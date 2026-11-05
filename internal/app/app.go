@@ -169,6 +169,7 @@ type app struct {
 	glowColor             ui.Color         // the color of Now Playing's glow, from the cover's
 	backdropCache         backdropCache // the backdrop of Now Playing, as last painted
 	npArt                 *artwork      // the cover whose colors Now Playing shows
+	coverArt              *artwork      // the cover whose color accents the whole app
 	npCoverState          coverState    // the cover of Now Playing, as it is tilted and flicked
 	wallState             wallState     // the wall of the queue's covers, as it is dragged
 	quiet                 quietState    // the quiet parts of the song playing, for its hot comments

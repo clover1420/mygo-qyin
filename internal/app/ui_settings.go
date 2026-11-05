@@ -79,11 +79,7 @@ var settingsCategories = [...]struct {
 }
 
 func (a *app) settingsView(c *ui.Context) {
-	t := *c.Theme()
-	p := paletteFor(&t)
-	t.Accent, t.AccentText = p.accent, p.onAccent
-	t.Font = a.fontFamily()
-	c.SetTheme(&t)
+	p := a.applyTheme(c)
 	c.Root().Background(p.sidebar)
 	a.settingsInner(c)
 }
@@ -328,6 +324,11 @@ func (a *app) settingsContent(c *ui.Context) {
 				a.changed()
 			}
 		})
+		row("主题色跟随封面", "按钮与高亮使用当前歌曲封面的颜色，而不是默认红", func() {
+			if ui.Switch(c.Key("accent-cover"), &s.AccentCover).Label("主题色跟随封面").Changed() {
+				a.changed()
+			}
+		})
 		if runtime.GOOS == "windows" {
 			row("侧边栏材质", "", func() {
 				i := 0
@@ -480,8 +481,12 @@ func (a *app) settingsContent(c *ui.Context) {
 // over the page's press shade, with the value beside it, dimmed while the
 // switch it belongs to is off.
 func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool) {
-	// The settings window draws its own palette, which the app's may not be.
+	// The settings window draws its own palette, which the app's may not be,
+	// but its accent follows the whole app's, cover included.
 	p := paletteFor(c.Theme())
+	if a.pal.accent.A > 0 {
+		p.accent = a.pal.accent
+	}
 	ui.Row(c).Gap(10).AlignItems(ui.Center).Children(func() {
 		s := ui.SliderBase(c.Key(key), v, 0, 1).Width(150).Height(22).Step(0.01).FocusRing(false).Label(label).
 			Disabled(!on).Cursor(ui.CursorPointer)

@@ -14,13 +14,7 @@ import (
 const sidebarWidth = 232
 
 func (a *app) view(c *ui.Context) {
-	t := *c.Theme()
-	a.pal = paletteFor(&t)
-	p := a.pal
-	t.Accent, t.AccentText = p.accent, p.onAccent
-	t.Selection = p.accent.Alpha(0.3)
-	t.Font = a.fontFamily()
-	c.SetTheme(&t)
+	p := a.applyTheme(c)
 
 	if a.cacheMoving {
 		a.cacheMigrationView(c)
