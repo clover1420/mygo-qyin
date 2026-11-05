@@ -19,6 +19,7 @@ func (a *app) view(c *ui.Context) {
 	p := a.pal
 	t.Accent, t.AccentText = p.accent, p.onAccent
 	t.Selection = p.accent.Alpha(0.3)
+	t.Font = a.fontFamily()
 	c.SetTheme(&t)
 
 	if a.cacheMoving {

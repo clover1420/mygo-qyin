@@ -101,6 +101,9 @@ type settings struct {
 	// GlassPanels makes menus, popovers, dialogs and panels frosted glass.
 	GlassPanels bool `json:"glassPanels"`
 
+	// Font is the font the app is read in (uiFonts); empty for the default.
+	Font string `json:"font,omitempty"`
+
 	// NpLight lights the line sung in Now Playing, and GlowLevel how far the
 	// listener has turned that light up, 0.5 as it was tuned.
 	NpLight   bool    `json:"npLight"`

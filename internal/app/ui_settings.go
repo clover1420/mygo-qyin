@@ -81,6 +81,7 @@ func (a *app) settingsView(c *ui.Context) {
 	t := *c.Theme()
 	p := paletteFor(&t)
 	t.Accent, t.AccentText = p.accent, p.onAccent
+	t.Font = a.fontFamily()
 	c.SetTheme(&t)
 	c.Root().Background(p.sidebar)
 	c.OnShortcut(ui.Cmd, ui.KeyW, func() { a.settingsWin.Close() })
@@ -334,6 +335,26 @@ func (a *app) settingsContent(c *ui.Context) {
 	})
 
 	group(settingsAppearance, "外观与玻璃", func() {
+		row("字体", "界面文字所用的字体，随系统所装字体而定", func() {
+			fonts := a.fontChoices()
+			labels := make([]string, len(fonts))
+			chosen := fonts[0].label
+			for i, f := range fonts {
+				labels[i] = f.label
+				if f.id == s.Font {
+					chosen = f.label
+				}
+			}
+			if ui.Select(c.Key("font"), &chosen, labels).Label("字体").Width(150).Changed() {
+				for _, f := range fonts {
+					if f.label == chosen {
+						s.Font = f.id
+					}
+				}
+				a.loadFont()
+				a.changed()
+			}
+		})
 		row("液态玻璃播放栏", "播放栏浮起为一条玻璃胶囊，页面从它底下滚过", func() {
 			if ui.Switch(c.Key("liquid-glass"), &s.LiquidGlass).Label("液态玻璃播放栏").Changed() {
 				a.changed()

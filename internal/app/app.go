@@ -177,6 +177,8 @@ type app struct {
 	settingsDirty                 bool   // a slider of the settings is held, its value not yet kept
 	settingsTab                   int    // the destination of the settings showing
 	settingsScroll                [4]ui.ScrollState
+	fontsLoaded                   map[string]bool // the font files registered, by id
+	fontList                      []uiFont        // the fonts this computer can show
 	cacheUsed                     int64  // the bytes the song cache takes, -1 until measured
 	cacheDirError                 string // a directory selection that could not be applied
 	cacheMoving                   bool   // startup migration finishes before playback is restored
@@ -284,9 +286,11 @@ func Run() error {
 		cacheUsed:  -1,
 	}
 	a.useUpdater()
+	mygo.App.SetLanguages(appLanguage)
 	mygo.App.WhenReady(func() {
 		a.settings = loadSettings()
 		a.settings.applyAppearance()
+		a.loadFont()
 		a.npPane = a.lyricsPaneChosen()
 		// Before the window: on Windows it lays out its content as it is
 		// made, and the view asks the player what plays.
