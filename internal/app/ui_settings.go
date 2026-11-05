@@ -174,36 +174,6 @@ func (a *app) settingsContent(c *ui.Context) {
 	}
 
 	group(settingsGeneral, "通用", func() {
-		row("外观", "", func() {
-			modes := []string{"system", "light", "dark"}
-			i := 0
-			for k, m := range modes {
-				if m == s.Appearance {
-					i = k
-				}
-			}
-			if segmented(c.Key("appearance"), &i, "跟随系统", "浅色", "深色") {
-				s.Appearance = modes[i]
-				a.changed()
-			}
-		})
-		if runtime.GOOS == "windows" {
-			row("侧边栏材质", "", func() {
-				i := 0
-				if s.sidebarVibrancy() == mygo.VibrancyMica {
-					i = 1
-				}
-				if segmented(c.Key("sidebar-material"), &i, "亚克力", "Mica") {
-					s.SidebarMaterial = []string{"acrylic", "mica"}[i]
-					if a.win != nil {
-						a.win.SetVibrancy(s.sidebarVibrancy())
-					}
-					s.save()
-					a.redraw()
-				}
-			})
-		}
-
 		if a.canHideOnClose() {
 			row("关闭主窗口时", "", func() {
 				i := 0
@@ -345,6 +315,36 @@ func (a *app) settingsContent(c *ui.Context) {
 	})
 
 	group(settingsAppearance, "外观与玻璃", func() {
+		row("外观", "", func() {
+			modes := []string{"system", "light", "dark"}
+			i := 0
+			for k, m := range modes {
+				if m == s.Appearance {
+					i = k
+				}
+			}
+			if segmented(c.Key("appearance"), &i, "跟随系统", "浅色", "深色") {
+				s.Appearance = modes[i]
+				a.changed()
+			}
+		})
+		if runtime.GOOS == "windows" {
+			row("侧边栏材质", "", func() {
+				i := 0
+				if s.sidebarVibrancy() == mygo.VibrancyMica {
+					i = 1
+				}
+				if segmented(c.Key("sidebar-material"), &i, "亚克力", "Mica") {
+					s.SidebarMaterial = []string{"acrylic", "mica"}[i]
+					if a.win != nil {
+						a.win.SetVibrancy(s.sidebarVibrancy())
+					}
+					s.save()
+					a.redraw()
+				}
+			})
+		}
+
 		row("字体", "界面文字所用的字体，随系统所装字体而定", func() {
 			fonts := a.fontChoices()
 			labels := make([]string, len(fonts))

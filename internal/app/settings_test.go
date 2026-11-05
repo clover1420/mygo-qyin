@@ -218,6 +218,8 @@ func TestSidebarMaterialSettings(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
+	// The appearance rows now live in the appearance category.
+	a.settingsTab = int(settingsAppearance)
 	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()

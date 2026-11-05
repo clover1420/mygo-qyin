@@ -441,6 +441,7 @@ func TestSegmentedFrames(t *testing.T) {
 	for _, dark := range []bool{false, true} {
 		a := newTestApp()
 		a.settings = defaultSettings()
+		a.settingsTab = int(settingsAppearance)
 		a.settings.Appearance = "light"
 		tt := ui.NewTester(a.settingsView, 560, 640)
 		tt.SetScale(2)
