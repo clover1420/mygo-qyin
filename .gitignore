@@ -15,6 +15,7 @@ RELEASING.md
 # Local development configuration
 /AGENTS.md
 /.agents/
+/.workbuddy/
 /.codex/
 /.trellis/
 /.gitattributes
