@@ -85,7 +85,7 @@ type settings struct {
 	// CacheMB is how many megabytes the songs kept on disk may take; 0
 	// keeps none.
 	CacheMB int `json:"cacheMB"`
-	// CacheDir is the chosen parent of the dedicated Lilt song cache;
+	// CacheDir is the chosen parent of the dedicated Yunhe song cache;
 	// empty uses the platform's cache directory.
 	CacheDir string `json:"cacheDir,omitempty"`
 	// PendingCacheDir is migrated and applied before playback on the next launch.
@@ -184,8 +184,8 @@ func settingsPath() (string, error) {
 	return filepath.Join(dir, "settings.json"), nil
 }
 
-// oldName is the QQ fork's name before Lilt; NetEase data stays separate.
-const oldName = "MyGo QQ 音乐"
+// oldName is the app's previous name; older NetEase data stays separate.
+const oldName = "Lilt"
 
 // moveOldData moves the user data and the song cache kept under oldName to
 // the directories of the app's name, unless those hold something already:

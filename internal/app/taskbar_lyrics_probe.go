@@ -26,7 +26,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 	if err := os.MkdirAll(filepath.Join(dir, "data"), 0700); err != nil {
 		return err
 	}
-	mygo.App.SetName("Lilt Taskbar Lyrics Check")
+	mygo.App.SetName("Yunhe Taskbar Lyrics Check")
 	mygo.App.SetPath(mygo.PathUserData, filepath.Join(dir, "data"))
 	mygo.App.SetPath(mygo.PathCache, filepath.Join(dir, "cache"))
 	a := &app{settings: defaultSettings()}
@@ -84,7 +84,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 		}
 	}
 	mygo.App.WhenReady(func() {
-		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt Taskbar Lyrics Check", Hidden: true, Width: 420, Height: 150,
+		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Yunhe Taskbar Lyrics Check", Hidden: true, Width: 420, Height: 150,
 			Content: ui.View(func(c *ui.Context) {
 				ui.Column(c).Fill().Center().Gap(12).Background(neutral(c.Theme().Dark, 2)).Children(func() {
 					ui.Text(c, "任务栏歌词验证").FontSize(20)

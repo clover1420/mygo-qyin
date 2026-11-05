@@ -1,4 +1,4 @@
-// Command tray draws internal/app/tray/tray-template.png, the Lilt record in
+// Command tray draws internal/app/tray/tray-template.png, the Yunhe record in
 // the macOS menu bar, as a black-on-transparent template at 2×.
 //
 // Run it from the repository root:

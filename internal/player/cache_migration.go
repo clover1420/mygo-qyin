@@ -138,7 +138,7 @@ func (f cacheMigrationFile) copyTo(dir string, progress func(int64)) error {
 		return err
 	}
 	defer source.Close()
-	temp, err := os.CreateTemp(dir, ".lilt-migrate-*")
+	temp, err := os.CreateTemp(dir, ".yunhe-migrate-*")
 	if err != nil {
 		return err
 	}

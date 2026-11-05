@@ -9,19 +9,19 @@ import (
 	"github.com/egoist/mygo"
 )
 
-// Renaming the QQ fork to Lilt must keep its settings, queue, development login and cache in the matching build.
-func TestLiltDataMigration(t *testing.T) {
+// Renaming the QQ fork to Yunhe must keep its settings, queue, development login and cache in the matching build.
+func TestYunheDataMigration(t *testing.T) {
 	name := mygo.App.Name()
 	t.Cleanup(func() {
 		mygo.App.SetName(name)
 		mygo.App.SetPath(mygo.PathUserData, "")
 		mygo.App.SetPath(mygo.PathCache, "")
 	})
-	for _, current := range []string{"Lilt", "Lilt Dev"} {
+	for _, current := range []string{"Yunhe", "Yunhe Dev"} {
 		t.Run(current, func(t *testing.T) {
 			mygo.App.SetName(current)
 			root := t.TempDir()
-			previous := oldName + strings.TrimPrefix(current, "Lilt")
+			previous := oldName + strings.TrimPrefix(current, "Yunhe")
 			otherBuild := oldName
 			if previous == oldName {
 				otherBuild += " Dev"

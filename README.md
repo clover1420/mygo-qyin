@@ -1,6 +1,6 @@
-# Lilt
+# Yunhe
 
-Lilt 是基于 MyGo 云音乐改造的第三方 QQ 音乐客户端，使用 Go 原生界面与播放器，以纯 Go 直接连接 QQ 音乐服务。
+Yunhe 是基于 MyGo 云音乐改造的第三方 QQ 音乐客户端，使用 Go 原生界面与播放器，以纯 Go 直接连接 QQ 音乐服务。
 ![截图1](assets/image.png)
 
 ## 功能

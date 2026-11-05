@@ -82,7 +82,7 @@ func main() {
 	}}
 	p.result.OS = operatingSystem()
 	p.result.ParentMode = *parentMode
-	mygo.App.SetName("Lilt Taskbar Lyrics Probe")
+	mygo.App.SetName("Yunhe Taskbar Lyrics Probe")
 	mygo.App.WhenReady(p.start)
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { p.finish(false) })
 	if err := mygo.App.Run(); err != nil {
@@ -96,7 +96,7 @@ func main() {
 
 func (p *probe) start() {
 	p.phase = "floating"
-	p.main = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt · taskbar T0 probe", Width: 460, Height: 180, Hidden: true, Content: ui.View(p.mainView)})
+	p.main = mygo.NewWindow(mygo.WindowOptions{Title: "Yunhe · taskbar T0 probe", Width: 460, Height: 180, Hidden: true, Content: ui.View(p.mainView)})
 	p.main.OnClosed(func() { p.finish(false); mygo.App.Quit() })
 	p.main.ShowInactive()
 	p.newLyrics()
@@ -117,7 +117,7 @@ func (p *probe) mainView(c *ui.Context) {
 }
 
 func (p *probe) newLyrics() {
-	p.lyrics = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt · taskbar T0 lyrics", Panel: true, Hidden: true, Frameless: true, Transparent: true, DisableShadow: true, DisableResize: true, Width: 280, Height: 42, Content: ui.View(p.lyricsView)})
+	p.lyrics = mygo.NewWindow(mygo.WindowOptions{Title: "Yunhe · taskbar T0 lyrics", Panel: true, Hidden: true, Frameless: true, Transparent: true, DisableShadow: true, DisableResize: true, Width: 280, Height: 42, Content: ui.View(p.lyricsView)})
 	p.lyrics.SetIgnoreMouseEvents(true)
 	clearPanelFrame(p.lyrics.NativeHandle())
 	placeFloating(p.lyrics.NativeHandle())

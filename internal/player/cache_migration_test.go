@@ -130,7 +130,7 @@ func TestCacheCopyToFailureKeepsSources(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, entry := range entries {
-		if strings.HasPrefix(entry.Name(), ".lilt-migrate-") {
+		if strings.HasPrefix(entry.Name(), ".yunhe-migrate-") {
 			t.Fatalf("temporary copy remains: %s", entry.Name())
 		}
 	}

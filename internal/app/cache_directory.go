@@ -24,7 +24,7 @@ func (a *app) cacheDirectoryRow(c *ui.Context) {
 	if pending := a.settings.PendingCacheDir; pending != nil {
 		path = "默认目录"
 		if *pending != "" {
-			path = filepath.Join(*pending, "Lilt", "songs")
+			path = filepath.Join(*pending, "Yunhe", "songs")
 		}
 	}
 	ui.Row(c).Padding(12, 16).Gap(16).AlignItems(ui.Center).MinHeight(48).Children(func() {

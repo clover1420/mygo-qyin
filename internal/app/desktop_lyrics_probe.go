@@ -27,7 +27,7 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 	if err := os.MkdirAll(filepath.Join(dir, "data"), 0700); err != nil {
 		return err
 	}
-	mygo.App.SetName("Lilt Lyrics Probe")
+	mygo.App.SetName("Yunhe Lyrics Probe")
 	mygo.App.SetPath(mygo.PathUserData, filepath.Join(dir, "data"))
 	mygo.App.SetPath(mygo.PathCache, filepath.Join(dir, "cache"))
 	a := &app{settings: defaultSettings()}
@@ -35,7 +35,7 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 	a.pl = player.New(a.post)
 	a.pl.Changed = func() { a.redraw() }
 	mygo.App.WhenReady(func() {
-		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt Lyrics Probe", Width: 580, Height: 300,
+		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Yunhe Lyrics Probe", Width: 580, Height: 300,
 			Content: ui.View(func(c *ui.Context) {
 				ui.Column(c).Fill().Padding(24).Gap(12).Background(neutral(c.Theme().Dark, 2)).Children(func() {
 					ui.Text(c, "桌面歌词 · 原生窗口验证").FontSize(20)

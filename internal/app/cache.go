@@ -13,7 +13,7 @@ import (
 // directory, or nil without one.
 func newSongCache(s settings) *player.Cache {
 	if s.CacheDir != "" {
-		return player.NewCache(filepath.Join(s.CacheDir, "Lilt", "songs"), int64(s.CacheMB)<<20)
+		return player.NewCache(filepath.Join(s.CacheDir, "Yunhe", "songs"), int64(s.CacheMB)<<20)
 	}
 	dir, err := mygo.App.Path(mygo.PathCache)
 	if err != nil {

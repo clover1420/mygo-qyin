@@ -23,7 +23,7 @@ func TestCacheDirectorySettings(t *testing.T) {
 	writeCacheFixture(t, filepath.Join(oldCache.Directory(), "1-exhigh.json"), `{"level":"exhigh","type":"mp3","size":8}`)
 
 	selected := filepath.Join(t.TempDir(), "音乐缓存")
-	writeCacheFixture(t, filepath.Join(selected, "Lilt", "songs", "2-exhigh.mp3"), "new song")
+	writeCacheFixture(t, filepath.Join(selected, "Yunhe", "songs", "2-exhigh.mp3"), "new song")
 	userSong := filepath.Join(selected, "my-music.mp3")
 	writeCacheFixture(t, userSong, "personal music")
 	picker := pickCacheDirectory
@@ -107,7 +107,7 @@ func TestCacheDirectorySelectionFailure(t *testing.T) {
 			previousCache, previousDir := a.pl.Cache, a.settings.CacheDir
 			selected := t.TempDir()
 			if scenario == "blocked directory" {
-				writeCacheFixture(t, filepath.Join(selected, "Lilt"), "a file blocks the directory")
+				writeCacheFixture(t, filepath.Join(selected, "Yunhe"), "a file blocks the directory")
 			}
 			if scenario == "save error" {
 				blocker := filepath.Join(t.TempDir(), "file")

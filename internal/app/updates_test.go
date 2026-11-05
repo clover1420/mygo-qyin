@@ -93,7 +93,7 @@ func TestCheckForUpdatesFromSettings(t *testing.T) {
 // name, which Path made empty, but not over data kept there already.
 func TestMoveOldData(t *testing.T) {
 	root := t.TempDir()
-	old, dir := filepath.Join(root, oldName), filepath.Join(root, "Lilt")
+	old, dir := filepath.Join(root, oldName), filepath.Join(root, "Yunhe")
 	os.MkdirAll(old, 0o700)
 	os.WriteFile(filepath.Join(old, "settings.json"), []byte("old"), 0o600)
 	os.MkdirAll(dir, 0o700)

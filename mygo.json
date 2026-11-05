@@ -1,13 +1,13 @@
 {
-  "name": "Lilt",
+  "name": "Yunhe",
   "identifier": "dev.amamiya.qqmusic",
-  "slug": "lilt",
+  "slug": "yunhe",
   "version": "0.0.1",
   "out": "build",
   "resources": ["LICENSE", "THIRD_PARTY_NOTICES.md", "README.md"],
   "updates": {
     "publicKey": "p24sLvin8mZfRkm9Om/3pwJLdUWG5kAJS1M2+oIskbE=",
-    "github": "clover1420/mygo-qyin"
+    "github": "clover1420/yunhe"
   },
   "macos": {
     "minimumSystemVersion": "13.0"

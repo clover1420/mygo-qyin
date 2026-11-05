@@ -1,7 +1,7 @@
 # Windows taskbar lyrics T0 probe
 
 This independent diagnostic uses the pinned MyGo native renderer. It does not
-enable taskbar lyrics in Lilt, read player data, inject into Explorer, or resize
+enable taskbar lyrics in Yunhe, read player data, inject into Explorer, or resize
 Explorer's task list. Its colors are Radix Slate dark tokens.
 
 Build from the repository root with PowerShell:
