@@ -169,6 +169,7 @@ type app struct {
 	settings                      settings
 	settingsWin                   *mygo.Window
 	settingsPane                  ui.Handle
+	settingsDirty                 bool   // a slider of the settings is held, its value not yet kept
 	cacheUsed                     int64  // the bytes the song cache takes, -1 until measured
 	cacheDirError                 string // a directory selection that could not be applied
 	cacheMoving                   bool   // startup migration finishes before playback is restored

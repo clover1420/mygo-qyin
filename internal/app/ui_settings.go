@@ -270,6 +270,26 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 	})
 
+	group("外观与玻璃", func() {
+		row("液态玻璃播放栏", "播放栏浮起为一条玻璃胶囊，页面从它底下滚过", func() {
+			if ui.Switch(c.Key("liquid-glass"), &s.LiquidGlass).Label("液态玻璃播放栏").Changed() {
+				a.changed()
+			}
+		})
+		glassRow := func(label, desc string, v *float64) {
+			row(label, desc, func() {
+				a.glassSlider(c.Key(label), label, label, v, s.LiquidGlass)
+			})
+		}
+		glassRow("玻璃透明度", "越高越能看清背后的内容，文字会更难读", &s.GlassClear)
+		glassRow("折射强度", "胶囊边缘弯折背后内容的程度", &s.GlassBend)
+		row("界面玻璃", "菜单、弹层与对话框使用磨砂玻璃", func() {
+			if ui.Switch(c.Key("glass-panels"), &s.GlassPanels).Label("界面玻璃").Changed() {
+				a.changed()
+			}
+		})
+	})
+
 	group("实验性功能", func() {
 		if supportsTaskbarLyrics() {
 			row("歌词显示位置", "", func() {
@@ -351,5 +371,47 @@ func (a *app) settingsContent(c *ui.Context) {
 				}
 			})
 		}
+	})
+}
+
+// glassSlider is how clear the glass of the player bar is, or how far it
+// bends what shows through: a thin bar in the accent over the page's press
+// shade, dimmed while the glass is off.
+func (a *app) glassSlider(c *ui.Context, key, label string, v *float64, on bool) {
+	// The settings window draws its own palette, which the app's may not be.
+	p := paletteFor(c.Theme())
+	ui.Row(c).Gap(10).AlignItems(ui.Center).Children(func() {
+		s := ui.SliderBase(c.Key(key), v, 0, 1).Width(150).Height(22).Step(0.01).FocusRing(false).Label(label).
+			Disabled(!on).Cursor(ui.CursorPointer)
+		if s.Changed() {
+			a.settingsDirty = true
+			a.redraw()
+		}
+		if a.settingsDirty && !s.Pressed() {
+			a.settingsDirty = false
+			a.settings.save()
+		}
+		held := s.Pressed()
+		thick := float32(4)
+		if s.Hovered() || held {
+			thick = 5
+		}
+		thick = s.AnimateTo("thick", thick, ui.Snappy)
+		at := float32(*v)
+		hot := held || s.Hovered() || s.FocusVisible()
+		track, fill, knob := p.press, p.accent, paper
+		if !on {
+			// Off, the slider says so by its colors rather than by a layer.
+			track, fill, knob = p.hover, p.faint, p.hover
+		}
+		s.Draw(func(pel *ui.Painter, r ui.Rect) {
+			y := r.Y + (r.H-thick)/2
+			pel.Fill(ui.Rect{X: r.X, Y: y, W: r.W, H: thick}, track, thick/2)
+			pel.Fill(ui.Rect{X: r.X, Y: y, W: max(thick, r.W*at), H: thick}, fill, thick/2)
+			if hot {
+				pel.Fill(ui.Rect{X: r.X + r.W*at - 6, Y: r.Y + (r.H-12)/2, W: 12, H: 12}, knob, 6)
+			}
+		})
+		ui.Textf(c, "%d%%", int(100*(*v))).FontSize(12).FontFeatures("tnum").TextColor(p.muted).Width(38)
 	})
 }
