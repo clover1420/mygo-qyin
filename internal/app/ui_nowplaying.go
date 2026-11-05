@@ -87,6 +87,9 @@ func (a *app) nowPlayingView(c *ui.Context) {
 		tint = shown.tint
 	}
 	accent := tint.Mix(white, 0.45)
+	// The light of the line sung takes the cover's own color, lightened as
+	// the lyrics beside it are.
+	a.glowColor = accent
 
 	root := ui.Box(c.Key("now-playing")).Absolute().Top(0).Left(0).Right(0).Bottom(0).
 		Background(neutral(true, 1)).TextColor(white)
@@ -545,6 +548,10 @@ func (a *app) timedLines(c *ui.Context, scroll ui.Element, lines []lyrics.Line, 
 						}
 						if l.Translation != "" {
 							ui.Text(c, l.Translation).FontSize(17).FontWeight(600).TextColor(white.Alpha(0.7))
+						}
+						// The line sung again in light, over it and blurred.
+						if on && a.glows() {
+							a.lineGlow(c, l, pos, st)
 						}
 					})
 				})

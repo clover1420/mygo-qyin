@@ -71,7 +71,7 @@ func TestLikedTabsKeepHeaderGeometry(t *testing.T) {
 		t.Run(fmt.Sprint(width), func(t *testing.T) {
 			a := likedLayoutApp()
 			a.open(route{page: pagePlaylist, id: 7})
-			tt := ui.NewTester(a.view, width, 800)
+			tt := newNavTester(a, width, 800)
 			tt.Frame()
 			songsTab, albumsTab := likedBounds(t, tt, "单曲"), likedBounds(t, tt, "专辑")
 			if err := tt.Click("专辑"); err != nil {
@@ -101,7 +101,7 @@ func TestLikedTabsKeepHeaderGeometry(t *testing.T) {
 func TestLikedTabsRememberIndependentScroll(t *testing.T) {
 	a := likedLayoutApp()
 	a.open(route{page: pagePlaylist, id: 7})
-	tt := ui.NewTester(a.view, 1200, 800)
+	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	startSong := likedBounds(t, tt, "喜欢的单曲01")
 	tt.Scroll(1000, 550, 0, 72)

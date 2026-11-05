@@ -122,6 +122,10 @@ func (a *app) open(r route) {
 
 // show shows the page of r.
 func (a *app) show(r route) {
+	a.pageDir = pageLevel(r) - pageLevel(a.route)
+	// A tab of the page open is not another page: it changes in place, so
+	// that the control chosen stays where the pointer left it.
+	a.pageIn = r.page != a.route.page || r.id != a.route.id
 	a.route = r
 	if r.page == pageSearch {
 		a.query, a.searched = r.query, r
@@ -388,36 +392,41 @@ func (a *app) pageTop(c *ui.Context) {
 func (a *app) content(c *ui.Context) {
 	// Pages mark where their content is, as they scroll.
 	a.underTop, a.underBottom = false, false
-	switch a.route.page {
-	case pageHome:
-		a.homePage(c)
-	case pageDaily:
-		a.dailyPage(c)
-	case pageCharts:
-		a.chartsPage(c)
-	case pagePlaylist:
-		a.playlistPage(c)
-	case pageSearch:
-		a.searchPage(c)
-	case pageFM:
-		a.fmPage(c)
-	case pageArtist:
-		a.artistPage(c)
-	case pageAlbum:
-		a.albumPage(c)
-	case pageUser:
-		a.userPage(c)
-	case pagePodcast:
-		a.podcastPage(c)
-	case pagePodcasts:
-		a.podcastsPage(c)
-	case pagePurchased:
-		a.purchasedPage(c)
-	case pageSettings:
-		a.settingsPage(c)
-	case pageSongShelf:
-		a.songShelfPage(c)
-	}
+	// Keyed by its route, the page before leaves as this one comes.
+	page := ui.Box(c.Key(keyOf(a.route))).Absolute().Top(0).Left(0).Right(0).Bottom(0)
+	a.pageMotion(c, page)
+	page.Children(func() {
+		switch a.route.page {
+		case pageHome:
+			a.homePage(c)
+		case pageDaily:
+			a.dailyPage(c)
+		case pageCharts:
+			a.chartsPage(c)
+		case pagePlaylist:
+			a.playlistPage(c)
+		case pageSearch:
+			a.searchPage(c)
+		case pageFM:
+			a.fmPage(c)
+		case pageArtist:
+			a.artistPage(c)
+		case pageAlbum:
+			a.albumPage(c)
+		case pageUser:
+			a.userPage(c)
+		case pagePodcast:
+			a.podcastPage(c)
+		case pagePodcasts:
+			a.podcastsPage(c)
+		case pagePurchased:
+			a.purchasedPage(c)
+		case pageSettings:
+			a.settingsPage(c)
+		case pageSongShelf:
+			a.songShelfPage(c)
+		}
+	})
 }
 
 // centered shows a message, with a retry button if retry is set: what a

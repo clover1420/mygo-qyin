@@ -76,6 +76,8 @@ type app struct {
 	route   route
 	history []route
 	forward []route // the pages gone back from, the last first to go to
+	pageDir int     // the way the page last changed: 1 in, -1 back, 0 across
+	pageIn  bool    // whether the page changed at all, rather than a tab of it
 
 	profile      *qqmusic.Profile
 	mine, saved  []qqmusic.Playlist // the listener's playlists: made, and saved
@@ -157,6 +159,7 @@ type app struct {
 	underTop, underBottom bool
 	barScrub              scrubState
 	npScrub               scrubState
+	glowColor             ui.Color         // the color of Now Playing's glow, from the cover's
 	backdropCache         backdropCache // the backdrop of Now Playing, as last painted
 	npArt                 *artwork      // the cover whose colors Now Playing shows
 	npCoverState          coverState    // the cover of Now Playing, as it is tilted and flicked

@@ -35,7 +35,7 @@ func TestNavigationRestoresScroll(t *testing.T) {
 				}
 			}
 			a.open(route{page: page})
-			tt := ui.NewTester(a.view, 1200, 800)
+			tt := newNavTester(a, 1200, 800)
 			tt.Frame()
 			tt.Scroll(1000, 550, 0, 600)
 			tt.Frame()
@@ -94,7 +94,7 @@ func TestPlaylistsKeepIndependentScroll(t *testing.T) {
 		a.playlists[pl.ID] = pl
 	}
 	a.open(route{page: pagePlaylist, id: 1})
-	tt := ui.NewTester(a.view, 1200, 800)
+	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	tt.Scroll(1000, 550, 0, 700)
 	tt.Frame()
@@ -134,4 +134,12 @@ func assertNavigationPosition(t *testing.T, tt *ui.Tester, name string, want ui.
 	if !ok || math.Abs(float64(got.Y-want.Y)) > 1 || math.Abs(float64(got.X-want.X)) > 1 {
 		t.Fatalf("%s moved after navigation: got %+v (visible %v), want %+v", name, got, ok, want)
 	}
+}
+
+// newNavTester tests where things sit as pages change, which a page's entry
+// motion would still be moving: it asks for none.
+func newNavTester(a *app, width, height int) *ui.Tester {
+	tt := ui.NewTester(a.view, width, height)
+	tt.SetPreferences(ui.Preferences{ReduceMotion: true})
+	return tt
 }

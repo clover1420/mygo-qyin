@@ -278,7 +278,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 		glassRow := func(label, desc string, v *float64) {
 			row(label, desc, func() {
-				a.glassSlider(c.Key(label), label, label, v, s.LiquidGlass)
+				a.valueSlider(c.Key(label), label, label, v, s.LiquidGlass)
 			})
 		}
 		glassRow("玻璃透明度", "越高越能看清背后的内容，文字会更难读", &s.GlassClear)
@@ -287,6 +287,14 @@ func (a *app) settingsContent(c *ui.Context) {
 			if ui.Switch(c.Key("glass-panels"), &s.GlassPanels).Label("界面玻璃").Changed() {
 				a.changed()
 			}
+		})
+		row("歌词光晕", "正在唱的那一行，在封面的颜色里发光", func() {
+			if ui.Switch(c.Key("np-light"), &s.NpLight).Label("歌词光晕").Changed() {
+				a.changed()
+			}
+		})
+		row("光晕强度", "越高越亮，字也越容易糊在一起", func() {
+			a.valueSlider(c.Key("glow-level"), "光晕强度", "光晕强度", &s.GlowLevel, s.NpLight)
 		})
 	})
 
@@ -374,10 +382,10 @@ func (a *app) settingsContent(c *ui.Context) {
 	})
 }
 
-// glassSlider is how clear the glass of the player bar is, or how far it
-// bends what shows through: a thin bar in the accent over the page's press
-// shade, dimmed while the glass is off.
-func (a *app) glassSlider(c *ui.Context, key, label string, v *float64, on bool) {
+// valueSlider is a setting that goes from 0 to 1: a thin bar in the accent
+// over the page's press shade, with the value beside it, dimmed while the
+// switch it belongs to is off.
+func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool) {
 	// The settings window draws its own palette, which the app's may not be.
 	p := paletteFor(c.Theme())
 	ui.Row(c).Gap(10).AlignItems(ui.Center).Children(func() {

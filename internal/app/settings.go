@@ -101,11 +101,16 @@ type settings struct {
 	// GlassPanels makes menus, popovers, dialogs and panels frosted glass.
 	GlassPanels bool `json:"glassPanels"`
 
+	// NpLight lights the line sung in Now Playing, and GlowLevel how far the
+	// listener has turned that light up, 0.5 as it was tuned.
+	NpLight   bool    `json:"npLight"`
+	GlowLevel float64 `json:"glowLevel"`
+
 	path string // where they were loaded from, and are saved to
 }
 
 func defaultSettings() settings {
-	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", SidebarMaterial: "acrylic", LiquidGlass: true, GlassClear: 0.6, GlassBend: 0.3, GlassPanels: true, Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
+	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", SidebarMaterial: "acrylic", LiquidGlass: true, GlassClear: 0.6, GlassBend: 0.3, GlassPanels: true, NpLight: true, GlowLevel: 0.5, Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
 }
 
 const (

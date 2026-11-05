@@ -25,7 +25,7 @@ func TestGuestAccountMenuLogin(t *testing.T) {
 	t.Cleanup(func() { beginLoginQR = begin })
 	a := newTestApp()
 	a.settings = defaultSettings()
-	tt := ui.NewTester(a.view, 1000, 700)
+	tt := newNavTester(a, 1000, 700)
 	if err := tt.Click("账户"); err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestAccountMenuSettingsPage(t *testing.T) {
 				a.profile = &qqmusic.Profile{UserID: 1, Nickname: "小明"}
 				account = "小明"
 			}
-			tt := ui.NewTester(a.view, 1180, 780)
+			tt := newNavTester(a, 1180, 780)
 			for range 2 {
 				if err := tt.Click(account); err != nil {
 					t.Fatal(err)
@@ -111,7 +111,7 @@ func TestSettingsNavigationRestoresScroll(t *testing.T) {
 		a.charts = append(a.charts, qqmusic.Playlist{ID: int64(i + 1), Name: name})
 	}
 	a.open(route{page: pageCharts})
-	tt := ui.NewTester(a.view, 1200, 800)
+	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	tt.Scroll(1000, 550, 0, 600)
 	tt.Frame()
@@ -120,7 +120,7 @@ func TestSettingsNavigationRestoresScroll(t *testing.T) {
 	tt.Frame()
 	tt.Scroll(1000, 550, 0, 500)
 	tt.Frame()
-	control, controlAt := visibleNavigationItem(t, tt, []string{"更改缓存目录", "选择进度条特效", "烟雾背景"})
+	control, controlAt := visibleNavigationItem(t, tt, []string{"更改缓存目录", "选择进度条特效", "烟雾背景", "歌词光晕", "光晕强度", "玻璃透明度"})
 	for range 2 {
 		tt.Key(0, ui.KeyBack)
 		tt.Frame()
@@ -149,7 +149,7 @@ func TestSettingsPageSpaceTogglesControl(t *testing.T) {
 	out.Play()
 	a.pl.Attach(out)
 	defer out.Close()
-	tt := ui.NewTester(a.view, 1180, 780)
+	tt := newNavTester(a, 1180, 780)
 	if err := tt.Click("切换热评"); err != nil {
 		t.Fatal(err)
 	}
