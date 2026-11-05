@@ -18,6 +18,8 @@ func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsPlayback)
 	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
 	a.setDesktopLyricsEnabled(true)
 	tt := ui.NewTester(a.settingsView, 560, 2200)
@@ -70,6 +72,8 @@ func TestTaskbarLyricsSettingsModeWhileDisabled(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsPlayback)
 	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2200)
 	tt.Frame()

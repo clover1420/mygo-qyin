@@ -56,6 +56,27 @@ func (a *app) changed() {
 	a.redraw()
 }
 
+// settingsCategory is one of the destinations down the settings' side: the
+// rows of the others are not built while it shows.
+type settingsCategory int
+
+const (
+	settingsGeneral settingsCategory = iota
+	settingsAppearance
+	settingsPlayback
+	settingsAbout
+)
+
+var settingsCategories = [...]struct {
+	label string
+	icon  *ui.SVG
+}{
+	{"常规", iconSettings},
+	{"外观", iconSun},
+	{"播放与歌词", iconHeadset},
+	{"关于", iconInfo},
+}
+
 func (a *app) settingsView(c *ui.Context) {
 	t := *c.Theme()
 	p := paletteFor(&t)
@@ -63,25 +84,62 @@ func (a *app) settingsView(c *ui.Context) {
 	c.SetTheme(&t)
 	c.Root().Background(p.sidebar)
 	c.OnShortcut(ui.Cmd, ui.KeyW, func() { a.settingsWin.Close() })
-	ui.Scroll(c).Fill().Padding(24, 28, 32, 28).Gap(8).Children(func() {
-		a.settingsContent(c)
+	ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
+		a.settingsSidebar(c)
+		ui.Box(c).Width(0.5).Shrink(0).Background(p.hairline)
+		a.settingsBody(c)
 	})
 }
 
 // settingsPage shares the settings controls with the macOS window.
 func (a *app) settingsPage(c *ui.Context) {
 	top, bottom := a.insets(c)
-	ui.Scroll(c.Key("settings-page")).Bind(&a.settingsPane).TrackScroll(&a.pageState().scroll).
-		Fill().Background(a.pal.sidebar).Padding(top+pageGap, pagePad, bottom+48, pagePad).
-		ScrollbarInsets(top, 0, bottom, 0).Children(func() {
+	ui.Box(c.Key("settings-page")).Fill().Background(a.pal.bg).Padding(top+pageGap, 0, bottom, 0).Children(func() {
 		a.startMark(c)
 		defer a.endMark(c)
-		ui.Row(c).Justify(ui.Center).Children(func() {
-			ui.Column(c).Grow(1).MinWidth(0).MaxWidth(760).Gap(8).Children(func() {
-				a.heading(c, "设置", "")
-				a.settingsContent(c)
-			})
+		ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
+			a.settingsSidebar(c)
+			ui.Box(c).Width(0.5).Shrink(0).Background(a.pal.hairline)
+			a.settingsBody(c)
 		})
+	})
+}
+
+// settingsSidebar is the list of destinations, which stays while one of them
+// scrolls.
+func (a *app) settingsSidebar(c *ui.Context) {
+	p := paletteFor(c.Theme())
+	ui.Column(c.Key("settings-nav")).Width(184).Shrink(0).Padding(20, 12, 20, 4).Gap(4).Label("设置分类").
+		Background(p.sidebar).Children(func() {
+		for i, category := range settingsCategories {
+			selected := a.settingsTab == int(i)
+			button := ui.ButtonBase(c.Key(category.label)).Height(38).PaddingX(10).Gap(10).Radius(10).
+				AlignItems(ui.Center).Justify(ui.Start).Label("设置分类：" + category.label).Selected(selected)
+			bg, color, weight := ui.Transparent, p.muted, 500
+			if selected {
+				bg, color, weight = p.press, p.text, 600
+			} else if button.Hovered() {
+				bg, color = p.hover, p.text
+			}
+			button.Background(button.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond})).TextColor(color)
+			button.Children(func() {
+				ui.Icon(c, category.icon).Size(17, 17)
+				ui.Text(c, category.label).FontSize(13.5).FontWeight(weight)
+			})
+			if button.Clicked() {
+				a.settingsTab = int(i)
+			}
+		}
+	})
+}
+
+// settingsBody scrolls the rows of the destination chosen, and keeps its
+// place between visits.
+func (a *app) settingsBody(c *ui.Context) {
+	ui.Scroll(c.Key(settingsCategories[a.settingsTab].label)).Bind(&a.settingsPane).
+		TrackScroll(&a.settingsScroll[a.settingsTab]).Grow(1).Shrink(1).MinWidth(0).
+		Background(paletteFor(c.Theme()).bg).Padding(20, 28, 32, 28).Gap(8).Children(func() {
+		a.settingsContent(c)
 	})
 }
 
@@ -89,7 +147,12 @@ func (a *app) settingsContent(c *ui.Context) {
 	p := paletteFor(c.Theme())
 	s := &a.settings
 
-	group := func(title string, rows func()) {
+	// A group of the destination showing, and none of the others: their rows
+	// are not built, so that no control of another page takes a key.
+	group := func(cat settingsCategory, title string, rows func()) {
+		if a.settingsTab != int(cat) {
+			return
+		}
 		ui.Text(c, title).FontSize(12).FontWeight(600).TextColor(p.muted).Margin(14, 4, 4, 4)
 		ui.Column(c).Radius(20).Background(p.bg).Border(1, p.hairline).Dividers(1, p.hairline).Children(rows)
 	}
@@ -105,7 +168,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 	}
 
-	group("通用", func() {
+	group(settingsGeneral, "通用", func() {
 		row("外观", "", func() {
 			modes := []string{"system", "light", "dark"}
 			i := 0
@@ -270,7 +333,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 	})
 
-	group("外观与玻璃", func() {
+	group(settingsAppearance, "外观与玻璃", func() {
 		row("液态玻璃播放栏", "播放栏浮起为一条玻璃胶囊，页面从它底下滚过", func() {
 			if ui.Switch(c.Key("liquid-glass"), &s.LiquidGlass).Label("液态玻璃播放栏").Changed() {
 				a.changed()
@@ -298,7 +361,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 	})
 
-	group("实验性功能", func() {
+	group(settingsPlayback, "歌词与播放", func() {
 		if supportsTaskbarLyrics() {
 			row("歌词显示位置", "", func() {
 				i := 0
@@ -353,7 +416,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		})
 	})
 
-	group("关于与更新", func() {
+	group(settingsAbout, "关于与更新", func() {
 		row("当前版本 "+mygo.App.Version(), "", func() {
 			if a.updates {
 				if ui.Button(c.Key("check-updates"), "检查更新").Clicked() {

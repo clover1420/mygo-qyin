@@ -229,6 +229,8 @@ func TestSidebarMaterialSettings(t *testing.T) {
 func TestProgressEffectSettings(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsPlayback)
 	a.settings.setVolumeBalance(volumeBalanceHigh)
 	if err := json.Unmarshal([]byte("{\"smoke\":true}"), &a.settings); err != nil {
 		t.Fatal(err)

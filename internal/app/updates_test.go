@@ -37,6 +37,8 @@ func TestTurnOffUpdateChecks(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	a.updates = true
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsAbout)
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	// The row's title is labelled as its switch is: click the switch, at
@@ -75,6 +77,8 @@ func TestCheckForUpdatesFromSettings(t *testing.T) {
 	a.settings = defaultSettings()
 	a.updates = true
 	a.profile = &qqmusic.Profile{UserID: 1}
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsAbout)
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	if err := tt.Click("检查更新"); err != nil {

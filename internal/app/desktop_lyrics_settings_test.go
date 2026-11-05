@@ -17,6 +17,8 @@ func TestDesktopLyricsLineSettings(t *testing.T) {
 		t.Skip("no desktop lyrics settings on this platform")
 	}
 	a, d := desktopLyricsViewFixture()
+	// The rows of the category they are on.
+	a.settingsTab = int(settingsPlayback)
 	a.settings.DesktopLyricsLocked = true
 	a.pl.SetLyrics(lyrics.Build("[00:01]Stay with me\n[00:12]Through the night", "[00:01]留在我身边\n[00:12]穿过黑夜", ""))
 	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
