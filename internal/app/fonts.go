@@ -57,30 +57,36 @@ func defaultFontFamily() string {
 	return ""
 }
 
-// fontOf returns the font of an id, the default for one no longer on offer.
-func fontOf(id string) uiFont {
+// fontOf returns the preset of an id, and whether it is one: the listener
+// may choose any family this computer has, kept by its name.
+func fontOf(id string) (uiFont, bool) {
 	for _, f := range uiFonts {
 		if f.id == id {
-			return f
+			return f, true
 		}
 	}
-	return uiFonts[0]
+	return uiFont{}, false
 }
 
 // fontFamily returns the family list of the font chosen, for the theme.
 func (a *app) fontFamily() string {
-	if f := fontOf(a.settings.Font); f.id != "" {
+	id := a.settings.Font
+	if id == "" {
+		return defaultFontFamily()
+	}
+	if f, ok := fontOf(id); ok {
 		return f.family
 	}
-	return defaultFontFamily()
+	// A family of the system, kept by its name.
+	return id
 }
 
 // loadFont registers the files of the font chosen, the first time it is
 // chosen: their tens of MB stay on disk for those who read another font.
 // A font that won't load leaves its family to the system's fallback.
 func (a *app) loadFont() {
-	f := fontOf(a.settings.Font)
-	if len(f.files) == 0 || a.fontsLoaded[f.id] {
+	f, ok := fontOf(a.settings.Font)
+	if !ok || len(f.files) == 0 || a.fontsLoaded[f.id] {
 		return
 	}
 	dir, err := mygo.App.Path(mygo.PathResources)
@@ -104,23 +110,54 @@ func (a *app) loadFont() {
 	a.fontsLoaded[f.id] = true
 }
 
-// fontChoices returns the fonts this computer can show, read once.
+// fontChoices returns the fonts this computer can show, read once: the
+// presets it has, the ones that come as files, then every other family the
+// system lists, so that what is chosen is always a font that is there.
 func (a *app) fontChoices() []uiFont {
 	if a.fontList != nil {
 		return a.fontList
 	}
-	families := map[string]bool{}
+	// The system's families, by name, one of each name however it is cased.
+	families := make(map[string]string, len(uiFonts))
 	for _, f := range ui.FontFamilies() {
-		families[strings.ToLower(f.Name)] = true
+		name := strings.TrimSpace(f.Name)
+		if name == "" {
+			continue
+		}
+		key := strings.ToLower(name)
+		if _, ok := families[key]; !ok {
+			families[key] = name
+		}
 	}
 	dir, _ := mygo.App.Path(mygo.PathResources)
-	a.fontList = slices.DeleteFunc(slices.Clone(uiFonts), func(f uiFont) bool {
-		if f.id == "" || families[strings.ToLower(f.family)] {
-			return false
+	choices := make([]uiFont, 0, len(families)+1)
+	choices = append(choices, uiFonts[0]) // the default first
+	used := map[string]bool{"": true}
+	for _, f := range uiFonts[1:] {
+		key := strings.ToLower(f.family)
+		name, installed := families[key]
+		shipped := len(f.files) > 0 && fileExists(filepath.Join(dir, "fonts", f.files[0]))
+		if !installed && !shipped {
+			continue // not on this computer, and not shipped with the app
 		}
-		return len(f.files) == 0 || !fileExists(filepath.Join(dir, "fonts", f.files[0]))
-	})
-	return a.fontList
+		choices = append(choices, f)
+		used[key] = true
+		if installed {
+			used[strings.ToLower(name)] = true
+		}
+	}
+	rest := make([]string, 0, len(families))
+	for key, name := range families {
+		if !used[key] {
+			rest = append(rest, name)
+		}
+	}
+	slices.SortFunc(rest, func(x, y string) int { return strings.Compare(strings.ToLower(x), strings.ToLower(y)) })
+	for _, name := range rest {
+		choices = append(choices, uiFont{id: name, label: name, family: name})
+	}
+	a.fontList = choices
+	return choices
 }
 
 func fileExists(path string) bool {

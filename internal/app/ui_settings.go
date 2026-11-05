@@ -349,7 +349,7 @@ func (a *app) settingsContent(c *ui.Context) {
 					chosen = f.label
 				}
 			}
-			if ui.Select(c.Key("font"), &chosen, labels).Label("字体").Width(150).Changed() {
+			if ui.Select(c.Key("font"), &chosen, labels).Label("字体").Width(200).Changed() {
 				for _, f := range fonts {
 					if f.label == chosen {
 						s.Font = f.id
