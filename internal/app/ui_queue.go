@@ -17,21 +17,21 @@ func (a *app) queueButton(c *ui.Context) {
 			a.queuePopupAt = -1
 		}
 	}
-	pop := popoverColors(p.dark)
+	ink := a.inkOn(false)
 	ui.PopoverBase(c.Key("queue-popover"), b, &a.queueOpen, func(panel ui.Element) {
 		w, h := c.Size()
 		height := min(float32(len(a.pl.Queue())*60+64), 460, h-topBar(c)-playerBarHeight-24)
 		panel.AttachTo(b, ui.AnchorTopEnd, ui.AnchorBottomEnd).
 			Margin(0, 0, (playerBarHeight-32)/2+8, 0).Size(min(320, w-32), height).
-			Padding(8).Radius(14).Background(pop.fill).TextColor(p.text).Border(0.5, pop.edge).
-			Shadow(0, 8, 24, -4, ink.Alpha(0.2)).Label("待播清单")
+			Padding(8).TextColor(ink.text).Label("待播清单")
+		a.pane(panel, 14, false)
 		// Overlay content sits outside the page's Space shortcut scope.
 		panel.OnShortcut(0, ui.KeySpace, a.pl.TogglePlay)
 		ui.Row(c).Height(40).PaddingX(8).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Text(c, "待播清单").FontSize(15).FontWeight(700)
-			ui.Textf(c, "%d", len(a.pl.Queue())).FontSize(12).FontFeatures("tnum").TextColor(p.muted)
+			ui.Text(c, "待播清单").FontSize(15).FontWeight(700).TextColor(ink.text)
+			ui.Textf(c, "%d", len(a.pl.Queue())).FontSize(12).FontFeatures("tnum").TextColor(ink.muted)
 			ui.Spacer(c)
-			if iconButton(c, iconX, 15, p.muted, "关闭待播清单").Clicked() {
+			if iconButton(c, iconX, 15, ink.muted, "关闭待播清单").Clicked() {
 				a.queueOpen = false
 			}
 		})

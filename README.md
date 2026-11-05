@@ -29,6 +29,17 @@ go test ./internal/...                      # 运行测试
 go tool mygo vet .
 ```
 
+### 发布构建
+
+更新包需要 Ed25519 私钥签名（由 `go tool mygo keygen` 生成，默认放在用户目录的 `mygo/update-keys/` 下，**不要提交到仓库**）。Windows 的 Git Bash 里可这样注入：
+
+```bash
+MYGO_UPDATER_PRIVATE_KEY="$(cat "$APPDATA/mygo/update-keys/mygo-update.key")" \
+  go tool mygo build -platform "windows/amd64,windows/arm64"
+```
+
+不注入也能打包，但不会生成签名更新包、`update-*.json` 和差分包。正式发布由推送 `vX.Y.Z` tag 触发 `.github/workflows/release.yml`：先跑 `go build` / `mygo vet` / `go test`，再三平台构建并上传到草稿 Release，草稿需要手动转正；CI 里已配置同名 Secret。
+
 ## 致谢
 
 - [MyGo](https://github.com/egoist/mygo)：原生 UI 与应用框架

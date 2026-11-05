@@ -315,7 +315,7 @@ func (a *app) settingsContent(c *ui.Context) {
 	})
 
 	group(settingsAppearance, "外观与玻璃", func() {
-		row("外观", "", func() {
+		row("主题模式", "", func() {
 			modes := []string{"system", "light", "dark"}
 			i := 0
 			for k, m := range modes {

@@ -4,8 +4,10 @@ mygo_windows_*.syso
 /netease-music-mygo
 /node_modules/
 /.tools/
+# `go.mod` 的 module 名仍是 lilt，根目录 go build 会生成这些文件
 /lilt
 /lilt.exe
+# 应用名 Yunhe 的可执行文件
 /Yunhe
 /Yunhe.exe
 /design/

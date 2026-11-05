@@ -7,7 +7,8 @@
   "resources": ["LICENSE", "THIRD_PARTY_NOTICES.md", "README.md"],
   "updates": {
     "publicKey": "p24sLvin8mZfRkm9Om/3pwJLdUWG5kAJS1M2+oIskbE=",
-    "github": "clover1420/yunhe"
+    "github": "clover1420/yunhe",
+    "deltas": 0
   },
   "macos": {
     "minimumSystemVersion": "13.0"

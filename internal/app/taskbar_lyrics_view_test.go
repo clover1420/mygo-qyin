@@ -3,6 +3,7 @@ package app
 import (
 	"image"
 	"image/png"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -84,7 +85,9 @@ func TestTaskbarLyricsTwoLineContent(t *testing.T) {
 							t.Fatal("compact layout discarded the second sentence")
 						}
 						_, secondaryHeight := layout.secondary.Size()
-						if secondaryHeight != layout.originalHeight || layout.height > float32(height) {
+						// Latin and Han glyph metrics differ by a fraction of a pixel;
+						// drawing already spaces both rows by originalHeight.
+						if math.Abs(float64(secondaryHeight-layout.originalHeight)) > 0.5 || layout.height > float32(height) {
 							t.Fatalf("rows differ in size or exceed taskbar: first=%v second=%v total=%v available=%d", layout.originalHeight, secondaryHeight, layout.height, height)
 						}
 					} else if layout.secondary != nil {
