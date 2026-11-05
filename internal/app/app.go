@@ -175,6 +175,7 @@ type app struct {
 	settingsWin                   *mygo.Window
 	settingsPane                  ui.Handle
 	settingsDirty                 bool   // a slider of the settings is held, its value not yet kept
+	settingsOpen                  bool   // the settings show over the window
 	settingsTab                   int    // the destination of the settings showing
 	settingsScroll                [4]ui.ScrollState
 	fontsLoaded                   map[string]bool // the font files registered, by id

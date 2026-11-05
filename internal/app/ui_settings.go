@@ -8,42 +8,43 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// openSettings uses a separate window on macOS and the main navigation elsewhere.
+// openSettings shows the settings as a pane over the main window, where
+// their glass has the app to show through: a window of its own would have
+// nothing under it.
 func (a *app) openSettings() {
-	if runtime.GOOS != "darwin" {
-		a.showMain()
-		if a.route.page == pageSettings {
-			a.measureCache()
-		}
-		a.open(route{page: pageSettings})
-		a.redraw()
-		return
-	}
-	if a.settingsWin != nil {
-		a.settingsWin.Show()
-		a.settingsWin.Focus()
-		a.measureCache()
-		return
-	}
 	a.measureCache()
-	a.settingsWin = mygo.NewWindow(mygo.WindowOptions{
-		Title:           "设置",
-		Width:           560,
-		Height:          720,
-		MinWidth:        480,
-		MinHeight:       420,
-		StateKey:        "settings",
-		DisableMaximize: true,
-		DisableMinimize: true,
-		AutoHideMenuBar: true,
-		BackgroundColor: "light-dark(" + neutralLight[0] + ", " + neutralDark[0] + ")",
-		Content:         ui.View(a.settingsView),
+	// Over the pages, not over Now Playing, which it puts away as a page of
+	// its own would.
+	a.nowPlaying = false
+	a.settingsOpen = true
+	a.showMain()
+	a.redraw()
+}
+
+// settingsPanel is the settings, a pane over the window while they are open.
+func (a *app) settingsPanel(c *ui.Context) {
+	if !a.settingsOpen {
+		return
+	}
+	w, h := c.Size()
+	ink := a.inkOn(false)
+	ui.DialogBase(c.Key("settings"), &a.settingsOpen, func(backdrop, panel ui.Element) {
+		backdrop.Background(ui.RGBA(0, 0, 0, 0.28))
+		panel.Width(min(860, w-48)).Height(max(h-96, 360)).TextColor(ink.text).Label("设置").TransformOrigin(0, 1)
+		a.pane(panel, 26, false)
+		panel.Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.96, Y: 12}, Exit: &ui.Motion{Scale: 0.98}})
+		panel.Children(func() {
+			ui.Row(c).Height(60).Padding(0, 16, 0, 28).AlignItems(ui.Center).Children(func() {
+				ui.Text(c, "设置").FontSize(20).FontWeight(700).Grow(1)
+				if iconButton(c.Key("close"), iconX, 16, ink.muted, "关闭").Clicked() {
+					a.settingsOpen = false
+				}
+			})
+			ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Padding(0, 0, 12, 12).Children(func() {
+				a.settingsInner(c)
+			})
+		})
 	})
-	a.settingsWin.OnClosed(func() {
-		a.settingsWin = nil
-		a.syncDock()
-	})
-	a.syncDock()
 }
 
 // changed applies the settings everywhere and keeps them.
@@ -84,10 +85,14 @@ func (a *app) settingsView(c *ui.Context) {
 	t.Font = a.fontFamily()
 	c.SetTheme(&t)
 	c.Root().Background(p.sidebar)
-	c.OnShortcut(ui.Cmd, ui.KeyW, func() { a.settingsWin.Close() })
+	a.settingsInner(c)
+}
+
+// settingsInner lays the destinations beside what they show.
+func (a *app) settingsInner(c *ui.Context) {
 	ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
 		a.settingsSidebar(c)
-		ui.Box(c).Width(0.5).Shrink(0).Background(p.hairline)
+		ui.Box(c).Width(0.5).Shrink(0).Background(paletteFor(c.Theme()).hairline)
 		a.settingsBody(c)
 	})
 }
@@ -110,8 +115,7 @@ func (a *app) settingsPage(c *ui.Context) {
 // scrolls.
 func (a *app) settingsSidebar(c *ui.Context) {
 	p := paletteFor(c.Theme())
-	ui.Column(c.Key("settings-nav")).Width(184).Shrink(0).Padding(20, 12, 20, 4).Gap(4).Label("设置分类").
-		Background(p.sidebar).Children(func() {
+	ui.Column(c.Key("settings-nav")).Width(168).Shrink(0).Padding(16, 12, 16, 4).Gap(4).Label("设置分类").Children(func() {
 		for i, category := range settingsCategories {
 			selected := a.settingsTab == int(i)
 			button := ui.ButtonBase(c.Key(category.label)).Height(38).PaddingX(10).Gap(10).Radius(10).
@@ -139,7 +143,7 @@ func (a *app) settingsSidebar(c *ui.Context) {
 func (a *app) settingsBody(c *ui.Context) {
 	ui.Scroll(c.Key(settingsCategories[a.settingsTab].label)).Bind(&a.settingsPane).
 		TrackScroll(&a.settingsScroll[a.settingsTab]).Grow(1).Shrink(1).MinWidth(0).
-		Background(paletteFor(c.Theme()).bg).Padding(20, 28, 32, 28).Gap(8).Children(func() {
+		Padding(8, 24, 24, 24).Gap(8).Children(func() {
 		a.settingsContent(c)
 	})
 }

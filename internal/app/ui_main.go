@@ -33,7 +33,8 @@ func (a *app) view(c *ui.Context) {
 		c.Root().Background(ui.Transparent)
 	}
 	root := ui.Box(c).Fill()
-	settingsFocused := a.route.page == pageSettings && !a.nowPlaying && a.settingsPane.FocusWithin(c)
+	// The settings, a pane over the page, keep Space for their own controls.
+	settingsFocused := a.settingsOpen || a.route.page == pageSettings && !a.nowPlaying && a.settingsPane.FocusWithin(c)
 	if !c.Focused(a.searchBox) && !settingsFocused {
 		// Space plays and pauses wherever the focus is, as in Music. On
 		// the container around everything, it comes before a button the
@@ -79,6 +80,7 @@ func (a *app) view(c *ui.Context) {
 		a.nowPlayingLayer(c, npOpen, npSettled)
 		a.splash(c)
 	})
+	a.settingsPanel(c)
 	a.loginDialog(c)
 	a.playlistNameDialog(c)
 	a.deletePlaylistDialog(c)

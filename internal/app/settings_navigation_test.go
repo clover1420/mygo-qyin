@@ -7,7 +7,6 @@ import (
 	"image/png"
 	"os"
 	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/egoist/mygo"
@@ -55,11 +54,9 @@ func TestGuestAccountMenuLogin(t *testing.T) {
 	wait(t, asked, "the guest login QR")
 }
 
-// Settings from either account menu uses the main route without duplicating history or creating a window.
-func TestAccountMenuSettingsPage(t *testing.T) {
-	if runtime.GOOS == "darwin" {
-		t.Skip("macOS opens a native settings window")
-	}
+// Settings from either account menu open the pane over the window, without
+// a route of their own or a window beside the app.
+func TestAccountMenuOpensSettings(t *testing.T) {
 	for _, signedIn := range []bool{false, true} {
 		t.Run(fmt.Sprint(signedIn), func(t *testing.T) {
 			a := newTestApp()
@@ -70,6 +67,7 @@ func TestAccountMenuSettingsPage(t *testing.T) {
 				account = "小明"
 			}
 			tt := newNavTester(a, 1180, 780)
+			route := a.route
 			for range 2 {
 				if err := tt.Click(account); err != nil {
 					t.Fatal(err)
@@ -79,29 +77,32 @@ func TestAccountMenuSettingsPage(t *testing.T) {
 					t.Fatal(err)
 				}
 				tt.Frame()
-				if a.route.page != pageSettings || a.settingsWin != nil || a.accountOpen || a.login.open {
-					t.Fatalf("settings did not open in the main window: route %+v", a.route)
+				if !a.settingsOpen || a.settingsWin != nil || a.accountOpen || a.login.open {
+					t.Fatalf("settings did not open over the window: open %v", a.settingsOpen)
 				}
-				if len(a.history) != 1 {
-					t.Fatalf("settings history = %v", a.history)
+				if a.route != route || len(a.history) != 0 {
+					t.Fatalf("settings took the route: %+v, history %v", a.route, a.history)
+				}
+				tt.Key(0, ui.KeyEscape)
+				tt.Frame()
+				if a.settingsOpen {
+					t.Fatal("Escape left the settings open")
 				}
 			}
 			a.pl.Cue([]qqmusic.Track{{ID: 1, Name: "宝船"}})
 			a.nowPlaying = true
 			a.openSettings()
 			tt.Frame()
-			if a.nowPlaying || len(a.history) != 1 {
-				t.Fatal("reopening settings did not dismiss Now Playing without duplicating history")
+			if a.nowPlaying || !a.settingsOpen {
+				t.Fatal("opening the settings did not dismiss Now Playing")
 			}
 		})
 	}
 }
 
-// Back and Forward restore the actual scroll positions of both settings and the music page.
-func TestSettingsNavigationRestoresScroll(t *testing.T) {
-	if runtime.GOOS == "darwin" {
-		t.Skip("macOS opens a native settings window")
-	}
+// Opening the settings leaves the page under them where it was, and closing
+// them gives it back as it was.
+func TestSettingsOverlayKeepsPageScroll(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	var cards []string
@@ -118,23 +119,16 @@ func TestSettingsNavigationRestoresScroll(t *testing.T) {
 	card, cardAt := visibleNavigationItem(t, tt, cards)
 	a.openSettings()
 	tt.Frame()
-	tt.Scroll(1000, 550, 0, 500)
-	tt.Frame()
-	control, controlAt := visibleNavigationItem(t, tt, []string{"更改缓存目录", "选择进度条特效", "烟雾背景", "歌词光晕", "光晕强度", "玻璃透明度"})
-	for range 2 {
-		tt.Key(0, ui.KeyBack)
-		tt.Frame()
-		if a.route.page != pageCharts {
-			t.Fatalf("Back opened %+v", a.route)
-		}
-		assertNavigationPosition(t, tt, card, cardAt)
-		tt.Key(0, ui.KeyForward)
-		tt.Frame()
-		if a.route.page != pageSettings {
-			t.Fatalf("Forward opened %+v", a.route)
-		}
-		assertNavigationPosition(t, tt, control, controlAt)
+	if !a.settingsOpen || a.route.page != pageCharts {
+		t.Fatalf("settings did not open over the page: open %v, route %+v", a.settingsOpen, a.route)
 	}
+	// The pane takes the keys: Back is not a way out of it.
+	tt.Key(0, ui.KeyEscape)
+	tt.Frame()
+	if a.settingsOpen {
+		t.Fatal("Escape left the settings open")
+	}
+	assertNavigationPosition(t, tt, card, cardAt)
 }
 
 // Embedded settings must let Space toggle a focused switch rather than pause the playing song.
