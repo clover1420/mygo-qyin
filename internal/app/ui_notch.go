@@ -371,9 +371,6 @@ func (n *notch) view(c *ui.Context) {
 			return
 		}
 		path := shape(r.X+cx, w, h, flare, foot)
-		if open > 0.05 {
-			p.Shadow(ui.Rect{X: r.X + cx - w/2, Y: r.Y + h - 40, W: w, H: 40}, foot, 0, 14, 30, -6, ink.Alpha(0.45*open))
-		}
 		p.FillPath(path, ink)
 	})
 	stage.Children(func() {

@@ -153,12 +153,8 @@ func (a *app) searchField(c *ui.Context) {
 			cb.SetOpen(false)
 		}
 		cb.Popup(func(panel ui.Element) {
-			width := float32(360)
-			if q == "" {
-				width = field.Bounds().W
-			}
 			panel.AttachTo(field, ui.AnchorBottomStart, ui.AnchorTopStart).
-				Width(width).Padding(6).Margin(8, 0, 0, 0)
+				Width(field.Bounds().W).Padding(6).Margin(8, 0, 0, 0)
 			a.pane(panel, 14, false)
 			option := func(key, label string) ui.Element {
 				row := cb.Item(key).MinHeight(36).Padding(6, 10).Gap(10).Radius(8).AlignItems(ui.Center).Label(label)
@@ -173,12 +169,24 @@ func (a *app) searchField(c *ui.Context) {
 					ui.Text(c, "搜索历史").FontSize(12).TextColor(p.muted).Grow(1)
 					iconButton(c.Key("clear"), iconTrash, 14, p.muted, "清空搜索历史").KeepFocus().OnClick(a.clearSearchHistory)
 				})
-				for _, h := range a.settings.SearchHistory {
-					option("history:"+h, h).Children(func() {
-						ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.muted)
-						ui.Text(c, h).FontSize(13).SingleLine().Shrink(1).MinWidth(0)
+				_, windowHeight := c.Size()
+				const popupChromeHeight = 80 // header, padding, and space around the popup
+				const historyMaxHeight = 8 * 36
+				height := min(float32(len(a.settings.SearchHistory))*36, historyMaxHeight, max(float32(36), windowHeight-field.Bounds().Y-field.Bounds().H-popupChromeHeight))
+				scroll := ui.Scroll(c.Key("search-history")).Height(height).Padding(0, 12, 0, 0).TrackScroll(&a.historyScroll)
+				if !scroll.Hovered() {
+					scroll.DrawOver(func(painter *ui.Painter, r ui.Rect) {
+						painter.Scrollbar(ui.Scrollbar{Box: r, View: r.H, Content: r.H + a.historyScroll.MaxY, Offset: a.historyScroll.Y}, ui.ScrollbarState{})
 					})
 				}
+				scroll.Children(func() {
+					for _, h := range a.settings.SearchHistory {
+						option("history:"+h, h).Children(func() {
+							ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.muted)
+							ui.Text(c, h).FontSize(13).SingleLine().Shrink(1).MinWidth(0)
+						})
+					}
+				})
 				return
 			}
 			panel.Label("搜索建议")

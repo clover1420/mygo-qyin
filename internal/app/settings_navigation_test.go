@@ -54,25 +54,19 @@ func TestGuestAccountMenuLogin(t *testing.T) {
 	wait(t, asked, "the guest login QR")
 }
 
-// Settings from either account menu open the pane over the window, without
+// Settings from the sidebar open the pane over the window, without
 // a route of their own or a window beside the app.
 func TestAccountMenuOpensSettings(t *testing.T) {
 	for _, signedIn := range []bool{false, true} {
 		t.Run(fmt.Sprint(signedIn), func(t *testing.T) {
 			a := newTestApp()
 			a.settings = defaultSettings()
-			account := "账户"
 			if signedIn {
 				a.profile = &qqmusic.Profile{UserID: 1, Nickname: "小明"}
-				account = "小明"
 			}
 			tt := newNavTester(a, 1180, 780)
 			route := a.route
 			for range 2 {
-				if err := tt.Click(account); err != nil {
-					t.Fatal(err)
-				}
-				tt.Frame()
 				if err := tt.Click("设置"); err != nil {
 					t.Fatal(err)
 				}

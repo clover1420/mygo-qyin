@@ -46,6 +46,9 @@ func (a *app) view(c *ui.Context) {
 		c.OnShortcut(0, ui.KeySpace, a.pl.TogglePlay)
 	}
 	npOpen, npSettled := a.npState(c)
+	if npOpen || a.pl.Current() == nil {
+		a.queueOpen = false
+	}
 	root.Children(func() {
 		page := ui.Row(c).Fill().AlignItems(ui.Stretch)
 		page.Children(func() {
@@ -117,6 +120,7 @@ func (a *app) shortcuts(c *ui.Context) {
 // closes Now Playing over it, though it is the page open.
 func (a *app) open(r route) {
 	a.nowPlaying = false
+	a.queueOpen = false
 	if r == a.route {
 		return
 	}
@@ -126,6 +130,7 @@ func (a *app) open(r route) {
 
 // show shows the page of r.
 func (a *app) show(r route) {
+	a.queueOpen = false
 	a.pageDir = pageLevel(r) - pageLevel(a.route)
 	// A tab of the page open is not another page: it changes in place, so
 	// that the control chosen stays where the pointer left it.
@@ -220,10 +225,7 @@ func (a *app) sidebar(c *ui.Context) {
 			a.myPlaylists(c, "收藏的歌单", a.saved, false, &a.savedCollapsed)
 		})
 
-		// What plays, as a card at the foot of the sidebar, over who listens.
-		if tr := a.pl.Current(); tr != nil {
-			a.sidebarNowPlaying(c, tr)
-		}
+		a.navItem(c, iconSettings, "设置", route{page: pageSettings})
 		a.accountRow(c)
 	})
 }
@@ -242,7 +244,11 @@ func (a *app) navItem(c *ui.Context, icon *ui.SVG, label string, r route) {
 		ui.Text(c, label).FontSize(13.5).FontWeight(500).TextColor(p.text)
 	})
 	if b.Clicked() {
-		a.open(r)
+		if r.page == pageSettings {
+			a.openSettings()
+		} else {
+			a.open(r)
+		}
 	}
 }
 
@@ -276,26 +282,6 @@ func (a *app) sidebarSurface(c *ui.Context, fallback ui.Color, opacity float32) 
 
 func (a *app) acrylicSidebar(c *ui.Context) bool {
 	return runtime.GOOS == "windows" && a.settings.sidebarVibrancy() == mygo.VibrancyAcrylic && c.Vibrancy()
-}
-
-func (a *app) sidebarNowPlaying(c *ui.Context, tr *qqmusic.Track) {
-	p := a.pal
-	card := ui.ButtonBase(c.Key("np-card")).Gap(10).Padding(8).Radius(14).AlignItems(ui.Center).FocusRing(false).Label("正在播放")
-	bg := a.sidebarSurface(c, p.hover, 0.03)
-	if card.Hovered() {
-		bg = a.sidebarSurface(c, p.press, 0.06)
-	}
-	card.Background(card.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
-	card.Children(func() {
-		a.cover(c, tr.Album.PicURL, 96, 40, 6).Shadow(0, 2, 6, 0, p.cardShade)
-		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(2).Children(func() {
-			ui.Text(c, tr.Name).FontSize(12.5).FontWeight(600).SingleLine()
-			a.artistLinks(c, tr, p.muted, p.text).FontSize(11.5).SingleLine()
-		})
-	})
-	if card.Clicked() {
-		a.nowPlaying = true
-	}
 }
 
 // playerBarHeight is the height of the player along the foot of the pages.

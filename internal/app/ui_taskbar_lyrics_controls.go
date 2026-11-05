@@ -13,10 +13,17 @@ type taskbarControlsTrack struct {
 // controlsView is a small player above the taskbar cover, independent of the main window.
 func (d *taskbarLyrics) controlsView(c *ui.Context) {
 	theme := *c.Theme()
-	theme.Dark = d.dark
+	// The material follows app appearance, which can differ from the taskbar.
+	if !c.Vibrancy() {
+		theme.Dark = d.dark
+	}
 	c.SetTheme(&theme)
-	background, text := neutral(d.dark, 2), neutral(d.dark, 12)
-	muted := neutral(d.dark, 11)
+	dark := theme.Dark
+	background, text := neutral(dark, 2), neutral(dark, 12)
+	muted := neutral(dark, 11)
+	if c.Vibrancy() {
+		background = ui.Transparent
+	}
 	c.Root().Background(background)
 	c.OnShortcut(0, ui.KeyEscape, d.closeControls)
 	tr := d.a.pl.Current()
@@ -33,7 +40,7 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 	a.tickTimes(c)
 	ui.Column(c.Key(identity)).Fill().Padding(12).Gap(8).TextColor(text).Children(func() {
 		ui.Row(c).Height(64).Gap(12).AlignItems(ui.Center).Children(func() {
-			cover := ui.Box(c.Key("artwork")).Size(64, 64).Shrink(0).Radius(8).Background(neutral(d.dark, 4)).Center()
+			cover := ui.Box(c.Key("artwork")).Size(64, 64).Shrink(0).Radius(8).Background(neutral(dark, 4)).Center()
 			bmp := bitmap(a.art.get(qqmusic.Sized(tr.Album.PicURL, 120), false))
 			cover.Children(func() {
 				if bmp != nil {
@@ -42,14 +49,10 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 					ui.Icon(c, iconNote).Size(24, 24).TextColor(muted)
 				}
 			})
-			ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
+			ui.Column(c).Grow(1).MinWidth(0).Gap(4).Children(func() {
 				ui.Text(c, tr.Name).FontSize(14).FontWeight(600).LineHeight(1.15).SingleLine().Tooltip(tr.Name)
 				artist := tr.ArtistNames()
-				ui.Text(c, artist).FontSize(11.5).LineHeight(1.15).TextColor(muted).SingleLine().Tooltip(artist)
-				ui.Row(c).Gap(4).AlignItems(ui.Center).TextColor(muted).Children(func() {
-					ui.Icon(c, iconNote).Size(12, 12)
-					ui.Text(c, "Lilt").FontSize(11.5).LineHeight(1.15)
-				})
+				ui.Text(c, artist).FontSize(13).LineHeight(1.15).TextColor(muted).SingleLine().Tooltip(artist)
 			})
 			ui.Row(c).Shrink(0).Gap(8).AlignItems(ui.Center).Children(func() {
 				iconButton(c.Key("previous"), iconPrev, 18, text, "上一首", playerSurface).Size(28, 28).Shrink(0).
@@ -61,7 +64,7 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 			})
 		})
 		ui.Column(c).Gap(0).Children(func() {
-			a.scrubber(c.Key("progress"), &d.scrub, neutral(d.dark, 6), text, 14, accent(d.dark, 9)).FillWidth()
+			a.scrubber(c.Key("progress"), &d.scrub, neutral(dark, 8), text.Alpha(0.75), 14, accent(dark, 9)).FillWidth()
 			position := pl.Position()
 			if d.scrub.active || d.scrub.held {
 				position = secs(d.scrub.v)

@@ -126,11 +126,12 @@ type app struct {
 
 	mineCollapsed, savedCollapsed bool
 
-	query       string
-	searchBox   ui.Handle
-	searches    map[route]*searchData // the results of each search, by its page
-	searched    route                 // the search last shown, which the sidebar goes back to
-	suggestions suggestState          // what the search field's query may be after
+	query         string
+	searchBox     ui.Handle
+	historyScroll ui.ScrollState
+	searches      map[route]*searchData // the results of each search, by its page
+	searched      route                 // the search last shown, which the sidebar goes back to
+	suggestions   suggestState          // what the search field's query may be after
 
 	nowPlaying  bool
 	npOpen      bool      // Now Playing as it last showed: open or not
@@ -145,6 +146,10 @@ type app struct {
 	queueAt     int // the row of the queue pane last scrolled to, -1 while it is hidden
 	comments    commentState
 	tabCount    rollState // the count on the comments' tab, as it rolls
+
+	queueOpen    bool // the player bar's floating queue shows
+	queuePopup   ui.ListState
+	queuePopupAt int // the floating queue's last followed row, reset when opened
 
 	fmMode        int    // the FM mode chosen, in fmModes
 	radioStarting string // the radio asked for its first songs, or ""
@@ -295,6 +300,7 @@ func Run() error {
 		a.pl = player.New(a.post)
 		a.pl.Quality = func() string { return a.settings.Quality }
 		a.pl.Normalize = func() string { return a.settings.volumeBalance() }
+		a.pl.PlaybackFade = func() bool { return a.settings.PlaybackFade }
 		a.pl.Cache = newSongCache(a.settings)
 		a.cacheMoving = a.settings.PendingCacheDir != nil
 		a.pl.Changed = a.playerChanged
