@@ -76,7 +76,7 @@ func (d *taskbarLyrics) view(c *ui.Context) {
 // uses its own placeholder rather than keeping the previous song's artwork.
 func (d *taskbarLyrics) cover(c *ui.Context, url string, size, height float32) {
 	cover := ui.ButtonBase(c.Key("taskbar-cover")).Absolute().Left(taskbarLyricsCoverInset).Top((height-size)/2).
-		Size(size, size).Radius(min(6, size/2)).Background(radixGray(d.dark, 3)).Center().
+		Size(size, size).Radius(min(6, size/2)).Background(neutral(d.dark, 3)).Center().
 		Label("歌曲控制").Cursor(ui.CursorPointer).OnClick(d.toggleControls)
 	d.coverButton(c, cover, url, size)
 }
@@ -90,7 +90,7 @@ func (d *taskbarLyrics) coverView(c *ui.Context) {
 	w, h := c.Size()
 	size := min(w, h)
 	cover := ui.ButtonBase(c.Key("taskbar-cover")).Fill().Radius(min(6, size/2)).
-		Background(radixGray(d.dark, 3)).Center().Label("歌曲控制").
+		Background(neutral(d.dark, 3)).Center().Label("歌曲控制").
 		Cursor(ui.CursorPointer).OnClick(d.toggleControls)
 	d.coverButton(c, cover, tr.Album.PicURL, size)
 }
@@ -103,16 +103,16 @@ func (d *taskbarLyrics) coverButton(c *ui.Context, cover ui.Element, url string,
 		active = 1
 	}
 	active = cover.AnimateTo("interaction", active, ui.Animation{Duration: 120 * time.Millisecond})
-	shade := radixBlack(7)
+	overlay := shade(7)
 	if cover.Pressed() {
-		shade = radixBlack(9)
+		overlay = shade(9)
 	}
 	cover.Children(func() {
 		d.coverImage(c, url, size)
 		if active > 0 {
 			ui.Box(c.Key("control-overlay")).Absolute().Fill().Radius(min(6, size/2)).
-				Background(shade).Opacity(active).Center().Children(func() {
-				ui.Icon(c, taskbarControlsIcon).Size(size*0.55, size*0.55).TextColor(radixWhite(12))
+				Background(overlay).Opacity(active).Center().Children(func() {
+				ui.Icon(c, taskbarControlsIcon).Size(size*0.55, size*0.55).TextColor(veil(12))
 			})
 		}
 	})
@@ -123,7 +123,7 @@ func (d *taskbarLyrics) coverImage(c *ui.Context, url string, size float32) {
 	if bmp != nil {
 		ui.Image(c, bmp).Fill().Fit(ui.Cover).Radius(min(6, size/2))
 	} else {
-		ui.Icon(c, iconNote).Size(size*0.4, size*0.4).TextColor(radixGray(d.dark, 9))
+		ui.Icon(c, iconNote).Size(size*0.4, size*0.4).TextColor(neutral(d.dark, 9))
 	}
 }
 
@@ -175,7 +175,7 @@ func makeTaskbarLyricLayout(c *ui.Context, content desktopLyricContent, position
 	if content.text == "" {
 		return taskbarLyricLayout{}
 	}
-	color := radixGray(dark, 12)
+	color := neutral(dark, 12)
 	text := taskbarLyricSingleLine(content.text)
 	secondary := content.translation
 	preview := secondary == "" && content.preview != ""
@@ -259,16 +259,16 @@ func (layout taskbarLyricLayout) draw(p *ui.Painter, r ui.Rect, dark bool, offse
 	}
 	y := r.Y + (r.H-layout.height)/2 + offsetY
 	x := r.X + taskbarLyricOffset(layout.width, r.W, layout.progressX)
-	outline := radixGray(dark, 1).Alpha(0.8)
+	outline := neutral(dark, 1).Alpha(0.8)
 	p.Clip(r, 0, func() {
 		// A fine contrasting edge remains legible on translucent taskbars.
 		for _, offset := range []ui.Point{{X: -0.5}, {X: 0.5}, {Y: -0.5}, {Y: 0.5}} {
 			p.TextLayout(layout.outline, x+offset.X, y+offset.Y, outline)
 		}
-		p.TextLayout(layout.text, x, y, radixGray(dark, 12))
+		p.TextLayout(layout.text, x, y, neutral(dark, 12))
 		if layout.secondary != nil {
 			w, progress := layout.secondaryWidth, layout.progress
-			color := radixGray(dark, 12)
+			color := neutral(dark, 12)
 			if layout.preview {
 				progress, color = 0, color.Alpha(desktopLyricsRestAlpha)
 			}

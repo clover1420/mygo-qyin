@@ -66,7 +66,7 @@ func TestQRCLyricsFrames(t *testing.T) {
 	a.pl.SetLyrics(lyrics.Build("", "[00:01.00]A long note, then a pause", "[1000,7000]慢(1000,2000)慢(3000,500) (3500,1500)唱(5000,3000)\n[9000,4000]下一句歌词(9000,4000)"))
 	a.pl.Seek(2 * time.Second)
 	tt := ui.NewTester(func(c *ui.Context) {
-		ui.Column(c).Size(800, 500).Padding(24).Background(radixSage(true, 1)).Children(func() { a.lyricsPane(c, a.pl.Current(), 500) })
+		ui.Column(c).Size(800, 500).Padding(24).Background(neutral(true, 1)).Children(func() { a.lyricsPane(c, a.pl.Current(), 500) })
 	}, 800, 500)
 	tt.SetPreferences(ui.Preferences{ReduceMotion: true})
 	for _, frame := range []struct {

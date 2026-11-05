@@ -26,7 +26,7 @@ func playerHoverApp() *app {
 	a.pl.Seek(24 * time.Second)
 	a.volume = 0.63
 	a.pl.SetVolume(a.volume)
-	art := &artwork{bmp: solidBitmap(radixCyan9), tint: radixCyan9}
+	art := &artwork{bmp: solidBitmap(burstCyan), tint: burstCyan}
 	for _, size := range []int{96, 120, 240, 600} {
 		a.art.art[qqmusic.Sized(tr.Album.PicURL, size)] = art
 	}

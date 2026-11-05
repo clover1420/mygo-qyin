@@ -225,7 +225,7 @@ func (a *app) albumLikeButton(c *ui.Context, al *qqmusic.AlbumProfile) {
 	}
 	icon, label, color := iconHeart, "收藏专辑", a.pal.muted
 	if a.profile != nil && d.likeUID == a.profile.UserID && d.likeKnown && d.liked {
-		icon, label, color = iconHeartFill, "取消收藏专辑", radixRed(a.pal.dark, 9)
+		icon, label, color = iconHeartFill, "取消收藏专辑", accent(a.pal.dark, 9)
 	}
 	iconButton(c.Key("like-album"), icon, 20, color, label).Disabled(d.likeLoading).
 		OnClick(func() { a.toggleAlbumLike(d) })
@@ -437,7 +437,7 @@ func (a *app) likeButton(c *ui.Context, tr *qqmusic.Track, size float32, color u
 	liked := a.isLiked(tr)
 	icon, label := iconHeart, "喜欢"
 	if liked {
-		icon, color, label = iconHeartFill, radixRed(a.pal.dark, 9), "取消喜欢"
+		icon, color, label = iconHeartFill, accent(a.pal.dark, 9), "取消喜欢"
 	}
 	// The burst goes on a wrapper, which the heart's pop does not scale.
 	wrap := ui.Box(c).Center()
@@ -458,7 +458,7 @@ func (a *app) likeButton(c *ui.Context, tr *qqmusic.Track, size float32, color u
 		a.toggleLike(tr)
 	}
 	if !burst.IsZero() {
-		start, accent := *burst, radixRed(a.pal.dark, 9)
+		start, accent := *burst, accent(a.pal.dark, 9)
 		wrap.DrawOver(func(p *ui.Painter, r ui.Rect) {
 			if drawBurst(p, r, size, p.Now().Sub(start), accent) {
 				p.AnimationFrame()
@@ -470,8 +470,8 @@ func (a *app) likeButton(c *ui.Context, tr *qqmusic.Track, size float32, color u
 
 // burstColors are the confetti's colors, around the heart's red.
 var burstColors = []ui.Color{
-	radixRed(false, 9), radixOrange9, radixAmber(false, 9),
-	radixPurple9, radixCyan9, radixPink9,
+	accent(false, 9), burstOrange, warm(false, 9),
+	burstPurple, burstCyan, burstPink,
 }
 
 const burstTime = 750 * time.Millisecond

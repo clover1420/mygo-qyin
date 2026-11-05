@@ -72,7 +72,7 @@ func (a *app) songShelfColumns(c *ui.Context) int {
 }
 
 func (a *app) shelfAction(c *ui.Context, icon *ui.SVG, label string) ui.Element {
-	b := ui.ButtonBase(c).Height(32).PaddingX(8).Gap(5).Radius(6).AlignItems(ui.Center).Label(label)
+	b := ui.ButtonBase(c).Height(32).PaddingX(8).Gap(5).Radius(8).AlignItems(ui.Center).Label(label)
 	color := a.pal.muted
 	if b.Hovered() || b.FocusVisible() {
 		b.Background(a.pal.hover)
@@ -191,7 +191,7 @@ func (a *app) songShelf(c *ui.Context, shelf *qqmusic.SongShelf) {
 func (a *app) shelfPageButton(c *ui.Context, icon *ui.SVG, label, tooltip string, disabled bool) ui.Element {
 	color := a.pal.muted
 	if disabled {
-		color = radixSage(a.pal.dark, 8)
+		color = neutral(a.pal.dark, 8)
 	}
 	b := ui.ButtonBase(c).Size(32, 32).Center().Radius(999).Label(label).Tooltip(tooltip).Disabled(disabled).TextColor(color)
 	bg := ui.Transparent
@@ -248,14 +248,14 @@ func (a *app) songShelfRow(c *ui.Context, shelf *qqmusic.SongShelf, i int) {
 	tr := &shelf.Tracks[i]
 	cur := a.pl.Current()
 	current := cur != nil && cur.ID == tr.ID
-	row := ui.Row(c).Height(76).Padding(6).Gap(3).Radius(8).AlignItems(ui.Center).ContextMenu(a.songItems(tr, 0))
+	row := ui.Row(c).Height(76).Padding(6).Gap(3).Radius(12).AlignItems(ui.Center).ContextMenu(a.songItems(tr, 0))
 	row.Children(func() {
 		b := ui.ButtonBase(c.Key("song")).Grow(1).Shrink(1).MinWidth(0).Gap(10).AlignItems(ui.Center).Label(tr.Name).
 			Disabled(!tr.Playable()).OnClick(func() { a.playShelfSong(shelf, i) })
 		hovered := row.Hovered() || b.FocusVisible()
 		bg := ui.Transparent
 		if current {
-			bg = radixGreen(p.dark, 3)
+			bg = accent(p.dark, 3)
 		} else if hovered {
 			bg = p.hover
 		}
@@ -264,14 +264,14 @@ func (a *app) songShelfRow(c *ui.Context, shelf *qqmusic.SongShelf, i int) {
 			b.Opacity(0.42)
 		}
 		b.Children(func() {
-			ui.Box(c).Size(48, 48).Radius(6).Children(func() {
+			ui.Box(c).Size(48, 48).Radius(8).Children(func() {
 				a.coverFill(c, tr.Album.PicURL, 120, 6)
 				if hovered || current {
-					ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(6).Center().Background(radixBlack(5)).PassThrough().Children(func() {
+					ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(8).Center().Background(shade(5)).PassThrough().Children(func() {
 						if current && a.pl.Playing() {
-							a.nowPlayingBars(c, radixPaper)
+							a.nowPlayingBars(c, paper)
 						} else {
-							ui.Icon(c, iconPlay).Size(15, 15).TextColor(radixPaper)
+							ui.Icon(c, iconPlay).Size(15, 15).TextColor(paper)
 						}
 					})
 				}
@@ -279,7 +279,7 @@ func (a *app) songShelfRow(c *ui.Context, shelf *qqmusic.SongShelf, i int) {
 			ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(3).Children(func() {
 				name := p.text
 				if current {
-					name = radixGreen(p.dark, 11)
+					name = accent(p.dark, 11)
 				}
 				ui.Text(c, tr.Name).FontSize(13.5).FontWeight(500).TextColor(name).SingleLine()
 				ui.Text(c, tr.ArtistNames()).FontSize(12).TextColor(p.muted).SingleLine()

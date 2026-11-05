@@ -48,15 +48,15 @@ func (a *app) locateTrackButton(c *ui.Context, state *listScrollState, current *
 	p := a.pal
 	b := ui.ButtonBase(c.Key("locate-track")).Absolute().Right(20).Bottom(bottom+20).
 		Size(32, 32).Radius(999).Center().Label("定位当前歌曲").Tooltip("定位当前歌曲").
-		TextColor(radixGreen(p.dark, 11)).Shadow(0, 3, 12, 0, p.cardShade.Alpha(0.65))
-	bg := radixSage(p.dark, 1).Alpha(0.88)
-	border := radixGreen(p.dark, 6).Alpha(0.55)
+		TextColor(accent(p.dark, 11)).Shadow(0, 3, 12, 0, p.cardShade.Alpha(0.65))
+	bg := neutral(p.dark, 1).Alpha(0.88)
+	border := accent(p.dark, 6).Alpha(0.55)
 	if b.Pressed() {
-		bg = radixGreen(p.dark, 4)
-		border = radixGreen(p.dark, 6)
+		bg = accent(p.dark, 4)
+		border = accent(p.dark, 6)
 	} else if b.Hovered() {
-		bg = radixGreen(p.dark, 3).Alpha(0.96)
-		border = radixGreen(p.dark, 6).Alpha(0.85)
+		bg = accent(p.dark, 3).Alpha(0.96)
+		border = accent(p.dark, 6).Alpha(0.85)
 	}
 	b.Background(b.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
 	b.Border(1, b.AnimateColor("border", border, ui.Animation{Duration: 120 * time.Millisecond}))

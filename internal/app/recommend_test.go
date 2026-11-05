@@ -475,7 +475,7 @@ func TestSongShelfFrames(t *testing.T) {
 		for _, dark := range []bool{false, true} {
 			for _, detail := range []bool{false, true} {
 				a := songShelfApp()
-				colors := []ui.Color{radixGreen(false, 9), radixAmber(false, 9), radixSage(true, 9), radixRed(false, 9)}
+				colors := []ui.Color{accent(false, 9), warm(false, 9), neutral(true, 9), accent(false, 9)}
 				for i := range a.songShelves.shelves[0].Tracks {
 					tr := &a.songShelves.shelves[0].Tracks[i]
 					tr.Album.PicURL = fmt.Sprintf("shelf-cover-%d", i)

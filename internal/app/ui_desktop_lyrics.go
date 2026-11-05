@@ -174,7 +174,7 @@ func (d *desktopLyrics) view(c *ui.Context) {
 	if !d.a.settings.DesktopLyrics {
 		return
 	}
-	root := ui.Box(c.Key("desktop-lyrics")).Fill().TextColor(radixWhite(12))
+	root := ui.Box(c.Key("desktop-lyrics")).Fill().TextColor(veil(12))
 	state := ui.Local(root, "presentation", func() desktopLyricViewState { return desktopLyricViewState{} })
 	unlocked := !d.a.settings.DesktopLyricsLocked
 	if unlocked {
@@ -182,7 +182,7 @@ func (d *desktopLyrics) view(c *ui.Context) {
 	}
 	hovered := unlocked && root.Hovered()
 	if hovered {
-		root.Background(radixBlack(4)).Radius(16).Border(1, radixWhite(2))
+		root.Background(shade(4)).Radius(16).Border(1, veil(2))
 	}
 	width, windowHeight := c.Size()
 	textWidth := max(width-48, 1)
@@ -253,7 +253,7 @@ var desktopLyricsMinusIcon = strokeIcon(`<path d="M5 12h14"/>`)
 
 func (d *desktopLyrics) toolbar(c *ui.Context) {
 	ui.Row(c.Key("toolbar")).Height(36).Justify(ui.Center).AlignItems(ui.Center).Children(func() {
-		ui.Row(c).Padding(1, 6).Gap(2).AlignItems(ui.Center).Radius(12).Background(radixBlack(10)).Border(1, radixWhite(3)).Children(func() {
+		ui.Row(c).Padding(1, 6).Gap(2).AlignItems(ui.Center).Radius(12).Background(shade(10)).Border(1, veil(3)).Children(func() {
 			desktopLyricsButton(c.Key("previous"), iconPrev, "上一首").OnClick(func() { d.a.pl.Prev(); d.a.redraw() })
 			icon := iconPlay
 			if d.a.pl.Playing() {
@@ -261,7 +261,7 @@ func (d *desktopLyrics) toolbar(c *ui.Context) {
 			}
 			desktopLyricsButton(c.Key("play"), icon, "播放/暂停").OnClick(func() { d.a.pl.TogglePlay(); d.a.redraw() })
 			desktopLyricsButton(c.Key("next"), iconNext, "下一首").OnClick(func() { d.a.pl.Next(); d.a.redraw() })
-			ui.Box(c).Width(1).Height(16).Background(radixWhite(4)).MarginX(5)
+			ui.Box(c).Width(1).Height(16).Background(veil(4)).MarginX(5)
 			desktopLyricsButton(c.Key("smaller"), desktopLyricsMinusIcon, "减小桌面歌词字号").Disabled(d.fontSize() <= 18).OnClick(func() { d.setFontSize(d.fontSize() - 2) })
 			desktopLyricsButton(c.Key("larger"), iconPlus, "增大桌面歌词字号").Disabled(d.fontSize() >= 64).OnClick(func() { d.setFontSize(d.fontSize() + 2) })
 			desktopLyricsButton(c.Key("lock"), desktopLyricsLockIcon, "锁定桌面歌词").OnClick(func() { d.setLocked(true) })
@@ -271,12 +271,12 @@ func (d *desktopLyrics) toolbar(c *ui.Context) {
 }
 
 func desktopLyricsButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
-	button := ui.ButtonBase(c).Size(32, 32).Center().Radius(8).Label(label).Tooltip(label).TextColor(radixWhite(12))
+	button := ui.ButtonBase(c).Size(32, 32).Center().Radius(8).Label(label).Tooltip(label).TextColor(veil(12))
 	if button.Hovered() || button.FocusVisible() {
-		button.Background(radixWhite(3))
+		button.Background(veil(3))
 	}
 	if button.Pressed() {
-		button.Background(radixWhite(4))
+		button.Background(veil(4))
 	}
 	return button.Children(func() { ui.Icon(c, icon).Size(17, 17) })
 }
@@ -285,7 +285,7 @@ func (d *desktopLyrics) widthGrips(c *ui.Context, shown bool) {
 	grip := ui.ButtonBase(c.Key("width-grip")).Absolute().Right(0).Top(desktopLyricsToolbarHeight).Bottom(8).Width(16).Cursor(ui.CursorResizeEW).Label("调整桌面歌词宽度")
 	if shown {
 		grip.Draw(func(p *ui.Painter, r ui.Rect) {
-			p.Fill(ui.Rect{X: r.X + 7, Y: r.Y + r.H/2 - 12, W: 2, H: 24}, radixWhite(5), 1)
+			p.Fill(ui.Rect{X: r.X + 7, Y: r.Y + r.H/2 - 12, W: 2, H: 24}, veil(5), 1)
 		})
 	}
 	if dx, _, dragging := grip.Dragged(); dragging && dx != 0 {
@@ -306,12 +306,12 @@ func desktopLyricsLayouts(c *ui.Context, content desktopLyricContent, position t
 	font := ui.Font{Family: c.Theme().Font, Size: size, Weight: 700, LineHeight: 1.3}
 	shape := ui.TextShape{Width: width, Align: ui.Center}
 	text := content.text
-	spans := []ui.Span{{Text: text, Color: radixWhite(12)}}
+	spans := []ui.Span{{Text: text, Color: veil(12)}}
 	if content.line.Timed && len(content.line.Words) > 0 {
 		spans = make([]ui.Span, 0, len(content.line.Words))
 		for _, word := range content.line.Words {
 			brightness := desktopLyricsRestAlpha + (desktopLyricsSungAlpha-desktopLyricsRestAlpha)*word.Progress(position)
-			spans = append(spans, ui.Span{Text: word.Text, Color: radixPaper.Alpha(brightness)})
+			spans = append(spans, ui.Span{Text: word.Text, Color: paper.Alpha(brightness)})
 		}
 	}
 	layout := desktopLyricLayouts{outline: ui.ShapeRichTextWith([]ui.Span{{Text: text}}, font, shape), text: ui.ShapeRichTextWith(spans, font, shape)}
@@ -325,7 +325,7 @@ func desktopLyricsLayouts(c *ui.Context, content desktopLyricContent, position t
 		layout.height += h + 6
 	} else if content.preview != "" {
 		layout.previewOutline = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview}}, font, shape)
-		layout.preview = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview, Color: radixPaper.Alpha(desktopLyricsRestAlpha)}}, font, shape)
+		layout.preview = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview, Color: paper.Alpha(desktopLyricsRestAlpha)}}, font, shape)
 		_, h := layout.preview.Size()
 		layout.height += h + 6
 	}
@@ -340,14 +340,14 @@ func (layout desktopLyricLayouts) draw(p *ui.Painter, r ui.Rect, alpha float32) 
 		if text == nil {
 			return
 		}
-		p.TextLayout(outline, r.X, y+2, radixBlack(7).Alpha(0.5*alpha))
+		p.TextLayout(outline, r.X, y+2, shade(7).Alpha(0.5*alpha))
 		for i := 0; i < 8; i++ {
 			angle := float64(i) * math.Pi / 4
-			p.TextLayout(outline, r.X+float32(math.Cos(angle))*0.8, y+float32(math.Sin(angle))*0.8, radixBlack(12).Alpha(0.95*alpha))
+			p.TextLayout(outline, r.X+float32(math.Cos(angle))*0.8, y+float32(math.Sin(angle))*0.8, shade(12).Alpha(0.95*alpha))
 		}
 		p.TextLayout(text, r.X, y, color)
 	}
-	draw(layout.outline, layout.text, r.Y, radixWhite(12))
-	draw(layout.translationOutline, layout.translation, r.Y+layout.originalHeight+6, radixGray(true, 12))
-	draw(layout.previewOutline, layout.preview, r.Y+layout.originalHeight+6, radixWhite(12))
+	draw(layout.outline, layout.text, r.Y, veil(12))
+	draw(layout.translationOutline, layout.translation, r.Y+layout.originalHeight+6, neutral(true, 12))
+	draw(layout.previewOutline, layout.preview, r.Y+layout.originalHeight+6, veil(12))
 }

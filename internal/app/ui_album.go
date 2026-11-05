@@ -116,7 +116,7 @@ func (a *app) albumCard(c *ui.Context, al *qqmusic.AlbumProfile) {
 	card := ui.ButtonBase(c).Column().Gap(10).AlignItems(ui.Stretch).FocusRing(false).Label(al.Name)
 	hovered := card.Hovered()
 	card.Children(func() {
-		art := ui.Box(c).AspectRatio(1).Radius(10)
+		art := ui.Box(c).AspectRatio(1).Radius(14)
 		lift := ui.Pose{}
 		if hovered {
 			lift = ui.Pose{Y: -3}

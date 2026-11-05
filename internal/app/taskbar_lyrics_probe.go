@@ -86,7 +86,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 	mygo.App.WhenReady(func() {
 		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt Taskbar Lyrics Check", Hidden: true, Width: 420, Height: 150,
 			Content: ui.View(func(c *ui.Context) {
-				ui.Column(c).Fill().Center().Gap(12).Background(radixSage(c.Theme().Dark, 2)).Children(func() {
+				ui.Column(c).Fill().Center().Gap(12).Background(neutral(c.Theme().Dark, 2)).Children(func() {
 					ui.Text(c, "任务栏歌词验证").FontSize(20)
 					ui.Button(c, "结束验证").OnClick(mygo.App.Quit)
 				})

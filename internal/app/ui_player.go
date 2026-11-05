@@ -128,7 +128,7 @@ func (a *app) scrubber(c *ui.Context, st *scrubState, track, fill ui.Color, heig
 		}
 		if knob > 0.01 {
 			k := 12 * knob
-			p.Shadow(ui.Rect{X: head - k/2, Y: r.Y + (r.H-k)/2, W: k, H: k}, k/2, 0, 1, 3, 0, radixInk.Alpha(0.3))
+			p.Shadow(ui.Rect{X: head - k/2, Y: r.Y + (r.H-k)/2, W: k, H: k}, k/2, 0, 1, 3, 0, ink.Alpha(0.3))
 			p.Fill(ui.Rect{X: head - k/2, Y: r.Y + (r.H-k)/2, W: k, H: k}, fill, k/2)
 		}
 		switch {
@@ -211,7 +211,7 @@ func (a *app) volumeButton(c *ui.Context, color ui.Color) {
 	ui.PopoverBase(c.Key("volume-popover"), b, &a.volumeOpen, func(panel ui.Element) {
 		const arrow = 7
 		panel.AttachTo(b, ui.AnchorTop, ui.AnchorBottom).Margin(0, 0, arrow+3, 0).Width(52).Padding(11, 0, 12, 0).
-			Radius(12).Background(pop.fill).Border(0.5, pop.edge).Shadow(0, 8, 24, -4, radixInk.Alpha(0.2)).
+			Radius(14).Background(pop.fill).Border(0.5, pop.edge).Shadow(0, 8, 24, -4, ink.Alpha(0.2)).
 			AlignItems(ui.Center).Gap(8).Label("音量")
 		panel.Draw(func(p *ui.Painter, r ui.Rect) {
 			// The arrow pointing at the speaker, its sides edged as the
@@ -235,7 +235,7 @@ type popover struct {
 }
 
 func popoverColors(dark bool) popover {
-	return popover{fill: radixSage(dark, 2), edge: radixSage(dark, 6), track: radixSage(dark, 5), knob: radixPaper}
+	return popover{fill: neutral(dark, 2), edge: neutral(dark, 6), track: neutral(dark, 5), knob: paper}
 }
 
 // nativeVolumeSlider is a vertical slider as AppKit draws one: a thin
@@ -258,14 +258,14 @@ func (a *app) nativeVolumeSlider(c *ui.Context, pop popover) {
 		p.Fill(ui.Rect{X: x, Y: top - track/2, W: track, H: foot - top + track}, pop.track, track/2)
 		p.Fill(ui.Rect{X: x, Y: y, W: track, H: foot - y + track/2}, accent, track/2)
 		k := ui.Rect{X: r.X + (r.W-knob)/2, Y: y - knob/2, W: knob, H: knob}
-		p.Shadow(k, knob/2, 0, 0.5, 1.5, 0, radixInk.Alpha(0.3))
-		p.Shadow(k, knob/2, 0, 1, 4, 0, radixInk.Alpha(0.12))
+		p.Shadow(k, knob/2, 0, 0.5, 1.5, 0, ink.Alpha(0.3))
+		p.Shadow(k, knob/2, 0, 1, 4, 0, ink.Alpha(0.12))
 		fill := pop.knob
 		if pressed {
-			fill = fill.Mix(radixInk, 0.06)
+			fill = fill.Mix(ink, 0.06)
 		}
 		p.Fill(k, fill, knob/2)
-		p.Stroke(k, radixInk.Alpha(0.08), knob/2, 0.5)
+		p.Stroke(k, ink.Alpha(0.08), knob/2, 0.5)
 	})
 }
 
@@ -388,11 +388,16 @@ func (a *app) playerBar(c *ui.Context) {
 		// Played, or gone: it says what it is again.
 		a.picked = pickedUp{}
 	}
+	liquid := a.settings.LiquidGlass
 	// Over the foot of the page: while content is under it, its edge frosts
-	// it, with a hairline along the top.
-	edge := ui.Box(c.Key("bottom-edge")).Absolute().Left(0).Right(0).Bottom(0).Height(playerBarHeight).
-		Material(glass.ScrollEdge{Hard: true, Bottom: true, Background: p.bg})
-	edge.Opacity(edgeShown(edge, a.underBottom))
+	// it, with a hairline along the top. Glass floats clear of the foot
+	// instead, a capsule over what the page scrolls under it.
+	glassH := float32(playerBarHeight - glassBarFoot)
+	if !liquid {
+		edge := ui.Box(c.Key("bottom-edge")).Absolute().Left(0).Right(0).Bottom(0).Height(playerBarHeight).
+			Material(glass.ScrollEdge{Hard: true, Bottom: true, Background: p.bg})
+		edge.Opacity(edgeShown(edge, a.underBottom))
+	}
 	// The controls keep the middle, between sides that share what is left:
 	// narrower, the middle gives up to 140 DIPs, and what plays keeps room
 	// for its cover, some of its title and its heart.
@@ -400,7 +405,15 @@ func (a *app) playerBar(c *ui.Context) {
 	if supportsDesktopLyrics() {
 		controls += 32 + 4
 	}
-	ui.Row(c).Absolute().Left(0).Right(0).Bottom(0).Height(playerBarHeight).PaddingX(20).Gap(20).AlignItems(ui.Center).Children(func() {
+	bar := ui.Row(c).Absolute().Gap(20).AlignItems(ui.Center)
+	if liquid {
+		bar.Left(glassBarSide).Right(glassBarSide).Bottom(glassBarFoot).Height(glassH).PaddingX(20).
+			Radius(glassH/2).Shadow(0, 6, 24, -6, ui.RGBA(0, 0, 0, 0.3)).
+			Material(barGlass{dark: p.dark, clear: float32(a.settings.GlassClear), bend: float32(a.settings.GlassBend)})
+	} else {
+		bar.Left(0).Right(0).Bottom(0).Height(playerBarHeight).PaddingX(20)
+	}
+	bar.Children(func() {
 		// What plays.
 		ui.Row(c).Grow(1).Basis(0).MinWidth(150).Children(func() {
 			if tr == nil {
@@ -421,7 +434,7 @@ func (a *app) playerBar(c *ui.Context) {
 				cover.Translate(0, -reveal).Children(func() {
 					a.cover(c, tr.Album.PicURL, 120, 48, 8).Shadow(0, 2, 8, 0, p.cardShade)
 					ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(8).Center().PassThrough().
-						Opacity(reveal).Background(radixBlack(5)).TextColor(radixPaper).Children(func() {
+						Opacity(reveal).Background(shade(5)).TextColor(paper).Children(func() {
 						ui.Icon(c, iconDown).Size(18, 18).Rotate(180).Translate(0, 3*(1-reveal))
 					})
 				})

@@ -200,9 +200,9 @@ func (a *app) loginDialog(c *ui.Context) {
 	p := a.pal
 	l := &a.login
 	ui.DialogBase(c.Key("login"), &l.open, func(backdrop, panel ui.Element) {
-		backdrop.Background(radixInk.Alpha(0.35))
-		panel.Width(340).Padding(28, 28, 26, 28).Radius(22).Gap(6).AlignItems(ui.Center).
-			Background(p.bg).Border(1, p.hairline).Shadow(0, 24, 60, -12, radixInk.Alpha(0.4)).
+		backdrop.Background(ink.Alpha(0.35))
+		panel.Width(340).Padding(28, 28, 26, 28).Radius(20).Gap(6).AlignItems(ui.Center).
+			Background(p.bg).Border(1, p.hairline).Shadow(0, 24, 60, -12, ink.Alpha(0.4)).
 			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
 		channel := "QQ"
 		if l.wechat {
@@ -231,7 +231,7 @@ func (a *app) loginDialog(c *ui.Context) {
 		}
 		ui.Text(c, sub).Width(284).MaxLines(3).FontSize(13).TextColor(p.muted).TextAlign(ui.Center).Margin(0, 0, 14, 0)
 
-		ui.Box(c).Size(212, 212).Radius(16).Background(radixPaper).Border(1, p.hairline).Children(func() {
+		ui.Box(c).Size(212, 212).Radius(14).Background(paper).Border(1, p.hairline).Children(func() {
 			if l.code != nil {
 				code := l.code
 				opacity := float32(1)
@@ -242,7 +242,7 @@ func (a *app) loginDialog(c *ui.Context) {
 					Children(func() { ui.Image(c, code).Fill().Fit(ui.Contain) })
 			} else if l.err == "" {
 				// On white whatever the appearance, as the code is.
-				s := shimmer{base: radixBlack(3), sheen: radixBlack(1)}.in(c)
+				s := shimmer{base: shade(3), sheen: shade(1)}.in(c)
 				qrSkeleton(c, s, 14).Absolute().Top(0).Left(0).Right(0).Bottom(0)
 			}
 			ui.Column(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Center().Gap(10).Children(func() {
@@ -253,12 +253,12 @@ func (a *app) loginDialog(c *ui.Context) {
 					}
 				case l.finished || l.status == qqmusic.QRScanned:
 					if bmp := bitmap(a.art.get(qqmusic.Sized(l.avatar, 160), false)); bmp != nil {
-						pic := ui.Box(c).Size(72, 72).Radius(36).Shadow(0, 6, 16, -4, radixInk.Alpha(0.3))
+						pic := ui.Box(c).Size(72, 72).Radius(36).Shadow(0, 6, 16, -4, ink.Alpha(0.3))
 						in := artIn(pic, bmp)
 						pic.Children(func() { artImage(c, bmp, 36, in) })
 					}
 					if l.scanner != "" {
-						ui.Text(c, l.scanner).FontSize(14).FontWeight(600).TextColor(radixSage(false, 12))
+						ui.Text(c, l.scanner).FontSize(14).FontWeight(600).TextColor(neutral(false, 12))
 					}
 				}
 			})
@@ -318,7 +318,7 @@ func (a *app) accountMenu(c *ui.Context, row ui.Element) {
 	pop := popoverColors(a.pal.dark)
 	ui.PopoverBase(c.Key("account-menu"), row, &a.accountOpen, func(panel ui.Element) {
 		panel.AttachTo(row, ui.AnchorTopStart, ui.AnchorBottomStart).Margin(0, 0, 6, 0).Padding(5).Gap(1).
-			Radius(12).Background(pop.fill).Border(0.5, pop.edge).Shadow(0, 8, 24, -4, radixInk.Alpha(0.2)).
+			Radius(14).Background(pop.fill).Border(0.5, pop.edge).Shadow(0, 8, 24, -4, ink.Alpha(0.2)).
 			Role(ui.RoleMenu).FocusGroup(ui.Vertical).Label("账户").TransformOrigin(0.5, 1).
 			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.96, Y: 4}, Exit: &ui.Motion{Scale: 0.98}})
 		if w := row.Bounds().W; w > 0 {
@@ -361,7 +361,7 @@ func (a *app) accountMenu(c *ui.Context, row ui.Element) {
 // that does the same, if any.
 func (a *app) menuItem(c *ui.Context, icon *ui.SVG, label, shortcut string) ui.Element {
 	p := a.pal
-	b := ui.ButtonBase(c.Key(label)).Role(ui.RoleMenuItem).Label(label).Height(30).PaddingX(8).Gap(9).Radius(7).
+	b := ui.ButtonBase(c.Key(label)).Role(ui.RoleMenuItem).Label(label).Height(30).PaddingX(8).Gap(9).Radius(8).
 		AlignItems(ui.Center).Justify(ui.Start).FocusRing(false)
 	if b.Hovered() || b.FocusVisible() {
 		b.Background(p.press)
@@ -385,7 +385,7 @@ func (a *app) myPlaylists(c *ui.Context, title string, lists []qqmusic.Playlist,
 	}
 	p := a.pal
 	ui.Row(c.Key(title)).AlignItems(ui.Center).Margin(18, 4, 6, 6).Children(func() {
-		b := ui.ButtonBase(c.Key("toggle")).Grow(1).Height(26).PaddingX(4).Gap(6).Radius(6).
+		b := ui.ButtonBase(c.Key("toggle")).Grow(1).Height(26).PaddingX(4).Gap(6).Radius(8).
 			AlignItems(ui.Center).Justify(ui.Start).Role(ui.RoleDisclosure).Label(title)
 		if b.Clicked() {
 			*collapsed = !*collapsed
@@ -402,7 +402,7 @@ func (a *app) myPlaylists(c *ui.Context, title string, lists []qqmusic.Playlist,
 			}
 			ui.Icon(c, arrow).Size(12, 12).TextColor(p.faint)
 		})
-		if mine && iconButton(c.Key("new"), iconPlus, 13, p.faint, "新建歌单").Size(26, 26).Radius(6).Clicked() {
+		if mine && iconButton(c.Key("new"), iconPlus, 13, p.faint, "新建歌单").Size(26, 26).Radius(8).Clicked() {
 			a.newPlaylist(nil)
 		}
 	})

@@ -34,10 +34,10 @@ func TestSquigglyFrames(t *testing.T) {
 		a.pl.Seek(80 * time.Second)
 		label := "播放"
 		tt := ui.NewTester(func(c *ui.Context) {
-			c.Root().Background(radixSage(dark, 1)).Padding(16, 24)
+			c.Root().Background(neutral(dark, 1)).Padding(16, 24)
 			ui.Column(c).Fill().Gap(10).Children(func() {
-				ui.Text(c, label).FontSize(12).TextColor(radixSage(dark, 11))
-				a.scrubber(c, &a.barScrub, radixSage(dark, 5), radixGreen(dark, 9), 16, ui.Color{}).Width(552)
+				ui.Text(c, label).FontSize(12).TextColor(neutral(dark, 11))
+				a.scrubber(c, &a.barScrub, neutral(dark, 5), accent(dark, 9), 16, ui.Color{}).Width(552)
 			})
 		}, 600, 76)
 		tt.SetScale(2)

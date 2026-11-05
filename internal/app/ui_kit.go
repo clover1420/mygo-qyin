@@ -27,23 +27,34 @@ type palette struct {
 }
 
 func paletteFor(t *ui.Theme) palette {
-	shade := radixBlack(3)
 	if t.Dark {
-		shade = radixBlack(7)
+		return palette{
+			dark:      true,
+			bg:        ui.Hex("#141416"),
+			sidebar:   ui.Hex("#1c1c1f"),
+			text:      ui.Hex("#f5f5f7"),
+			muted:     ui.RGBA(235, 235, 245, 0.56),
+			faint:     ui.RGBA(235, 235, 245, 0.3),
+			hairline:  ui.RGBA(255, 255, 255, 0.07),
+			hover:     ui.RGBA(255, 255, 255, 0.06),
+			press:     ui.RGBA(255, 255, 255, 0.1),
+			accent:    accentBase(true),
+			onAccent:  paper,
+			cardShade: ui.RGBA(0, 0, 0, 0.45),
+		}
 	}
 	return palette{
-		dark:      t.Dark,
-		bg:        radixSage(t.Dark, 1),
-		sidebar:   radixSage(t.Dark, 2),
-		text:      radixSage(t.Dark, 12),
-		muted:     radixSage(t.Dark, 11),
-		faint:     radixSage(t.Dark, 11),
-		hairline:  radixSage(t.Dark, 6),
-		hover:     radixSage(t.Dark, 3),
-		press:     radixSage(t.Dark, 5),
-		accent:    radixGreen(t.Dark, 9),
-		onAccent:  radixPaper,
-		cardShade: shade,
+		bg:        ui.Hex("#ffffff"),
+		sidebar:   ui.Hex("#f4f4f6"),
+		text:      ui.Hex("#1d1d1f"),
+		muted:     ui.RGBA(60, 60, 67, 0.62),
+		faint:     ui.RGBA(60, 60, 67, 0.32),
+		hairline:  ui.RGBA(0, 0, 0, 0.07),
+		hover:     ui.RGBA(0, 0, 0, 0.04),
+		press:     ui.RGBA(0, 0, 0, 0.08),
+		accent:    accentBase(false),
+		onAccent:  paper,
+		cardShade: ui.RGBA(0, 0, 0, 0.16),
 	}
 }
 
@@ -102,10 +113,10 @@ func mediaFeedback(b ui.Element, color ui.Color) ui.Element {
 	bg, fg := ui.Transparent, color
 	pose := ui.Pose{}
 	if b.Hovered() || b.FocusVisible() {
-		bg, fg = radixWhite(2), color.Alpha(1)
+		bg, fg = veil(2), color.Alpha(1)
 	}
 	if b.Pressed() {
-		bg, fg, pose.Scale = radixWhite(3), color.Alpha(1), 0.94
+		bg, fg, pose.Scale = veil(3), color.Alpha(1), 0.94
 	}
 	motion := ui.Animation{Duration: 140 * time.Millisecond}
 	return b.Background(b.AnimateColor("bg", bg, motion)).
@@ -116,13 +127,13 @@ func mediaFeedback(b ui.Element, color ui.Color) ui.Element {
 // tint stays visible. Playback state colors stay on their icons.
 func playerFeedback(c *ui.Context, b ui.Element, color ui.Color, surface buttonSurface) ui.Element {
 	dark := c.Theme().Dark
-	hoverFill, pressFill := radixInk.Alpha(0.07), radixInk.Alpha(0.11)
+	hoverFill, pressFill := ink.Alpha(0.07), ink.Alpha(0.11)
 	if dark {
-		hoverFill, pressFill = radixWhite(2), radixWhite(3)
+		hoverFill, pressFill = veil(2), veil(3)
 	}
 	strong := color.Alpha(1)
-	if strong == radixSage(dark, 11) {
-		strong = radixSage(dark, 12)
+	if strong == neutral(dark, 11) {
+		strong = neutral(dark, 12)
 	}
 	selected := surface == playerSelectedSurface
 	bg, fg := ui.Transparent, color
@@ -155,7 +166,7 @@ func roundButton(c *ui.Context, size float32, color ui.Color, label string, surf
 	}
 	bg := ui.Transparent
 	if b.Hovered() {
-		bg = radixSage(c.Theme().Dark, 3)
+		bg = ui.RGBA(128, 128, 128, 0.14)
 	}
 	b.Background(b.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
 	pose := ui.Pose{}
@@ -171,11 +182,7 @@ func pillButton(c *ui.Context, icon *ui.SVG, label string, bg, fg ui.Color) ui.E
 	b := ui.ButtonBase(c).Height(36).PaddingX(18).Gap(8).Radius(999).AlignItems(ui.Center).TextColor(fg)
 	fill := bg
 	if b.Hovered() {
-		if bg == radixGreen(c.Theme().Dark, 9) {
-			fill = radixGreen(c.Theme().Dark, 10)
-		} else {
-			fill = bg.Mix(radixSage(c.Theme().Dark, 5), 0.2)
-		}
+		fill = bg.Mix(ui.RGB(255, 255, 255), 0.12)
 	}
 	b.Background(b.AnimateColor("bg", fill, ui.Animation{Duration: 120 * time.Millisecond}))
 	pose := ui.Pose{}
@@ -343,15 +350,15 @@ func drawBars(p *ui.Painter, r ui.Rect, st *barState, n int, color ui.Color, min
 // the user chose another.
 func segmented(c *ui.Context, selected *int, labels ...string) bool {
 	t := c.Theme()
-	const height, inset, radius = 28, 2, 6
+	const height, inset, radius = 28, 2, 14
 	width := float32(0)
 	for _, l := range labels {
 		w, _ := c.MeasureText(0, ui.Span{Text: l, Size: 13})
 		width = max(width, w+26)
 	}
-	track, capsule, divider := radixSage(t.Dark, 3), radixSage(t.Dark, 1), radixSage(t.Dark, 6)
+	track, capsule, divider := neutral(t.Dark, 3), neutral(t.Dark, 1), neutral(t.Dark, 6)
 	if t.Dark {
-		capsule = radixSage(true, 5)
+		capsule = neutral(true, 5)
 	}
 	before := *selected
 	parts := ui.SegmentedBase(c, selected, len(labels))
@@ -369,8 +376,8 @@ func segmented(c *ui.Context, selected *int, labels ...string) bool {
 		}
 		pill := ui.Rect{X: r.X + inset + at*width, Y: r.Y + inset, W: width, H: r.H - 2*inset}
 		if !dark {
-			p.Shadow(pill, radius-1, 0, 0.5, 1, 0, radixBlack(4))
-			p.Shadow(pill, radius-1, 0, 1, 3, 0, radixBlack(1))
+			p.Shadow(pill, radius-1, 0, 0.5, 1, 0, shade(4))
+			p.Shadow(pill, radius-1, 0, 1, 3, 0, shade(1))
 		}
 		p.Fill(pill, capsule, radius-1)
 	}).Children(func() {

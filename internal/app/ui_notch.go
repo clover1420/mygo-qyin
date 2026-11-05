@@ -372,9 +372,9 @@ func (n *notch) view(c *ui.Context) {
 		}
 		path := shape(r.X+cx, w, h, flare, foot)
 		if open > 0.05 {
-			p.Shadow(ui.Rect{X: r.X + cx - w/2, Y: r.Y + h - 40, W: w, H: 40}, foot, 0, 14, 30, -6, radixInk.Alpha(0.45*open))
+			p.Shadow(ui.Rect{X: r.X + cx - w/2, Y: r.Y + h - 40, W: w, H: 40}, foot, 0, 14, 30, -6, ink.Alpha(0.45*open))
 		}
-		p.FillPath(path, radixInk)
+		p.FillPath(path, ink)
 	})
 	stage.Children(func() {
 		body := ui.Box(c).Absolute().Top(0).Left(cx-w/2).Size(w, h).Radius(0, 0, foot, foot).Clip().TextColor(white)
@@ -447,7 +447,7 @@ func (n *notch) lyricText(c *ui.Context, tr *qqmusic.Track) string {
 // levels draws the music's levels in the cover's color.
 func (n *notch) levels(c *ui.Context, tr *qqmusic.Track, w, h float32, count int) {
 	a := n.a
-	color := radixPaper
+	color := paper
 	if art := a.art.get(qqmusic.Sized(tr.Album.PicURL, 96), false); art != nil && !art.failed {
 		color = art.tint.Mix(white, 0.35)
 	}
@@ -470,7 +470,7 @@ func (n *notch) expanded(c *ui.Context, tr *qqmusic.Track, open, left float32) {
 	col.Translate(0, (1-open)*-10)
 	col.Children(func() {
 		ui.Row(c).Gap(14).AlignItems(ui.Center).Children(func() {
-			cov := ui.ButtonBase(c.Key("cover")).Size(60, 60).Radius(12).FocusRing(false).Label("打开正在播放")
+			cov := ui.ButtonBase(c.Key("cover")).Size(60, 60).Radius(14).FocusRing(false).Label("打开正在播放")
 			lift := ui.Pose{}
 			if cov.Hovered() {
 				lift.Scale = 1.05
@@ -545,7 +545,7 @@ func (n *notch) idle(c *ui.Context, open, left float32) {
 	a := n.a
 	ui.Row(c).Absolute().Top(n.h0+4).Left(left).Width(notchIdleW).Padding(10, 20, 14, 20).Gap(12).AlignItems(ui.Center).
 		Opacity(max(0, open*1.4-0.4)).Children(func() {
-		ui.Box(c).Size(36, 36).Radius(10).Background(a.pal.accent).Center().Children(func() {
+		ui.Box(c).Size(36, 36).Radius(12).Background(a.pal.accent).Center().Children(func() {
 			ui.Icon(c, iconNote).Size(18, 18).TextColor(white)
 		})
 		ui.Column(c).Grow(1).Gap(2).Children(func() {

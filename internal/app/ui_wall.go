@@ -109,7 +109,7 @@ func (a *app) wallPane(c *ui.Context, tr *qqmusic.Track, art *artwork, accent ui
 	// backdrop, painted again over them, opaque by the frost's top: there
 	// it shows what shows above it, so that no edge does.
 	ui.Box(c.Key("wall-frost")).Absolute().Top(wallY).Left(0).Right(0).Height(frost).PassThrough().
-		Material(glass.Blur{Radius: 16, Mask: &ui.LinearGradient{From: radixInk, To: ui.Transparent, Angle: 180}}).
+		Material(glass.Blur{Radius: 16, Mask: &ui.LinearGradient{From: ink, To: ui.Transparent, Angle: 180}}).
 		Draw(func(p *ui.Painter, r ui.Rect) {
 			a.backdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 {
 				return 1 - smoothstep(0.1, 0.85, t)
@@ -118,7 +118,7 @@ func (a *app) wallPane(c *ui.Context, tr *qqmusic.Track, art *artwork, accent ui
 	// Down under the controls, they blur and fade most of the way, for
 	// the controls to read over them.
 	ui.Box(c.Key("wall-foot")).Absolute().Left(0).Right(0).Bottom(0).Height(foot).PassThrough().
-		Material(glass.Blur{Radius: 14, Mask: &ui.LinearGradient{From: radixInk, To: ui.Transparent, Angle: 0}}).
+		Material(glass.Blur{Radius: 14, Mask: &ui.LinearGradient{From: ink, To: ui.Transparent, Angle: 0}}).
 		Draw(func(p *ui.Painter, r ui.Rect) {
 			a.backdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 { return 0.7 * smoothstep(0, 0.9, t) })
 		})
@@ -137,7 +137,7 @@ func (a *app) wallSong(c *ui.Context, tr *qqmusic.Track, art *artwork, top, h fl
 		// Not Now Playing's cover, which the pointer tilts and flings: here
 		// the wall is what the pointer moves.
 		size := h - 48
-		cov := ui.Box(c.Key(coverKey{tr.ID, 0})).Size(size, size).Radius(16).Shadow(0, 24, 50, -12, radixInk.Alpha(0.55))
+		cov := ui.Box(c.Key(coverKey{tr.ID, 0})).Size(size, size).Radius(20).Shadow(0, 24, 50, -12, ink.Alpha(0.55))
 		scale := float32(1)
 		if !pl.Playing() {
 			scale = 0.92
@@ -329,23 +329,23 @@ func rowSwayTarget(r int, now time.Time) (float32, time.Duration) {
 // row, scaled to lift: the song playing stands out,
 // ringed, and the one under the pointer says what it is.
 func (a *app) wallTile(c *ui.Context, tr *qqmusic.Track, i int, x float32, playing, hovered bool, lift float32) {
-	tile := ui.Box(c.Key(i)).Absolute().Left(x).Top(0).Size(wallTile, wallTile).Radius(12).
+	tile := ui.Box(c.Key(i)).Absolute().Left(x).Top(0).Size(wallTile, wallTile).Radius(14).
 		Label(tr.Name).ContextMenu(a.songItems(tr, 0))
 	tile.AnimatePose(ui.Pose{Scale: lift}, ui.Animation{Spring: ui.SpringOptions{Duration: 400 * time.Millisecond, Bounce: 0.2}})
 	if !tr.Playable() {
 		tile.Opacity(0.4)
 	}
 	if playing {
-		tile.Shadow(0, 14, 30, -8, radixInk.Alpha(0.6))
+		tile.Shadow(0, 14, 30, -8, ink.Alpha(0.6))
 	}
 	tile.Children(func() {
 		a.cover(c, tr.Album.PicURL, 240, wallTile, 12)
 		if hovered {
 			// Its name and artists over a shade along its foot, on the
 			// cover, so that they move with it.
-			ui.Column(c.Key("caption")).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(12).Padding(8).Gap(1).
+			ui.Column(c.Key("caption")).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(14).Padding(8).Gap(1).
 				Justify(ui.End).PassThrough().TextColor(white).
-				Gradient(radixInk.Alpha(0.78), ui.Transparent, 0).
+				Gradient(ink.Alpha(0.78), ui.Transparent, 0).
 				Children(func() {
 					ui.Text(c, tr.Name).FontSize(12).FontWeight(700).SingleLine()
 					if names := tr.ArtistNames(); names != "" {
@@ -354,7 +354,7 @@ func (a *app) wallTile(c *ui.Context, tr *qqmusic.Track, i int, x float32, playi
 				})
 		}
 		if playing {
-			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(12).Border(2, white.Alpha(0.9)).PassThrough()
+			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(14).Border(2, white.Alpha(0.9)).PassThrough()
 		}
 	})
 }

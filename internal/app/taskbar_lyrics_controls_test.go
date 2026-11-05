@@ -27,7 +27,7 @@ func taskbarControlsFixture() (*app, *taskbarLyrics) {
 	a.pl.Cue(tracks)
 	a.pl.SetLyrics(nil)
 	a.pl.Seek(40 * time.Second)
-	art := &artwork{bmp: solidBitmap(radixCyan9)}
+	art := &artwork{bmp: solidBitmap(burstCyan)}
 	for _, size := range []int{96, 120} {
 		a.art.art[qqmusic.Sized(tracks[0].Album.PicURL, size)] = art
 	}

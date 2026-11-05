@@ -150,7 +150,7 @@ func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, su
 	card := ui.ButtonBase(c).Column().Gap(10).AlignItems(ui.Stretch).Justify(ui.Start).FocusRing(false).Label(name)
 	hovered := card.Hovered()
 	card.Children(func() {
-		art := ui.Box(c).AspectRatio(1).Radius(10)
+		art := ui.Box(c).AspectRatio(1).Radius(14)
 		lift := ui.Pose{}
 		if hovered {
 			lift = ui.Pose{Y: -3}
@@ -163,7 +163,7 @@ func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, su
 			a.coverFill(c, cover, 400, 10)
 			if playCount > 0 {
 				ui.Row(c).Absolute().Top(8).Right(8).Padding(2, 7).Radius(999).Gap(3).AlignItems(ui.Center).
-					Background(radixInk.Alpha(0.35)).TextColor(radixPaper).Children(func() {
+					Background(ink.Alpha(0.35)).TextColor(paper).Children(func() {
 					ui.Icon(c, iconHeadset).Size(10, 10)
 					ui.Text(c, plays(playCount)).FontSize(10.5).FontWeight(600)
 				})
@@ -195,8 +195,8 @@ func (a *app) coverFill(c *ui.Context, url string, px int, radius float32) {
 // opening it.
 func (a *app) coverPlayButton(c *ui.Context, shown bool, play func()) {
 	b := ui.ButtonBase(c.Key("play")).Absolute().Bottom(10).Right(10).Size(38, 38).Radius(999).Center().
-		Background(a.pal.accent).TextColor(radixPaper).Label("播放").FocusRing(false).
-		Shadow(0, 4, 12, 0, radixInk.Alpha(0.3))
+		Background(a.pal.accent).TextColor(paper).Label("播放").FocusRing(false).
+		Shadow(0, 4, 12, 0, ink.Alpha(0.3))
 	pose := ui.Pose{Fade: 1, Scale: 0.8, Y: 6}
 	if shown || b.Hovered() {
 		pose = ui.Pose{Scale: 1}
@@ -222,7 +222,7 @@ func (a *app) chartCard(c *ui.Context, pl *qqmusic.Playlist) {
 	}
 	card.Background(card.AnimateColor("bg", bg, ui.Animation{Duration: 140 * time.Millisecond}))
 	card.Children(func() {
-		ui.Box(c).Size(84, 84).Radius(9).Shadow(0, 3, 10, -2, p.cardShade).Children(func() {
+		ui.Box(c).Size(84, 84).Radius(8).Shadow(0, 3, 10, -2, p.cardShade).Children(func() {
 			a.coverFill(c, pl.Cover(), 200, 9)
 		})
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(5).Children(func() {
@@ -396,7 +396,7 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 			i--
 			tr := &tracks[i]
 			playing := cur != nil && cur.ID == tr.ID
-			row := ui.ButtonBase(c.Key(tr.ID)).Height(trackRowHeight).PaddingX(12).Gap(14).Radius(10).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
+			row := ui.ButtonBase(c.Key(tr.ID)).Height(trackRowHeight).PaddingX(12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
 				ContextMenu(a.songItems(tr, pid))
 			if r := row.Bounds(); current >= 0 && !measured && r.H > 0 {
 				currentTop, measured = r.Y+float32(current-i)*trackRowHeight, true
@@ -405,11 +405,11 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 			bg := ui.Transparent
 			switch {
 			case playing && row.Pressed():
-				bg = radixGreen(p.dark, 5)
+				bg = accent(p.dark, 5)
 			case playing && hovered:
-				bg = radixGreen(p.dark, 4)
+				bg = accent(p.dark, 4)
 			case playing:
-				bg = radixGreen(p.dark, 3)
+				bg = accent(p.dark, 3)
 			case hovered:
 				bg = p.hover
 			}

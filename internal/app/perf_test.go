@@ -209,7 +209,7 @@ func TestSquigglyFrameBudget(t *testing.T) {
 	out.Seek(70 * time.Second)
 	a.pl.Attach(out)
 	tt := ui.NewTester(func(c *ui.Context) {
-		a.scrubber(c, &a.barScrub, radixSage(false, 5), radixSage(false, 12), 16, ui.Color{}).Width(400)
+		a.scrubber(c, &a.barScrub, neutral(false, 5), neutral(false, 12), 16, ui.Color{}).Width(400)
 	}, 400, 40)
 	tt.Frame()
 	if !tt.FramePending() {

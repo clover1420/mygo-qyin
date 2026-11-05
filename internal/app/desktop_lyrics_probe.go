@@ -37,7 +37,7 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 	mygo.App.WhenReady(func() {
 		a.win = mygo.NewWindow(mygo.WindowOptions{Title: "Lilt Lyrics Probe", Width: 580, Height: 300,
 			Content: ui.View(func(c *ui.Context) {
-				ui.Column(c).Fill().Padding(24).Gap(12).Background(radixSage(c.Theme().Dark, 2)).Children(func() {
+				ui.Column(c).Fill().Padding(24).Gap(12).Background(neutral(c.Theme().Dark, 2)).Children(func() {
 					ui.Text(c, "桌面歌词 · 原生窗口验证").FontSize(20)
 					ui.Row(c).Gap(8).Children(func() {
 						ui.Button(c, "打开歌词").OnClick(func() { a.setDesktopLyricsEnabled(true) })

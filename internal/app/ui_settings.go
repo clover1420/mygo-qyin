@@ -36,7 +36,7 @@ func (a *app) openSettings() {
 		DisableMaximize: true,
 		DisableMinimize: true,
 		AutoHideMenuBar: true,
-		BackgroundColor: "light-dark(" + radixSageLight[1] + ", " + radixSageDark[1] + ")",
+		BackgroundColor: "light-dark(" + neutralLight[0] + ", " + neutralDark[0] + ")",
 		Content:         ui.View(a.settingsView),
 	})
 	a.settingsWin.OnClosed(func() {
@@ -91,7 +91,7 @@ func (a *app) settingsContent(c *ui.Context) {
 
 	group := func(title string, rows func()) {
 		ui.Text(c, title).FontSize(12).FontWeight(600).TextColor(p.muted).Margin(14, 4, 4, 4)
-		ui.Column(c).Radius(12).Background(p.bg).Border(1, p.hairline).Dividers(1, p.hairline).Children(rows)
+		ui.Column(c).Radius(20).Background(p.bg).Border(1, p.hairline).Dividers(1, p.hairline).Children(rows)
 	}
 	row := func(label, desc string, control func()) {
 		ui.Row(c).Padding(12, 16).Gap(16).AlignItems(ui.Center).MinHeight(48).Children(func() {

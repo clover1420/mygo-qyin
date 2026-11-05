@@ -72,7 +72,7 @@ func TestSquigglyPausedSeek(t *testing.T) {
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "宝船", Duration: 200000}})
 	a.pl.Seek(40 * time.Second)
 	tt := ui.NewTester(func(c *ui.Context) {
-		a.scrubber(c, &a.barScrub, radixSage(false, 5), radixGreen(false, 9), 16, ui.Color{}).Width(400)
+		a.scrubber(c, &a.barScrub, neutral(false, 5), accent(false, 9), 16, ui.Color{}).Width(400)
 	}, 400, 48)
 	tt.Frame()
 	bar, ok := tt.Find("播放进度")

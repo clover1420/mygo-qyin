@@ -199,7 +199,7 @@ func TestDesktopLyricsTransitionFrames(t *testing.T) {
 				previous := desktopLyricsLayouts(c, desktopLyricContent{text: scene.previous}, 0, 32, 432)
 				current := desktopLyricsLayouts(c, desktopLyricContent{text: scene.current, translation: scene.translation}, 0, 32, 432)
 				blend := state.blend(c)
-				ui.Box(c).Fill().Background(radixSage(false, 2)).PaddingX(24).Children(func() {
+				ui.Box(c).Fill().Background(neutral(false, 2)).PaddingX(24).Children(func() {
 					drawDesktopLyricLayers(c, current, previous, 140, blend)
 				})
 			}, 480, 168)
@@ -343,7 +343,7 @@ func TestDesktopLyricsFrames(t *testing.T) {
 			a.pl.SetLyrics(lyrics.Build(scene.text, scene.translation, scene.qrc))
 			a.pl.Seek(scene.position)
 			tt := ui.NewTester(func(c *ui.Context) {
-				ui.Box(c).Fill().Background(radixGray(scene.dark, 2)).Children(func() { d.view(c) })
+				ui.Box(c).Fill().Background(neutral(scene.dark, 2)).Children(func() { d.view(c) })
 			}, scene.width, 240)
 			tt.Move(-10, -10)
 			if scene.hover {

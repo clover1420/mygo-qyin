@@ -58,14 +58,16 @@ func (a *app) view(c *ui.Context) {
 			if !c.Vibrancy() {
 				side.Background(p.sidebar)
 			} else if a.acrylicSidebar(c) {
-				// Neutral frost quiets the desktop's color without adding a
-				// green cast, while leaving the system acrylic visible beneath.
-				side.Background(radixGray(p.dark, 2).Alpha(0.5))
+				// Neutral frost quiets the desktop's color while leaving the
+				// system acrylic visible beneath.
+				side.Background(neutral(p.dark, 2).Alpha(0.5))
 			}
 			side.Children(func() { a.sidebar(c) })
 			// Keyed, so that a popover of the sidebar opening or closing
 			// keeps what the page and its bars hold, their edges' fades.
-			ui.Box(c.Key("main")).Grow(1).Background(p.bg).BorderWidth(0, 0, 0, 1).BorderColor(a.sidebarSurface(c, p.hairline, 0.06)).Children(func() {
+			// The page and the sidebar are told apart by their tint alone,
+			// as Cloudy's are: no rule runs between them.
+			ui.Box(c.Key("main")).Grow(1).Background(p.bg).Children(func() {
 				a.content(c)
 				// The bars float over the page, which scrolls under them:
 				// positioned, they paint over it.
@@ -236,23 +238,18 @@ func (a *app) navItem(c *ui.Context, icon *ui.SVG, label string, r route) {
 	}
 }
 
-// styleSidebarItem gives navigation and playlists the same selection cue,
-// distinct from hover even over a colorful desktop material.
+// styleSidebarItem gives navigation and playlists the same selection cue:
+// the row a press darkens, as Cloudy's sidebar marks the page open.
 func (a *app) styleSidebarItem(c *ui.Context, b ui.Element, selected bool) {
 	p := a.pal
 	bg := ui.Transparent
 	switch {
 	case selected:
-		bg = p.bg.Alpha(0.4)
-		if p.dark {
-			bg = radixSage(true, 4).Alpha(0.65)
-		}
-		bg = a.sidebarSurface(c, bg, 0.09)
+		bg = p.press
 	case b.Hovered():
-		bg = a.sidebarSurface(c, p.hover.Alpha(0.45), 0.035)
+		bg = p.hover
 	}
-	// Keep the existing inset without drawing a frame around the selection.
-	b.Selected(selected).Border(1, ui.Transparent).
+	b.Selected(selected).
 		Background(b.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
 }
 
@@ -262,9 +259,9 @@ func (a *app) sidebarSurface(c *ui.Context, fallback ui.Color, opacity float32) 
 	if !a.acrylicSidebar(c) {
 		return fallback
 	}
-	tint := radixInk
+	tint := ink
 	if a.pal.dark {
-		tint = radixPaper
+		tint = paper
 	}
 	return tint.Alpha(opacity)
 }
@@ -275,7 +272,7 @@ func (a *app) acrylicSidebar(c *ui.Context) bool {
 
 func (a *app) sidebarNowPlaying(c *ui.Context, tr *qqmusic.Track) {
 	p := a.pal
-	card := ui.ButtonBase(c.Key("np-card")).Gap(10).Padding(8).Radius(12).AlignItems(ui.Center).FocusRing(false).Label("正在播放")
+	card := ui.ButtonBase(c.Key("np-card")).Gap(10).Padding(8).Radius(14).AlignItems(ui.Center).FocusRing(false).Label("正在播放")
 	bg := a.sidebarSurface(c, p.hover, 0.03)
 	if card.Hovered() {
 		bg = a.sidebarSurface(c, p.press, 0.06)

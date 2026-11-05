@@ -92,11 +92,20 @@ type settings struct {
 	// SearchHistory keeps submitted keywords, most recent first.
 	SearchHistory []string `json:"searchHistory,omitempty"`
 
+	// LiquidGlass floats the player bar as a capsule of glass.
+	LiquidGlass bool `json:"liquidGlass"`
+	// GlassClear is how clear the glass of the player bar is, from 0 to 1,
+	// and GlassBend how far it bends what shows through.
+	GlassClear float64 `json:"glassClear"`
+	GlassBend  float64 `json:"glassBend"`
+	// GlassPanels makes menus, popovers, dialogs and panels frosted glass.
+	GlassPanels bool `json:"glassPanels"`
+
 	path string // where they were loaded from, and are saved to
 }
 
 func defaultSettings() settings {
-	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", SidebarMaterial: "acrylic", Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
+	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", SidebarMaterial: "acrylic", LiquidGlass: true, GlassClear: 0.6, GlassBend: 0.3, GlassPanels: true, Volume: 0.8, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
 }
 
 const (

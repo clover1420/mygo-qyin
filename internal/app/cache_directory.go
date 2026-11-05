@@ -35,7 +35,7 @@ func (a *app) cacheDirectoryRow(c *ui.Context) {
 				ui.Text(c, "重启后迁移并生效").FontSize(12).TextColor(p.muted)
 			}
 			if a.cacheDirError != "" {
-				ui.Text(c, a.cacheDirError).FontSize(12).TextColor(radixRed(c.Theme().Dark, 11)).LineHeight(1.4)
+				ui.Text(c, a.cacheDirError).FontSize(12).TextColor(accent(c.Theme().Dark, 11)).LineHeight(1.4)
 			}
 		})
 		ui.Row(c).Gap(8).Children(func() {

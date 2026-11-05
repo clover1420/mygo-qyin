@@ -252,19 +252,19 @@ func (a *app) fmCard(c *ui.Context) {
 	if tr != nil {
 		art = a.art.get(qqmusic.Sized(tr.Album.PicURL, 600), true)
 	}
-	card := ui.Box(c.Key("fm-card")).Height(320).Radius(24).Background(radixSage(true, 3)).TextColor(white).
+	card := ui.Box(c.Key("fm-card")).Height(320).Radius(26).Background(neutral(true, 3)).TextColor(white).
 		Shadow(0, 18, 44, -16, a.pal.cardShade)
 	in := artIn(card, backdrop(art))
 	card.Children(func() {
 		if in < 1 {
-			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(24).
-				LinearGradient(ui.LinearGradient{Angle: 135, Oklab: true, From: radixGreen(true, 6), To: radixSage(true, 2)})
+			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(26).
+				LinearGradient(ui.LinearGradient{Angle: 135, Oklab: true, From: accent(true, 6), To: neutral(true, 2)})
 		}
 		artImage(c, backdrop(art), 24, in)
-		ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(24).
+		ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(26).
 			LinearGradient(ui.LinearGradient{Angle: 90, Stops: []ui.GradientStop{
-				{Color: radixInk.Alpha(0.35), At: 0},
-				{Color: radixInk.Alpha(0.1), At: 1},
+				{Color: ink.Alpha(0.35), At: 0},
+				{Color: ink.Alpha(0.1), At: 1},
 			}})
 		ui.Row(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Padding(36, 40).Gap(40).AlignItems(ui.Center).Children(func() {
 			a.fmCovers(c, tr)
@@ -285,7 +285,7 @@ func (a *app) fmCard(c *ui.Context) {
 						if a.radioStarting != "" && strings.HasPrefix(a.radioStarting, "fm:") {
 							label = "正在调频…"
 						}
-						if pillButton(c.Key("start"), iconPlay, label, white, radixSage(false, 12)).Clicked() {
+						if pillButton(c.Key("start"), iconPlay, label, white, neutral(false, 12)).Clicked() {
 							a.playFM()
 						}
 					})
@@ -302,7 +302,7 @@ func (a *app) fmCard(c *ui.Context) {
 				}
 				ui.Row(c).Gap(14).AlignItems(ui.Center).Margin(20, 0, 0, -8).Children(func() {
 					a.likeButton(c.Key("like"), tr, 20, white.Alpha(0.8))
-					play := ui.ButtonBase(c.Key("play")).Size(56, 56).Center().Radius(999).Background(white).TextColor(radixSage(false, 12)).Label("播放/暂停")
+					play := ui.ButtonBase(c.Key("play")).Size(56, 56).Center().Radius(999).Background(white).TextColor(neutral(false, 12)).Label("播放/暂停")
 					pose := ui.Pose{}
 					if play.Pressed() {
 						pose.Scale = 0.92
@@ -336,12 +336,12 @@ func (a *app) fmCovers(c *ui.Context, tr *qqmusic.Track) {
 		}
 		if next != nil {
 			back := ui.Box(c.Key(next.ID)).Absolute().Top(16).Left(36).Size(size-32, size-32).Radius(14).Opacity(0.55).Background(white.Alpha(0.12)).
-				Shadow(0, 10, 24, -8, radixInk.Alpha(0.4))
+				Shadow(0, 10, 24, -8, ink.Alpha(0.4))
 			back.AnimatePose(ui.Pose{Rotate: 6, X: 14}, ui.Animation{Spring: ui.SpringOptions{Duration: 500 * time.Millisecond, Bounce: 0.2}})
 			back.Children(func() { a.coverFill(c, next.Album.PicURL, 400, 14) })
 		}
-		front := ui.Box(c.Key("front")).Absolute().Top(0).Left(0).Size(size, size).Radius(16).
-			Background(white.Alpha(0.12)).Shadow(0, 20, 44, -10, radixInk.Alpha(0.55))
+		front := ui.Box(c.Key("front")).Absolute().Top(0).Left(0).Size(size, size).Radius(20).
+			Background(white.Alpha(0.12)).Shadow(0, 20, 44, -10, ink.Alpha(0.55))
 		if tr == nil {
 			front.Center().Children(func() {
 				ui.Icon(c, iconRadio).Size(64, 64).TextColor(white.Alpha(0.85))
@@ -363,9 +363,9 @@ func (a *app) fmCovers(c *ui.Context, tr *qqmusic.Track) {
 // heartCard starts heart mode: songs like those the listener likes.
 func (a *app) heartCard(c *ui.Context, p palette) {
 	on := a.pl.Radio() == heartRadio
-	ui.Row(c).Padding(22, 26).Gap(20).Radius(18).AlignItems(ui.Center).Background(p.hover).Children(func() {
-		ui.Box(c).Size(56, 56).Radius(16).Center().Shrink(0).
-			LinearGradient(ui.LinearGradient{Angle: 135, Oklab: true, From: radixGreen(false, 9), To: radixGreen(false, 10)}).
+	ui.Row(c).Padding(22, 26).Gap(20).Radius(20).AlignItems(ui.Center).Background(p.hover).Children(func() {
+		ui.Box(c).Size(56, 56).Radius(14).Center().Shrink(0).
+			LinearGradient(ui.LinearGradient{Angle: 135, Oklab: true, From: accent(false, 9), To: accent(false, 10)}).
 			TextColor(white).Children(func() { ui.Icon(c, iconHeartFill).Size(26, 26) })
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(4).Children(func() {
 			ui.Text(c, "从你喜欢的音乐出发").FontSize(15).FontWeight(700)

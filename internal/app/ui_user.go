@@ -97,17 +97,17 @@ func (a *app) acceptMembership(id int64, d *userData, level qqmusic.Membership, 
 
 func (a *app) membershipBadge(c *ui.Context, id int64, d *userData) {
 	p := a.pal
-	label, ink, background := "会员状态未知", p.muted, radixSage(p.dark, 3)
+	label, ink, background := "会员状态未知", p.muted, neutral(p.dark, 3)
 	switch d.membership {
 	case qqmusic.MembershipSuper:
-		label, ink, background = "超级会员", radixAmber(p.dark, 11), radixAmber(p.dark, 3)
+		label, ink, background = "超级会员", warm(p.dark, 11), warm(p.dark, 3)
 	case qqmusic.MembershipGreen:
-		label, ink, background = "绿钻会员", radixGreen(p.dark, 11), radixGreen(p.dark, 3)
+		label, ink, background = "绿钻会员", accent(p.dark, 11), accent(p.dark, 3)
 	case qqmusic.MembershipFree:
 		label = "免费账号"
 	}
 	if d.memberErr {
-		label, ink, background = "会员状态暂不可用", p.muted, radixSage(p.dark, 3)
+		label, ink, background = "会员状态暂不可用", p.muted, neutral(p.dark, 3)
 	} else if d.memberLoading && d.membership == "" {
 		label = "正在查询会员状态"
 	}
@@ -239,7 +239,7 @@ func (a *app) userPage(c *ui.Context) {
 // userRow is a user in a list, opening their page.
 func (a *app) userRow(c *ui.Context, u *qqmusic.User) {
 	p := a.pal
-	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(10).AlignItems(ui.Center).FocusRing(false).Label(u.Nickname)
+	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(u.Nickname)
 	if row.Hovered() {
 		row.Background(p.hover)
 	}

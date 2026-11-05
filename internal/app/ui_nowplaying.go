@@ -11,7 +11,7 @@ import (
 	"lilt/internal/qqmusic"
 )
 
-var white = radixPaper
+var white = paper
 
 var npSpring = ui.Animation{Spring: ui.SpringOptions{Duration: 450 * time.Millisecond, Bounce: 0.08}}
 
@@ -82,14 +82,14 @@ func (a *app) nowPlayingView(c *ui.Context) {
 		shown = a.npArt
 	}
 	a.npArt = shown
-	tint := radixSage(true, 9)
+	tint := neutral(true, 9)
 	if shown != nil && !shown.failed {
 		tint = shown.tint
 	}
 	accent := tint.Mix(white, 0.45)
 
 	root := ui.Box(c.Key("now-playing")).Absolute().Top(0).Left(0).Right(0).Bottom(0).
-		Background(radixSage(true, 1)).TextColor(white)
+		Background(neutral(true, 1)).TextColor(white)
 	// The pointer is over the view whenever it is in the window.
 	pointerIn := root.Hovered()
 	root.Children(func() {
@@ -250,8 +250,8 @@ const npTabsHeight = 28
 // npCollapseButton uses translucent media controls over the cover's dark
 // backdrop, independently of the appearance of the pages underneath it.
 func npCollapseButton(c *ui.Context) ui.Element {
-	b := ui.ButtonBase(c).Size(40, 32).Center().Radius(10).Label("收起播放页").Tooltip("收起播放页")
-	mediaFeedback(b, radixWhite(10))
+	b := ui.ButtonBase(c).Size(40, 32).Center().Radius(12).Label("收起播放页").Tooltip("收起播放页")
+	mediaFeedback(b, veil(10))
 	b.Children(func() { ui.Icon(c, iconDown).Size(20, 20) })
 	return b
 }
@@ -345,10 +345,10 @@ func (a *app) radioChip(c *ui.Context, name string) {
 		AlignItems(ui.Center).AlignSelf(ui.Start).FocusRing(false).Label(exit).Tooltip(exit)
 	bg, fg, cross := ui.Transparent, white.Alpha(0.6), float32(0.5)
 	if chip.Hovered() || chip.FocusVisible() {
-		bg, fg, cross = radixWhite(2), radixWhite(12), 1
+		bg, fg, cross = veil(2), veil(12), 1
 	}
 	if chip.Pressed() {
-		bg = radixWhite(3)
+		bg = veil(3)
 	}
 	motion := ui.Animation{Duration: 140 * time.Millisecond}
 	chip.Background(chip.AnimateColor("bg", bg, motion)).TextColor(chip.AnimateColor("fg", fg, motion))
@@ -372,8 +372,8 @@ func qualityBadge(c *ui.Context, st *qqmusic.Stream) {
 	if st.Level == "hires" {
 		label = "Hi-Res"
 	}
-	ui.Text(c, label).FontSize(9.5).FontWeight(800).LetterSpacing(0.6).TextColor(radixAmber(true, 11)).
-		Padding(1, 6).Radius(4).Border(1, radixAmber(true, 8))
+	ui.Text(c, label).FontSize(9.5).FontWeight(800).LetterSpacing(0.6).TextColor(warm(true, 11)).
+		Padding(1, 6).Radius(4).Border(1, warm(true, 8))
 }
 
 // stageBar is the slim bar along the foot of the stage: what plays, where
@@ -408,16 +408,16 @@ func (a *app) paneTab(c *ui.Context, i int, label string) {
 	b := ui.ButtonBase(c.Key(i)).Padding(6, 14).Radius(999).FocusRing(false).Label(label)
 	bg, fg := ui.Transparent, white.Alpha(0.55)
 	if a.npPane == i {
-		bg, fg = radixWhite(3), white
+		bg, fg = veil(3), white
 	}
 	if b.Hovered() || b.FocusVisible() {
-		bg, fg = radixWhite(2), radixWhite(12)
+		bg, fg = veil(2), veil(12)
 		if a.npPane == i {
-			bg = radixWhite(4)
+			bg = veil(4)
 		}
 	}
 	if b.Pressed() {
-		bg, fg = radixWhite(5), white
+		bg, fg = veil(5), white
 	}
 	motion := ui.Animation{Duration: 140 * time.Millisecond}
 	b.Background(b.AnimateColor("bg", bg, motion))
@@ -502,7 +502,7 @@ func (a *app) timedLines(c *ui.Context, scroll ui.Element, lines []lyrics.Line, 
 	scroll.Children(func() {
 		ui.Column(c).Gap(6).Translate(0, -lag).Children(func() {
 			for i, l := range lines {
-				line := ui.ButtonBase(c.Key(i)).Column().AlignItems(ui.Start).Padding(10, 12).Radius(12).Gap(6).FocusRing(false).Label(l.Text)
+				line := ui.ButtonBase(c.Key(i)).Column().AlignItems(ui.Start).Padding(10, 12).Radius(14).Gap(6).FocusRing(false).Label(l.Text)
 				on := i == cur
 				alpha := float32(0.28)
 				if on {
@@ -669,7 +669,7 @@ func (a *app) queuePane(c *ui.Context) {
 		i := order[r]
 		tr := &pl.Queue()[i]
 		playing := r == at
-		row := ui.ButtonBase(c.Key(i)).Height(58).PaddingX(10).Gap(14).Radius(12).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
+		row := ui.ButtonBase(c.Key(i)).Height(58).PaddingX(10).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
 			ContextMenu(a.songItems(tr, 0))
 		switch {
 		case playing:

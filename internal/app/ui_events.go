@@ -77,7 +77,7 @@ func (a *app) event(c *ui.Context, e *qqmusic.Event) {
 // has one.
 func (a *app) shared(c *ui.Context, name, sub, pic string, r route) {
 	p := a.pal
-	card := ui.ButtonBase(c.Key("shared")).Gap(12).Padding(8).Radius(10).AlignItems(ui.Center).Background(p.hover).
+	card := ui.ButtonBase(c.Key("shared")).Gap(12).Padding(8).Radius(14).AlignItems(ui.Center).Background(p.hover).
 		FocusRing(false).Label(name).Disabled(r.id == 0).MaxWidth(480)
 	if card.Hovered() {
 		card.Background(p.press)

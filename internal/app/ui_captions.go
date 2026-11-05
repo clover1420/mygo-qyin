@@ -110,14 +110,14 @@ func (a *app) modelCard(c *ui.Context) {
 			return
 		}
 		if m.err != "" {
-			ui.Text(c, m.err).FontSize(13).TextColor(radixRed(true, 11))
+			ui.Text(c, m.err).FontSize(13).TextColor(accent(true, 11))
 		}
 		label := "下载模型"
 		if m.err != "" {
 			label = "重试"
 		}
 		ui.Row(c).Margin(6, 0, 0, 0).Children(func() {
-			if pillButton(c.Key("download"), nil, label, white, radixSage(false, 12)).Clicked() {
+			if pillButton(c.Key("download"), nil, label, white, neutral(false, 12)).Clicked() {
 				a.startModelDownload()
 			}
 		})

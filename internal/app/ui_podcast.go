@@ -240,15 +240,15 @@ func (a *app) programRow(c *ui.Context, d *podcastData, i int, cur *qqmusic.Trac
 	p := a.pal
 	pr := &d.programs[i]
 	playing := cur != nil && cur.ProgramID == pr.ID
-	row := ui.ButtonBase(c).Height(60).PaddingX(12).Gap(14).Radius(8).AlignItems(ui.Center).FocusRing(false).
+	row := ui.ButtonBase(c).Height(60).PaddingX(12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).
 		Label(pr.Name).Disabled(pr.MainSong.ID == 0)
 	switch {
 	case playing && row.Pressed():
-		row.Background(radixGreen(p.dark, 5))
+		row.Background(accent(p.dark, 5))
 	case playing && row.Hovered():
-		row.Background(radixGreen(p.dark, 4))
+		row.Background(accent(p.dark, 4))
 	case playing:
-		row.Background(radixGreen(p.dark, 3))
+		row.Background(accent(p.dark, 3))
 	case row.Hovered():
 		row.Background(p.hover)
 	}
@@ -289,7 +289,7 @@ func (a *app) programRow(c *ui.Context, d *podcastData, i int, cur *qqmusic.Trac
 // podcastRow is a podcast in a list, opening its page.
 func (a *app) podcastRow(c *ui.Context, pod *qqmusic.Podcast) {
 	p := a.pal
-	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(10).AlignItems(ui.Center).FocusRing(false).Label(pod.Name)
+	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(pod.Name)
 	if row.Hovered() {
 		row.Background(p.hover)
 	}

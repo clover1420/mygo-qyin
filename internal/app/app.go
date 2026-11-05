@@ -305,7 +305,7 @@ func Run() error {
 			// apps with a sidebar place them.
 			TrafficLightPosition: &mygo.Point{X: 20, Y: 20},
 			Vibrancy:             a.settings.sidebarVibrancy(),
-			BackgroundColor:      "light-dark(#fbfdfc, #101211)",
+			BackgroundColor:      "light-dark(#ffffff, #141416)",
 			Content:              ui.View(a.view),
 		})
 		a.setMenu()

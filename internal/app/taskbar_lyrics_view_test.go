@@ -213,7 +213,7 @@ func TestTaskbarLyricsFrames(t *testing.T) {
 			}
 			a.pl.Seek(scene.position)
 			tt := ui.NewTester(func(c *ui.Context) {
-				ui.Box(c).Fill().Background(radixGray(scene.dark, 2)).Children(func() { d.view(c) })
+				ui.Box(c).Fill().Background(neutral(scene.dark, 2)).Children(func() { d.view(c) })
 			}, scene.width, scene.height)
 			tt.Frame()
 			f, err := os.Create(filepath.Join(dir, "taskbar-lyrics-"+scene.name+".png"))

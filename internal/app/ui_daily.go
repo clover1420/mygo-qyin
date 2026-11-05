@@ -20,15 +20,15 @@ func (a *app) dailyArt(c *ui.Context, now time.Time, size float32) {
 		art = a.art.get(qqmusic.Sized(a.daily[0].Album.PicURL, 600), true)
 	}
 	radius := size * 0.07
-	box := ui.Box(c).Size(size, size).Radius(radius).Background(radixSage(true, 6)).
+	box := ui.Box(c).Size(size, size).Radius(radius).Background(neutral(true, 6)).
 		Shadow(0, 18, 40, -10, a.pal.cardShade)
 	in := artIn(box, backdrop(art))
 	box.Children(func() {
 		artImage(c, backdrop(art), radius, in)
 		ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(radius).
 			LinearGradient(ui.LinearGradient{Angle: 180, Stops: []ui.GradientStop{
-				{Color: radixInk.Alpha(0), At: 0.35},
-				{Color: radixInk.Alpha(0.4), At: 1},
+				{Color: ink.Alpha(0), At: 0.35},
+				{Color: ink.Alpha(0.4), At: 1},
 			}})
 		ui.Column(c).Absolute().Left(size * 0.09).Bottom(size * 0.08).TextColor(white).Children(func() {
 			ui.Textf(c, "%d", now.Day()).FontSize(size * 0.44).FontWeight(300).LetterSpacing(-size * 0.02).FontFeatures("tnum").LineHeight(1)
@@ -291,12 +291,12 @@ func dailyArtists(songs []qqmusic.Track) string {
 // dailyPlayButton plays the day's songs; while they play it says so, its
 // bars dancing, and pauses them; paused, it goes on.
 func (a *app) dailyPlayButton(c *ui.Context, songs []qqmusic.Track, ours, playing bool) {
-	ink := radixSage(false, 12)
+	ink := neutral(false, 12)
 	b := ui.ButtonBase(c).Height(38).PaddingX(20).Gap(8).Radius(999).AlignItems(ui.Center).TextColor(ink).
-		Shadow(0, 6, 16, -6, radixInk.Alpha(0.35))
+		Shadow(0, 6, 16, -6, ink.Alpha(0.35))
 	fill := white
 	if b.Hovered() {
-		fill = radixSage(false, 3)
+		fill = neutral(false, 3)
 	}
 	b.Background(b.AnimateColor("bg", fill, ui.Animation{Duration: 120 * time.Millisecond}))
 	pose := ui.Pose{}
@@ -352,7 +352,7 @@ func (a *app) dailyPicks(c *ui.Context, songs []qqmusic.Track) {
 	ui.Column(c.Key("picks")).Width(236).Shrink(0).Gap(2).Children(func() {
 		for i := range min(3, len(songs)) {
 			tr := &songs[i]
-			row := ui.ButtonBase(c.Key(tr.ID)).Row().Gap(12).Padding(7, 12).Radius(12).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
+			row := ui.ButtonBase(c.Key(tr.ID)).Row().Gap(12).Padding(7, 12).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(tr.Name).
 				ContextMenu(a.songItems(tr, 0))
 			bg := white.Alpha(0)
 			if row.Hovered() {
@@ -396,29 +396,29 @@ func (a *app) dailyStack(c *ui.Context, songs []qqmusic.Track, fanned bool, out 
 			if fanned {
 				pose = ui.Pose{Rotate: -9 * float32(i), X: -10 * float32(i), Y: -2}
 			}
-			cov := ui.Box(c.Key(i)).Absolute().Left(sleeveLeft-30*float32(i)).Top((sleeveSize-size)/2).Size(size, size).Radius(10).
-				Opacity(1-0.12*float32(i)).Shadow(0, 10, 22, -6, radixInk.Alpha(0.45))
+			cov := ui.Box(c.Key(i)).Absolute().Left(sleeveLeft-30*float32(i)).Top((sleeveSize-size)/2).Size(size, size).Radius(12).
+				Opacity(1-0.12*float32(i)).Shadow(0, 10, 22, -6, ink.Alpha(0.45))
 			cov.AnimatePose(pose, spring)
 			cov.Children(func() { a.coverFill(c, songs[i].Album.PicURL, 240, 10) })
 		}
 		// The record, behind its sleeve.
 		mid := float32(sleeveLeft + sleeveSize/2)
 		ui.Box(c.Key("record")).Absolute().Left(mid+recordOut(out)-recordSize/2).Top((sleeveSize-recordSize)/2).
-			Size(recordSize, recordSize).Radius(recordSize/2).Shadow(0, 8, 20, -4, radixInk.Alpha(0.5)).
+			Size(recordSize, recordSize).Radius(recordSize/2).Shadow(0, 8, 20, -4, ink.Alpha(0.5)).
 			Draw(func(p *ui.Painter, r ui.Rect) {
 				drawRecord(p, r, bitmap(a.art.get(qqmusic.Sized(songs[0].Album.PicURL, 240), false)), float32(a.dailySpin.angle))
 			})
 		// The sleeve.
-		sleeve := ui.Box(c.Key("sleeve")).Absolute().Left(sleeveLeft).Top(0).Size(sleeveSize, sleeveSize).Radius(12).
-			Shadow(0, 16, 30, -8, radixInk.Alpha(0.5))
+		sleeve := ui.Box(c.Key("sleeve")).Absolute().Left(sleeveLeft).Top(0).Size(sleeveSize, sleeveSize).Radius(14).
+			Shadow(0, 16, 30, -8, ink.Alpha(0.5))
 		sleeve.AnimatePose(ui.Pose{Rotate: -2 * b2f(fanned), Y: -3 * b2f(fanned)}, spring)
 		sleeve.Children(func() {
 			a.coverFill(c, songs[0].Album.PicURL, 400, 12)
 			// Light on its gloss, and its edge.
-			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(12).PassThrough().Border(1, white.Alpha(0.14)).
+			ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(14).PassThrough().Border(1, white.Alpha(0.14)).
 				LinearGradient(ui.LinearGradient{Angle: 145, Stops: []ui.GradientStop{
 					{Color: white.Alpha(0.22), At: 0}, {Color: white.Alpha(0), At: 0.42},
-					{Color: radixInk.Alpha(0), At: 0.7}, {Color: radixInk.Alpha(0.18), At: 1},
+					{Color: ink.Alpha(0), At: 0.7}, {Color: ink.Alpha(0.18), At: 1},
 				}})
 		})
 	})
@@ -430,7 +430,7 @@ func (a *app) dailyStack(c *ui.Context, songs []qqmusic.Track, fanned bool, out 
 func drawRecord(p *ui.Painter, r ui.Rect, bmp *ui.Bitmap, angle float32) {
 	d := r.W
 	cx, cy := r.X+d/2, r.Y+d/2
-	p.Fill(r, radixSage(true, 1), d/2)
+	p.Fill(r, neutral(true, 1), d/2)
 	for i, rr := 0, d*0.21; rr < d*0.48; i, rr = i+1, rr+2.2 {
 		a := float32(0.035)
 		if i%3 == 0 {
@@ -448,15 +448,15 @@ func drawRecord(p *ui.Painter, r ui.Rect, bmp *ui.Bitmap, angle float32) {
 	// The label, turning: clipped still, its cover turning inside.
 	lr := d * 0.18
 	label := ui.Rect{X: cx - lr, Y: cy - lr, W: 2 * lr, H: 2 * lr}
-	p.Fill(label, radixGreen(false, 9), lr)
+	p.Fill(label, accent(false, 9), lr)
 	if bmp != nil {
 		p.Clip(label, lr, func() {
 			p.Transform(ui.Rotation(angle), cx, cy, func() { p.Image(bmp, label, ui.Cover) })
 		})
 	}
-	p.Stroke(label, radixInk.Alpha(0.35), lr, 1.5)
+	p.Stroke(label, ink.Alpha(0.35), lr, 1.5)
 	// The spindle hole.
-	p.Fill(ui.Rect{X: cx - 2.5, Y: cy - 2.5, W: 5, H: 5}, radixSage(true, 1), 2.5)
+	p.Fill(ui.Rect{X: cx - 2.5, Y: cy - 2.5, W: 5, H: 5}, neutral(true, 1), 2.5)
 }
 
 // dailyNote says, shortly, how the day's songs are picked.

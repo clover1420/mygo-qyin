@@ -15,8 +15,8 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 	theme := *c.Theme()
 	theme.Dark = d.dark
 	c.SetTheme(&theme)
-	background, text := radixGray(d.dark, 2), radixGray(d.dark, 12)
-	muted := radixGray(d.dark, 11)
+	background, text := neutral(d.dark, 2), neutral(d.dark, 12)
+	muted := neutral(d.dark, 11)
 	c.Root().Background(background)
 	c.OnShortcut(0, ui.KeyEscape, d.closeControls)
 	tr := d.a.pl.Current()
@@ -33,11 +33,11 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 	a.tickTimes(c)
 	ui.Column(c.Key(identity)).Fill().Padding(12).Gap(8).TextColor(text).Children(func() {
 		ui.Row(c).Height(64).Gap(12).AlignItems(ui.Center).Children(func() {
-			cover := ui.Box(c.Key("artwork")).Size(64, 64).Shrink(0).Radius(7).Background(radixGray(d.dark, 4)).Center()
+			cover := ui.Box(c.Key("artwork")).Size(64, 64).Shrink(0).Radius(8).Background(neutral(d.dark, 4)).Center()
 			bmp := bitmap(a.art.get(qqmusic.Sized(tr.Album.PicURL, 120), false))
 			cover.Children(func() {
 				if bmp != nil {
-					ui.Image(c, bmp).Size(64, 64).Fit(ui.Cover).Radius(7)
+					ui.Image(c, bmp).Size(64, 64).Fit(ui.Cover).Radius(8)
 				} else {
 					ui.Icon(c, iconNote).Size(24, 24).TextColor(muted)
 				}
@@ -61,7 +61,7 @@ func (d *taskbarLyrics) controlsView(c *ui.Context) {
 			})
 		})
 		ui.Column(c).Gap(0).Children(func() {
-			a.scrubber(c.Key("progress"), &d.scrub, radixGray(d.dark, 6), text, 14, radixGreen(d.dark, 9)).FillWidth()
+			a.scrubber(c.Key("progress"), &d.scrub, neutral(d.dark, 6), text, 14, accent(d.dark, 9)).FillWidth()
 			position := pl.Position()
 			if d.scrub.active || d.scrub.held {
 				position = secs(d.scrub.v)
