@@ -172,7 +172,6 @@ type app struct {
 	quitting              bool
 
 	settings                      settings
-	settingsWin                   *mygo.Window
 	settingsPane                  ui.Handle
 	settingsDirty                 bool   // a slider of the settings is held, its value not yet kept
 	settingsOpen                  bool   // the settings show over the window
@@ -206,9 +205,6 @@ func (a *app) post(fn func()) {
 func (a *app) redraw() {
 	if a.win != nil {
 		invalidateWindow(a.win)
-	}
-	if a.settingsWin != nil {
-		invalidateWindow(a.settingsWin)
 	}
 	if a.notch != nil && a.notch.win != nil {
 		invalidateWindow(a.notch.win)

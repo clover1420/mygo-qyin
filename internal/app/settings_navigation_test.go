@@ -77,7 +77,7 @@ func TestAccountMenuOpensSettings(t *testing.T) {
 					t.Fatal(err)
 				}
 				tt.Frame()
-				if !a.settingsOpen || a.settingsWin != nil || a.accountOpen || a.login.open {
+				if !a.settingsOpen || a.accountOpen || a.login.open {
 					t.Fatalf("settings did not open over the window: open %v", a.settingsOpen)
 				}
 				if a.route != route || len(a.history) != 0 {
@@ -161,28 +161,6 @@ func TestSettingsPageSpaceTogglesControl(t *testing.T) {
 	var saved settings
 	if err := json.Unmarshal(b, &saved); err != nil || saved.HotComments != a.settings.HotComments {
 		t.Fatalf("keyboard change was not saved: %v", err)
-	}
-}
-
-// The directory picker must be attached to whichever window hosts settings.
-func TestCacheDirectoryPickerHost(t *testing.T) {
-	picker := pickCacheDirectory
-	defer func() { pickCacheDirectory = picker }()
-	a := newTestApp()
-	a.win = &mygo.Window{}
-	for _, detached := range []bool{false, true} {
-		parent := a.win
-		if detached {
-			a.settingsWin = &mygo.Window{}
-			parent = a.settingsWin
-		}
-		pickCacheDirectory = func(opts mygo.OpenDialogOptions) ([]string, error) {
-			if opts.Parent != parent {
-				t.Fatal("picker was attached to the wrong settings host")
-			}
-			return nil, nil
-		}
-		a.chooseCacheDirectory()
 	}
 }
 

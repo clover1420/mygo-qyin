@@ -43,7 +43,6 @@ func TestDesktopLyricsPausedSeekRedraw(t *testing.T) {
 	a.pl.TogglePlay()
 	a.settings.DesktopLyrics = true
 	a.win = &mygo.Window{}
-	a.settingsWin = &mygo.Window{}
 	a.desktopLyrics = &desktopLyrics{a: a, win: &mygo.Window{}}
 	defer func(f func(*mygo.Window)) { invalidateWindow = f }(invalidateWindow)
 	seen := map[*mygo.Window]int{}
@@ -52,7 +51,7 @@ func TestDesktopLyricsPausedSeekRedraw(t *testing.T) {
 	sessionAfter = func(time.Duration, func()) {}
 	a.pl.Changed = a.playerChanged
 	a.pl.Seek(12 * time.Second)
-	if seen[a.desktopLyrics.win] == 0 || seen[a.win] == 0 || seen[a.settingsWin] == 0 {
+	if seen[a.desktopLyrics.win] == 0 || seen[a.win] == 0 {
 		t.Fatal("paused seek did not redraw both windows")
 	}
 	a.settings.DesktopLyrics = false

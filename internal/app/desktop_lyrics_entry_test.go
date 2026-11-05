@@ -74,7 +74,7 @@ func TestDesktopLyricsPlayerEntryLockAndUnlock(t *testing.T) {
 		if !a.settings.DesktopLyrics || !restored.DesktopLyrics || a.settings.DesktopLyricsLocked != locked || restored.DesktopLyricsLocked != locked {
 			t.Fatalf("right click did not persist enabled lyrics with locked=%t", locked)
 		}
-		if tt.Menu() != nil || a.settingsWin != nil {
+		if tt.Menu() != nil || a.settingsOpen {
 			t.Fatal("right click opened a menu or Settings")
 		}
 	}
@@ -142,7 +142,7 @@ func TestTaskbarLyricsPlayerEntryToggleAndRightClick(t *testing.T) {
 				if a.settings.DesktopLyricsLocked != locked || restored.DesktopLyricsLocked != locked {
 					t.Fatalf("taskbar right click changed desktop locked=%t", locked)
 				}
-				if tt.Menu() != nil || a.settingsWin != nil {
+				if tt.Menu() != nil || a.settingsOpen {
 					t.Fatal("taskbar right click opened a menu or Settings")
 				}
 			}

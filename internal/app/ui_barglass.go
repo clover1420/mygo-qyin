@@ -145,10 +145,8 @@ func (g barGlass) PaintMaterial(p *ui.Painter, box ui.Rect, radii [4]float32) {
 	}})
 }
 
-// How the glass of the bar sits: clear of the page's sides and its foot, with
-// its cover inset from the capsule's edge.
+// How the glass of the bar sits: clear of the page's sides and its foot.
 const (
-	glassBarSide  = 14
-	glassBarFoot  = 12
-	glassBarInset = 12
+	glassBarSide = 14
+	glassBarFoot = 12
 )

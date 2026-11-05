@@ -53,9 +53,8 @@ func (a *app) cacheMeasured(cache *player.Cache, n int64) {
 		return
 	}
 	a.cacheUsed = n
-	if a.settingsWin != nil {
-		a.settingsWin.Invalidate()
-	}
+	// The settings, a pane over the window, show how much is kept.
+	a.redraw()
 }
 
 func (a *app) clearCache() {
