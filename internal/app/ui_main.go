@@ -76,6 +76,7 @@ func (a *app) view(c *ui.Context) {
 			})
 		})
 		a.nowPlayingLayer(c, npOpen, npSettled)
+		a.splash(c)
 	})
 	a.loginDialog(c)
 	a.playlistNameDialog(c)

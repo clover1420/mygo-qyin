@@ -78,6 +78,8 @@ type app struct {
 	forward []route // the pages gone back from, the last first to go to
 	pageDir int     // the way the page last changed: 1 in, -1 back, 0 across
 	pageIn  bool    // whether the page changed at all, rather than a tab of it
+	splashed bool      // the record has come in, as the app started
+	splashAt time.Time // when it started to
 
 	profile      *qqmusic.Profile
 	mine, saved  []qqmusic.Playlist // the listener's playlists: made, and saved

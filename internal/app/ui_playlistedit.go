@@ -313,9 +313,9 @@ func (a *app) playlistNameDialog(c *ui.Context) {
 	d := &a.naming
 	ui.DialogBase(c.Key("playlist-name"), &d.open, func(backdrop, panel ui.Element) {
 		backdrop.Background(ink.Alpha(0.35))
-		panel.Width(360).Padding(24).Radius(20).Gap(16).
-			Background(p.bg).Border(1, p.hairline).Shadow(0, 24, 60, -12, ink.Alpha(0.4)).
-			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
+		panel.Width(360).Padding(24).Gap(16)
+		a.pane(panel, 20, false)
+		panel.Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
 		title, action := "新建歌单", "创建"
 		if d.rename != 0 {
 			title, action = "重命名歌单", "保存"
@@ -349,9 +349,9 @@ func (a *app) deletePlaylistDialog(c *ui.Context) {
 	d := &a.deleting
 	ui.DialogBase(c.Key("playlist-delete"), &d.open, func(backdrop, panel ui.Element) {
 		backdrop.Background(ink.Alpha(0.35))
-		panel.Width(360).Padding(24).Radius(20).Gap(8).
-			Background(p.bg).Border(1, p.hairline).Shadow(0, 24, 60, -12, ink.Alpha(0.4)).
-			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
+		panel.Width(360).Padding(24).Gap(8)
+		a.pane(panel, 20, false)
+		panel.Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
 		title, action := "删除歌单", "删除"
 		message := "确定删除歌单“" + d.name + "”吗？删除后无法恢复。"
 		if d.saved {

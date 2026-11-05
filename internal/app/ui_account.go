@@ -201,9 +201,9 @@ func (a *app) loginDialog(c *ui.Context) {
 	l := &a.login
 	ui.DialogBase(c.Key("login"), &l.open, func(backdrop, panel ui.Element) {
 		backdrop.Background(ink.Alpha(0.35))
-		panel.Width(340).Padding(28, 28, 26, 28).Radius(20).Gap(6).AlignItems(ui.Center).
-			Background(p.bg).Border(1, p.hairline).Shadow(0, 24, 60, -12, ink.Alpha(0.4)).
-			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
+		panel.Width(340).Padding(28, 28, 26, 28).Gap(6).AlignItems(ui.Center)
+		a.pane(panel, 20, false)
+		panel.Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.94}, Exit: &ui.Motion{Scale: 0.96}})
 		channel := "QQ"
 		if l.wechat {
 			channel = "微信"
@@ -315,11 +315,10 @@ func (a *app) accountRow(c *ui.Context) {
 // of the volume popover: the listener's own page and the settings, then
 // signing out.
 func (a *app) accountMenu(c *ui.Context, row ui.Element) {
-	pop := popoverColors(a.pal.dark)
 	ui.PopoverBase(c.Key("account-menu"), row, &a.accountOpen, func(panel ui.Element) {
-		panel.AttachTo(row, ui.AnchorTopStart, ui.AnchorBottomStart).Margin(0, 0, 6, 0).Padding(5).Gap(1).
-			Radius(14).Background(pop.fill).Border(0.5, pop.edge).Shadow(0, 8, 24, -4, ink.Alpha(0.2)).
-			Role(ui.RoleMenu).FocusGroup(ui.Vertical).Label("账户").TransformOrigin(0.5, 1).
+		panel.AttachTo(row, ui.AnchorTopStart, ui.AnchorBottomStart).Margin(0, 0, 6, 0).Padding(5).Gap(1)
+		a.pane(panel, 14, false)
+		panel.Role(ui.RoleMenu).FocusGroup(ui.Vertical).Label("账户").TransformOrigin(0.5, 1).
 			Transition(ui.ElementTransition{Animation: &ui.Snappy, Enter: &ui.Motion{Scale: 0.96, Y: 4}, Exit: &ui.Motion{Scale: 0.98}})
 		if w := row.Bounds().W; w > 0 {
 			panel.Width(w)
@@ -348,7 +347,7 @@ func (a *app) accountMenu(c *ui.Context, row ui.Element) {
 			a.openSettings()
 		}
 		if a.profile != nil {
-			ui.Box(c).Height(0.5).Margin(4, 8).Background(pop.edge)
+			ui.Box(c).Height(0.5).Margin(4, 8).Background(a.inkOn(false).line)
 			if a.menuItem(c, iconSignOut, "退出登录", "").Clicked() {
 				a.accountOpen = false
 				a.signOut()

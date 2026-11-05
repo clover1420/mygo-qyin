@@ -158,9 +158,8 @@ func (a *app) searchField(c *ui.Context) {
 				width = field.Bounds().W
 			}
 			panel.AttachTo(field, ui.AnchorBottomStart, ui.AnchorTopStart).
-				Width(width).Padding(6).Margin(8, 0, 0, 0).Radius(14).
-				Background(p.bg).Border(1, p.hairline).
-				Shadow(0, 8, 24, -4, ink.Alpha(0.2))
+				Width(width).Padding(6).Margin(8, 0, 0, 0)
+			a.pane(panel, 14, false)
 			option := func(key, label string) ui.Element {
 				row := cb.Item(key).MinHeight(36).Padding(6, 10).Gap(10).Radius(8).AlignItems(ui.Center).Label(label)
 				if row.Highlighted() {
