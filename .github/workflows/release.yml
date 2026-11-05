@@ -2,7 +2,8 @@
 # Linux, signs their updates, and uploads them to a draft
 # release of the tag, which is published by hand: installed apps update
 # to it then.
-# Before that, the tag's code is vetted and tested.
+# Before that, the tag's code is vetted and tested, and a prerelease script
+# trims the draft to the installers and portable archives people download.
 name: Release
 
 on:
@@ -83,13 +84,20 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y nsis
       # macOS uses MyGo's default ad-hoc signature, without Developer ID
       # credentials or notarization. Update archives are signed separately.
-      - name: Enable delta updates for the release
-        # Local builds keep updates.deltas = 0; only release uploads need deltas.
-        run: |
-          jq '.updates.deltas = 3' mygo.json > mygo.json.tmp
-          mv mygo.json.tmp mygo.json
       - name: Build and upload
         env:
           GH_TOKEN: ${{ github.token }}
           MYGO_UPDATER_PRIVATE_KEY: ${{ secrets.MYGO_UPDATER_PRIVATE_KEY }}
         run: go tool mygo build -platform "${{ matrix.platform }}" -upload
+
+  prerelease:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Keep installers and portable archives
+        run: bash scripts/prerelease.sh "$GITHUB_REF_NAME"
