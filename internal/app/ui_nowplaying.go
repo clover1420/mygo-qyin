@@ -57,6 +57,10 @@ func (a *app) nowPlayingLayer(c *ui.Context, open, settled bool) {
 	layer.AnimatePose(pose, npSpring)
 	if !open && settled || a.pl.Current() == nil {
 		// Closed: nothing to paint or click.
+		// Its backdrop goes with it: the canvas, and the GPU
+		// texture it holds, would otherwise stay for the rest of
+		// the session, invisible.
+		a.backdropCache = backdropCache{}
 		layer.Invisible()
 		a.queueAt, a.wallState.track = -1, 0
 		return
