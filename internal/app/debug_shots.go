@@ -51,7 +51,7 @@ func init() {
 						a.settings.SetProgressEffect(progressSmoke)
 					}
 					a.settings.Notch = os.Getenv("NM_NOTCH") != "0"
-					a.notch.setEnabled(a.settings.Notch)
+					a.notch.SetEnabled(a.settings.Notch)
 				})
 				for range 40 {
 					var n int
@@ -219,11 +219,11 @@ func init() {
 			}
 			time.Sleep(5 * time.Second)
 			mygo.RunOnMain(func() {
-				x, y, w, h := windowFrame(a.notch.win.NativeHandle())
+				x, y, w, h := windowFrame(a.notch.Win.NativeHandle())
 				println("notch frame", int(x), int(y), int(w), int(h))
 			})
 			shot("1-home", a.win)
-			shot("1-notch-idle", a.notch.win)
+			shot("1-notch-idle", a.notch.Win)
 			step(0, func() { a.open(route{Page: pageCharts}) })
 			time.Sleep(time.Second)
 			shot("2-charts", a.win)
@@ -238,10 +238,10 @@ func init() {
 			})
 			time.Sleep(5 * time.Second)
 			shot("4-playing", a.win)
-			shot("4-notch-compact", a.notch.win)
-			step(0, func() { a.notch.open = true; a.notch.lastInside = time.Now().Add(time.Hour) })
+			shot("4-notch-compact", a.notch.Win)
+			step(0, func() { a.notch.Open = true; a.notch.LastInside = time.Now().Add(time.Hour) })
 			time.Sleep(2 * time.Second)
-			shot("5-notch-open", a.notch.win)
+			shot("5-notch-open", a.notch.Win)
 			step(0, func() { a.nowPlaying = true })
 			time.Sleep(4 * time.Second)
 			shot("6-now-playing", a.win)

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"time"
-
 	"github.com/egoist/mygo/ui"
 
 	"lilt/internal/qqmusic"
@@ -26,45 +24,12 @@ func (a *app) cover(c *ui.Context, url string, px int, size, radius float32) ui.
 	return box
 }
 
-// bitmap returns the cover of art, nil while it loads.
-func bitmap(art *artwork) *ui.Bitmap {
-	if art == nil {
-		return nil
-	}
-	return art.BMP
-}
-
 // backdrop returns the blurred cover of art, nil while it loads.
 func backdrop(art *artwork) *ui.Bitmap {
 	if art == nil {
 		return nil
 	}
 	return art.Backdrop
-}
-
-// artFade is how an artwork fades in over its placeholder.
-var artFade = ui.Animation{Duration: 320 * time.Millisecond}
-
-// artIn returns how far bmp has faded in on el, the element that shows it
-// or its placeholder: over a moment once it loads while el shows, and at
-// once if it was ready as el first showed.
-func artIn(el ui.Element, bmp *ui.Bitmap) float32 {
-	if bmp == nil {
-		return el.Jump("art", 0)
-	}
-	return el.AnimateTo("art", 1, artFade)
-}
-
-// artImage fills its parent with bmp, its corners rounded by radius, as
-// far faded in as in.
-func artImage(c *ui.Context, bmp *ui.Bitmap, radius, in float32) {
-	if bmp == nil || in <= 0 {
-		return
-	}
-	img := ui.Image(c, bmp).Absolute().Top(0).Left(0).Right(0).Bottom(0).Fit(ui.Cover).Radius(radius)
-	if in < 1 {
-		img.Opacity(in)
-	}
 }
 
 // paged is how a list loaded a page at a time is coming along.

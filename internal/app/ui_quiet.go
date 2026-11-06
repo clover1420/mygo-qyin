@@ -104,20 +104,6 @@ func (a *app) quietShown(c *ui.Context, el ui.Element, tr *qqmusic.Track, lines 
 	return dim, cm != nil
 }
 
-// quietFaded is how much of the lyrics shows under a hot comment.
-const quietFaded = 0.06
-
-// quietUnder fades e, the lyrics, under a hot comment as far in as dim,
-// and hides it once the comment is all in.
-func quietUnder(e ui.Element, dim float32) ui.Element {
-	if dim > 0.98 {
-		e.Invisible()
-	} else if dim > 0.01 {
-		e.Opacity(1 - (1-quietFaded)*dim)
-	}
-	return e
-}
-
 // quietCard shows the hot comment kept, top down the pane, as far in as
 // dim.
 func (a *app) quietCard(c *ui.Context, dim, top float32) {

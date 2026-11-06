@@ -1,22 +1,16 @@
 package app
 
+import "lilt/internal/lyricsui"
+
 const (
-	lyricsDesktop = "desktop"
-	lyricsTaskbar = "taskbar"
+	lyricsDesktop = lyricsui.DesktopMode
+	lyricsTaskbar = lyricsui.TaskbarMode
 )
 
 // lyricsMode remembers the chosen location even while lyrics are switched off.
-// Before the location preference existed, an enabled taskbar selected that mode.
-func lyricsMode(s settings) string {
-	if supportsTaskbarLyrics() && (s.LyricsMode == lyricsTaskbar || s.LyricsMode == "" && s.TaskbarLyrics) {
-		return lyricsTaskbar
-	}
-	return lyricsDesktop
-}
+func lyricsMode(s settings) string { return lyricsui.Mode(s) }
 
-func lyricsEnabled(s settings) bool {
-	return supportsDesktopLyrics() && s.DesktopLyrics || supportsTaskbarLyrics() && s.TaskbarLyrics
-}
+func lyricsEnabled(s settings) bool { return lyricsui.Enabled(s) }
 
 // normalizeLyrics migrates independent switches to a single supported location.
 func normalizeLyrics(s *settings) {

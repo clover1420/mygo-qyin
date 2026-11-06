@@ -8,6 +8,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/art"
 	"lilt/internal/theme"
 )
 
@@ -150,6 +151,87 @@ func PillButton(c *ui.Context, icon *ui.SVG, label string, bg, fg ui.Color) ui.E
 		ui.Text(c, label).FontSize(14).FontWeight(600).SingleLine()
 	})
 	return b
+}
+
+// Bitmap returns the cover of a, nil while it loads.
+func Bitmap(a *art.Artwork) *ui.Bitmap {
+	if a == nil {
+		return nil
+	}
+	return a.BMP
+}
+
+// ArtFade is how an artwork fades in over its placeholder.
+var ArtFade = ui.Animation{Duration: 320 * time.Millisecond}
+
+// ArtIn returns how far bmp has faded in on el, the element that shows it
+// or its placeholder: over a moment once it loads while el shows, and at
+// once if it was ready as el first showed.
+func ArtIn(el ui.Element, bmp *ui.Bitmap) float32 {
+	if bmp == nil {
+		return el.Jump("art", 0)
+	}
+	return el.AnimateTo("art", 1, ArtFade)
+}
+
+// ArtImage fills its parent with bmp, its corners rounded by radius, as
+// far faded in as in.
+func ArtImage(c *ui.Context, bmp *ui.Bitmap, radius, in float32) {
+	if bmp == nil || in <= 0 {
+		return
+	}
+	img := ui.Image(c, bmp).Absolute().Top(0).Left(0).Right(0).Bottom(0).Fit(ui.Cover).Radius(radius)
+	if in < 1 {
+		img.Opacity(in)
+	}
+}
+
+// EdgeShown returns how much of a scroll edge shows over el: fully while
+// content is under its bar, and none at rest, as AppKit shows its edges.
+func EdgeShown(el ui.Element, under bool) float32 {
+	target := float32(0)
+	if under {
+		target = 1
+	}
+	return el.AnimateTo("shown", target, ui.Animation{Duration: 180 * time.Millisecond})
+}
+
+// Count formats a count as people in China read it, to a tenth of a 万.
+func Count(n int) string {
+	if n >= 1e4 && n < 1e6 {
+		return fmt.Sprintf("%.1f万", float64(n)/1e4)
+	}
+	return Plays(float64(n))
+}
+
+// Megabytes says n bytes in megabytes, or gigabytes once there are many.
+func Megabytes(n int64) string {
+	if n >= 1<<30 {
+		return fmt.Sprintf("%.2f GB", float64(n)/(1<<30))
+	}
+	return fmt.Sprintf("%d MB", n>>20)
+}
+
+// RelativeTime says when something happened, as NetEase does: in minutes
+// or hours while recent, then by the day.
+func RelativeTime(t, now time.Time) string {
+	d := now.Sub(t)
+	y1, m1, d1 := t.Date()
+	y2, m2, d2 := now.Date()
+	switch {
+	case d < time.Minute:
+		return "刚刚"
+	case d < time.Hour:
+		return fmt.Sprintf("%d分钟前", int(d/time.Minute))
+	case y1 == y2 && m1 == m2 && d1 == d2:
+		return t.Format("15:04")
+	case now.AddDate(0, 0, -1).Format("20060102") == t.Format("20060102"):
+		return "昨天 " + t.Format("15:04")
+	case y1 == y2:
+		return fmt.Sprintf("%d月%d日", m1, d1)
+	default:
+		return fmt.Sprintf("%d年%d月%d日", y1, m1, d1)
+	}
 }
 
 // Clock formats a duration as minutes and seconds.

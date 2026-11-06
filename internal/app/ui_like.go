@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"math"
 	"time"
 
@@ -71,120 +70,6 @@ func (a *app) moreLikedAlbums(d *likedAlbumData) {
 			d.page.loaded, d.page.more = true, more && len(albums) > 0
 		})
 	}()
-}
-
-func (a *app) likedPlaylistPage(c *ui.Context, id int64) {
-	pl := a.playlists[id]
-	content := route{Page: pagePlaylist, ID: id}
-	header := func(c *ui.Context) {
-		a.likedCollectionHeader(c, id)
-		ui.Row(c).AlignItems(ui.Center).Gap(12).Margin(0, 0, 18, 0).Children(func() {
-			tab := a.route.Tab
-			if segmented(c.Key("liked-kind"), &tab, "单曲", "专辑") {
-				r := a.route
-				r.Tab = tab
-				a.show(r)
-			}
-		})
-	}
-	if a.route.Tab == 1 {
-		d := a.likedAlbums
-		if d == nil {
-			a.loadLikedAlbums(false)
-			d = a.likedAlbums
-		}
-		a.listPageWithKey(c, content, &a.likedScroll.albums, func() {
-			header(c)
-			if d == nil {
-				return
-			}
-			a.albumGrid(c, d.albums)
-			if !d.page.loaded && d.page.loading {
-				a.playlistCardsSkeleton(c, a.pageShimmer(c), a.columns(c, 156), 156, false)
-				return
-			}
-			a.pageFoot(c, &d.page, func() { a.moreLikedAlbums(d) })
-			if d.page.loaded && len(d.albums) == 0 {
-				a.empty(c, "暂无收藏专辑")
-			}
-		})
-		return
-	}
-	if pl == nil {
-		if a.loadingPl[id] {
-			a.listPageWithKey(c, content, &a.likedScroll.songs.ListState, func() {
-				a.underTop, a.underBottom = false, true
-				a.trackSkeletonRows(c, a.pageShimmer(c), true, header)
-			})
-		} else {
-			a.listPageWithKey(c, content, &a.likedScroll.songs.ListState, func() {
-				header(c)
-				a.centered(c, a.plErr[id], func() { a.loadPlaylist(id, false) })
-			})
-		}
-		return
-	}
-	a.trackRowsWithKey(c, content, &a.likedScroll.songs, pl.Tracks, true, header)
-}
-
-func (a *app) likedCollectionHeader(c *ui.Context, id int64) {
-	p := a.pal
-	pl := a.playlists[id]
-	loaded := pl != nil
-	if pl == nil {
-		for i := range a.mine {
-			if a.mine[i].ID == id {
-				pl = &a.mine[i]
-				break
-			}
-		}
-	}
-	if pl == nil {
-		pl = &qqmusic.Playlist{ID: id, Name: "我喜欢"}
-	}
-	count := pl.TrackCount
-	if loaded {
-		count = len(pl.Tracks)
-	}
-	meta := fmt.Sprintf("%d 首单曲", count)
-	if a.route.Tab == 1 {
-		meta = "正在加载专辑"
-		if d := a.likedAlbums; d != nil {
-			switch {
-			case d.page.loaded:
-				more := ""
-				if d.page.more {
-					more = "+"
-				}
-				meta = fmt.Sprintf("%d%s 张专辑", len(d.albums), more)
-			case d.page.err != "":
-				meta = "专辑暂不可用"
-			}
-		}
-	}
-	a.collectionHeader(c, pl, "收藏", meta, func() {
-		if a.route.Tab == 1 {
-			d := a.likedAlbums
-			pillButton(c.Key("refresh-liked-albums"), iconReload, "刷新", p.Hover.Over(p.Bg), p.Text).
-				Label("刷新收藏专辑").Disabled(d == nil || d.page.loading).
-				OnClick(func() { a.loadLikedAlbums(true) })
-			return
-		}
-		pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Disabled(!loaded || len(pl.Tracks) == 0).
-			OnClick(func() {
-				if a.pl.Shuffle() {
-					a.pl.ToggleShuffle()
-				}
-				a.pl.PlayQueue(pl.Tracks, firstPlayable(pl.Tracks))
-			})
-		pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Disabled(!loaded || len(pl.Tracks) == 0).
-			OnClick(func() {
-				if !a.pl.Shuffle() {
-					a.pl.ToggleShuffle()
-				}
-				a.pl.PlayQueue(pl.Tracks, firstPlayable(pl.Tracks))
-			})
-	})
 }
 
 func (a *app) loadAlbumLike(d *albumData) {

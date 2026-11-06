@@ -1,14 +1,18 @@
-package app
+package nowplaying
 
 import (
 	"math"
 	"sync"
 	"time"
 
+	"lilt/internal/appui"
+	"lilt/internal/art"
+	"lilt/internal/player"
+	"lilt/internal/qqmusic"
+	"lilt/internal/theme"
+
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/shader"
-
-	"lilt/internal/qqmusic"
 )
 
 // The cover of Now Playing is a thing to touch. It tilts toward the
@@ -18,11 +22,11 @@ import (
 // for the one before, and the new cover comes in from the other side. A
 // fling too weak springs back. Another song played by the buttons, the
 // keys or the queue slides in the same way, the cover before sliding off.
-// Asked for less motion, it neither tilts nor swings, and a song coming
+// Asked for less motion, it neither tilts nor swings, and a song coming in
 // fades in over the one going.
 
-// coverState is the cover as the pointer and the trackpad move it.
-type coverState struct {
+// CoverState is the cover as the pointer and the trackpad move it.
+type CoverState struct {
 	off   ui.Point // where Draggable rests it, from its place
 	gen   int      // counts the flings, each cover after one a new element
 	flung int      // 1 flying off for the next song, -1 for the one before
@@ -86,10 +90,17 @@ var coverSlide = ui.Animation{Spring: ui.SpringOptions{Duration: 520 * time.Mill
 // trackpad that sends no momentum after it.
 const swipeRest = 140 * time.Millisecond
 
-// npCover shows the cover of tr, size across, which the pointer tilts,
+// bitmap returns the cover of art, nil while it loads.
+func bitmap(a *art.Artwork) *ui.Bitmap {
+	if a == nil {
+		return nil
+	}
+	return a.BMP
+}
+
+// Cover shows the cover of tr, size across, which the pointer tilts,
 // drags and flings.
-func (a *app) npCover(c *ui.Context, tr *qqmusic.Track, art *artwork, size float32) {
-	cs, pl := &a.npCoverState, a.pl
+func Cover(c *ui.Context, pl *player.Player, cs *CoverState, tr *qqmusic.Track, coverArt *art.Artwork, size float32) {
 	far := size * 1.5 // where a cover flies off to
 	fling := func(dir int) {
 		cs.flung = dir
@@ -145,7 +156,7 @@ func (a *app) npCover(c *ui.Context, tr *qqmusic.Track, art *artwork, size float
 		}
 		if ev.Momentum {
 			if cs.swipe != 0 {
-				a.letSwipeGo(size, fling)
+				letSwipeGo(cs, size, fling)
 			}
 			return cs.decided
 		}
@@ -160,7 +171,7 @@ func (a *app) npCover(c *ui.Context, tr *qqmusic.Track, art *artwork, size float
 	})
 	if cs.swipe != 0 {
 		if c.Now().Sub(cs.swipeAt) >= swipeRest {
-			a.letSwipeGo(size, fling)
+			letSwipeGo(cs, size, fling)
 		} else {
 			c.After(swipeRest)
 		}
@@ -217,18 +228,18 @@ func (a *app) npCover(c *ui.Context, tr *qqmusic.Track, art *artwork, size float
 		if over {
 			scale *= 1.02
 		}
-		box := ui.Box(c).Fill().Radius(20).Shadow(0, 30, 60, -12, ink.Alpha(0.55))
+		box := ui.Box(c).Fill().Radius(20).Shadow(0, 30, 60, -12, theme.Ink.Alpha(0.55))
 		if math.Abs(float64(rx))+math.Abs(float64(ry)) > 0.05 {
 			// In depth only while tilted: flat, it draws as an image does.
 			box.RotateX(rx).RotateY(ry).Perspective(900)
 		}
 		box.AnimatePose(ui.Pose{Scale: scale}, ui.Animation{Spring: ui.SpringOptions{Duration: 600 * time.Millisecond, Bounce: 0.25}})
-		in := artIn(box, bitmap(art))
+		in := appui.ArtIn(box, bitmap(coverArt))
 		if in < 1 {
 			box.Background(white.Alpha(0.08))
 		}
 		box.Children(func() {
-			artImage(c, bitmap(art), 16, in)
+			appui.ArtImage(c, bitmap(coverArt), 16, in)
 			if shine > 0.01 {
 				ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).PassThrough().Draw(func(p *ui.Painter, r ui.Rect) {
 					glareShader().Draw(p, r, shader.Options{Radius: 16, Uniforms: map[string]any{
@@ -242,8 +253,7 @@ func (a *app) npCover(c *ui.Context, tr *qqmusic.Track, art *artwork, size float
 
 // letSwipeGo ends a trackpad's swipe: flung if it went far enough,
 // springing back if not.
-func (a *app) letSwipeGo(size float32, fling func(int)) {
-	cs := &a.npCoverState
+func letSwipeGo(cs *CoverState, size float32, fling func(int)) {
 	switch {
 	case cs.swipe < -size*0.3:
 		fling(1)

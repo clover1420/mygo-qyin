@@ -78,7 +78,7 @@ func TestWallPlaysTheCoverSwaying(t *testing.T) {
 		tt.Advance(time.Second)
 		tt.Frame()
 		r := find(t, tt, "歌005")
-		sway := r.X - (a.wallState.shown.X + a.wallState.pan.X + 5*wallPitch)
+		sway := r.X - (a.wallState.Shown.X + a.wallState.Pan.X + 5*wallPitch)
 		if sway > -12 && sway < 12 {
 			continue
 		}
@@ -101,13 +101,13 @@ func TestWallPlaysTheCoverSwaying(t *testing.T) {
 func TestWallGlidesAndStops(t *testing.T) {
 	a, tt := wallApp(t, 300, 0)
 	ws := &a.wallState
-	from := ws.shown.X
+	from := ws.Shown.X
 	r := find(t, tt, "歌003")
 	drag(tt, r, -240, 0)
 	tt.Advance(2 * time.Second)
 	tt.Frame()
-	if ws.shown.X > from-480 {
-		t.Errorf("thrown 240 DIPs, the wall went from %v to %v", from, ws.shown.X)
+	if ws.Shown.X > from-480 {
+		t.Errorf("thrown 240 DIPs, the wall went from %v to %v", from, ws.Shown.X)
 	}
 	// Thrown hard the other way, it stops with its first column in view.
 	drag(tt, r, 3000, 0)

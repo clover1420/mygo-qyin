@@ -23,6 +23,17 @@ type pageKey struct {
 
 func keyOf(r route) pageKey { return pageKey{page: r.Page, id: r.ID, query: r.Query} }
 
+func clamp01(v float32) float32 { return min(1, max(0, v)) }
+
+func lerp(a, b, t float32) float32 { return a + (b-a)*t }
+
+func b2f(b bool) float32 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 // pageLevel is how deep a page is: those of the sidebar, and what opens from
 // them.
 func pageLevel(r route) int {

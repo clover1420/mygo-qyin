@@ -25,14 +25,6 @@ var trayTemplate []byte
 //go:embed tray/tray.png
 var trayColor []byte
 
-// appIcons are where the app's icon shows on macOS, with their names: the
-// Dock and the menu bar, the Dock alone, or the menu bar alone.
-var appIcons = []struct{ id, label string }{
-	{"dock-and-menubar", "程序坞与菜单栏"},
-	{"dock", "仅程序坞"},
-	{"menubar", "仅菜单栏"},
-}
-
 // showsTray tells whether the app's icon shows in the menu bar or the
 // notification area.
 func showsTray(s settings) bool {

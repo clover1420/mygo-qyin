@@ -14,6 +14,7 @@ import (
 	"github.com/egoist/mygo/ui"
 
 	"lilt/internal/lyrics"
+	notchpkg "lilt/internal/notch"
 	"lilt/internal/qqmusic"
 )
 
@@ -32,7 +33,7 @@ func TestNotchLyricsFollowPausedSeek(t *testing.T) {
 	a.pl.TogglePlay()
 	a.pl.Seek(2 * time.Second)
 
-	n := &notch{a: a, w0: 200, h0: 32, winW: notchOpenW + 60, winH: 32 + notchOpenH + 30}
+	n := &notch{Deps: a.notchDeps(), W0: 200, H0: 32, WinW: notchOpenW + 60, WinH: 32 + notchOpenH + 30}
 	a.notch = n
 	var mainServices, notchServices ui.Services
 	main := ui.NewTester(func(c *ui.Context) {
@@ -42,8 +43,8 @@ func TestNotchLyricsFollowPausedSeek(t *testing.T) {
 	}, 400, 40)
 	compact := ui.NewTester(func(c *ui.Context) {
 		notchServices = c.Services()
-		n.view(c)
-	}, int(n.winW), int(n.winH))
+		n.View(c)
+	}, int(n.WinW), int(n.WinH))
 	main.Advance(time.Second)
 	compact.Advance(time.Second)
 	if !compact.HasText("第一句歌词") {
@@ -54,13 +55,13 @@ func TestNotchLyricsFollowPausedSeek(t *testing.T) {
 	}
 
 	// Route the real window notifications to the two headless windows.
-	a.win, n.win = &mygo.Window{}, &mygo.Window{}
+	a.win, n.Win = &mygo.Window{}, &mygo.Window{}
 	defer func(f func(*mygo.Window)) { invalidateWindow = f }(invalidateWindow)
 	invalidateWindow = func(w *mygo.Window) {
 		switch w {
 		case a.win:
 			mainServices.Invalidate()
-		case n.win:
+		case n.Win:
 			notchServices.Invalidate()
 		}
 	}
@@ -95,11 +96,11 @@ func TestNotchLyricTimer(t *testing.T) {
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "测试歌曲", Duration: 60000}})
 	a.pl.SetLyrics(lyrics.Build("[00:01.00]第一句歌词\n[00:04.00]第二句歌词", "", ""))
 	a.pl.Seek(2 * time.Second)
-	n := &notch{a: a}
+	n := &notch{Deps: a.notchDeps()}
 	builds := 0
 	tt := ui.NewTester(func(c *ui.Context) {
 		builds++
-		ui.Text(c, n.lyricText(c, a.pl.Current()))
+		ui.Text(c, n.LyricText(c, a.pl.Current()))
 	}, 360, 32)
 	tt.Frame()
 	before := builds
@@ -124,9 +125,9 @@ func TestNotchLyrics(t *testing.T) {
 			a.settings = defaultSettings()
 			a.settings.Notch, a.settings.NotchVirtual = true, true
 			a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "测试歌曲", Artists: []qqmusic.Artist{{Name: "测试歌手"}}, Duration: 60000}})
-			n := &notch{a: a, real: real, w0: 200, h0: 32, winW: notchOpenW + 60, winH: 32 + notchOpenH + 30}
+			n := &notch{Deps: a.notchDeps(), Real: real, W0: 200, H0: 32, WinW: notchOpenW + 60, WinH: 32 + notchOpenH + 30}
 			a.notch = n
-			tt := ui.NewTester(n.view, int(n.winW), int(n.winH))
+			tt := ui.NewTester(n.View, int(n.WinW), int(n.WinH))
 			settle := func() {
 				tt.Frame()
 				tt.Advance(time.Second)
@@ -144,11 +145,11 @@ func TestNotchLyrics(t *testing.T) {
 			}
 			if !real {
 				r, ok := tt.Find("第一句歌词")
-				if !ok || r.Y < 0 || r.Y+r.H > n.h0 || r.X < (n.winW-notchLyricsW)/2+30 {
+				if !ok || r.Y < 0 || r.Y+r.H > n.H0 || r.X < (n.WinW-notchLyricsW)/2+30 {
 					t.Fatalf("compact lyric overlaps the cover or leaves the notch: %+v", r)
 				}
 			}
-			n.open = true
+			n.Open = true
 			settle()
 			line, ok := tt.Find("第一句歌词")
 			title, titleOK := tt.Find("测试歌曲")
@@ -202,7 +203,7 @@ func TestNotchLyrics(t *testing.T) {
 			if !tt.HasText("第二句歌词") || tt.HasText("测试歌手") {
 				t.Fatal("resuming must replace the artist with the current lyric")
 			}
-			n.open = false
+			n.Open = false
 			settle()
 			if tt.HasText("第二句歌词") == real {
 				t.Fatal("closing did not restore the correct compact layout")
@@ -220,7 +221,7 @@ func TestNotchLyrics(t *testing.T) {
 			// Missing lyrics must not leave the previous song's line on screen.
 			a.pl.Cue([]qqmusic.Track{{ID: 8, Name: "无歌词歌曲", Duration: 60000}})
 			a.pl.SetLyrics(nil)
-			n.open = true
+			n.Open = true
 			settle()
 			if !tt.HasText("暂无歌词") || tt.HasText("第二句歌词") {
 				t.Fatal("old lyrics remained after changing tracks")
@@ -237,11 +238,11 @@ func TestNotchGreetsOnce(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	n := &notch{a: a, w0: 200, h0: 32, winW: notchOpenW + 60, winH: 240}
+	n := &notch{Deps: a.notchDeps(), W0: 200, H0: 32, WinW: notchOpenW + 60, WinH: 240}
 	a.notch = n
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "宝船", Duration: 200000}})
 	a.syncWindows()
-	if n.hello {
+	if n.Hello {
 		t.Fatal("greeted before the song played")
 	}
 	out := audio.NewPlayer(&silence{})
@@ -249,18 +250,18 @@ func TestNotchGreetsOnce(t *testing.T) {
 	a.pl.Attach(out)
 	defer out.Close()
 	a.syncWindows()
-	if !n.hello || !a.settings.NotchGreeted {
+	if !n.Hello || !a.settings.NotchGreeted {
 		t.Fatal("did not greet as the song played")
 	}
 
-	tt := ui.NewTester(n.view, int(n.winW), int(n.winH))
+	tt := ui.NewTester(n.View, int(n.WinW), int(n.WinH))
 	tt.Advance(time.Second)
 	tt.Frame()
 	if err := tt.Click("开启刘海播放器"); err != nil {
 		t.Fatal(err)
 	}
-	if !a.settings.Notch || n.hello {
-		t.Fatalf("kept: notch %v, greeting %v", a.settings.Notch, n.hello)
+	if !a.settings.Notch || n.Hello {
+		t.Fatalf("kept: notch %v, greeting %v", a.settings.Notch, n.Hello)
 	}
 
 	// Turned off again, it does not greet the next song.
@@ -268,7 +269,7 @@ func TestNotchGreetsOnce(t *testing.T) {
 	a.pl.Cue([]qqmusic.Track{{ID: 8, Name: "下一首", Duration: 200000}})
 	a.pl.Attach(out)
 	a.syncWindows()
-	if n.hello {
+	if n.Hello {
 		t.Error("greeted twice")
 	}
 }
@@ -282,33 +283,33 @@ func TestNotchGreetingKeptUnderPointer(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	n := &notch{a: a, real: true, w0: 185, h0: 32, winW: notchOpenW + 60, winH: 240}
+	n := &notch{Deps: a.notchDeps(), Real: true, W0: 185, H0: 32, WinW: notchOpenW + 60, WinH: 240}
 	a.notch = n
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "宝船", Duration: 200000}})
-	n.greet()
-	if !n.hello {
+	n.Greet()
+	if !n.Hello {
 		t.Fatal("did not greet")
 	}
 
-	defer func(f func() mygo.Point) { cursorPoint = f }(cursorPoint)
-	cursorPoint = func() mygo.Point {
-		return mygo.Point{X: int(n.screenX + n.winW/2 + 120), Y: int(n.screenY + n.h0 + 28)}
+	defer func(f func() mygo.Point) { notchpkg.CursorPoint = f }(notchpkg.CursorPoint)
+	notchpkg.CursorPoint = func() mygo.Point {
+		return mygo.Point{X: int(n.ScreenX + n.WinW/2 + 120), Y: int(n.ScreenY + n.H0 + 28)}
 	}
-	n.poll()
-	n.enteredAt = n.lastInside.Add(-time.Second) // as if it had rested there
-	n.poll()
-	if n.open {
+	n.Poll()
+	n.EnteredAt = n.LastInside.Add(-time.Second) // as if it had rested there
+	n.Poll()
+	if n.Open {
 		t.Fatal("opened the player over the greeting")
 	}
 
-	tt := ui.NewTester(n.view, int(n.winW), int(n.winH))
+	tt := ui.NewTester(n.View, int(n.WinW), int(n.WinH))
 	tt.Advance(time.Second)
 	tt.Frame()
 	if err := tt.Click("开启刘海播放器"); err != nil {
 		t.Fatal(err)
 	}
-	if !a.settings.Notch || n.hello {
-		t.Fatalf("kept: notch %v, greeting %v", a.settings.Notch, n.hello)
+	if !a.settings.Notch || n.Hello {
+		t.Fatalf("kept: notch %v, greeting %v", a.settings.Notch, n.Hello)
 	}
 }
 
@@ -326,21 +327,21 @@ func TestFirstUseFrames(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	n := &notch{a: a, real: true, w0: 185, h0: 32, winW: notchOpenW + 60, winH: 240}
+	n := &notch{Deps: a.notchDeps(), Real: true, W0: 185, H0: 32, WinW: notchOpenW + 60, WinH: 240}
 	a.notch = n
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "NAINAINAI", Artists: []qqmusic.Artist{{Name: "ATARASHII GAKKO!"}}, Duration: 193877}})
 	main := ui.NewTester(a.view, 1200, 800) // for the app's colors
 	main.Frame()
-	tt := ui.NewTester(n.view, int(n.winW), int(n.winH))
+	tt := ui.NewTester(n.View, int(n.WinW), int(n.WinH))
 	tt.Frame()
-	n.greet()
+	n.Greet()
 	for _, ms := range []int{120, 600} {
 		tt.Advance(time.Duration(ms) * time.Millisecond)
 		tt.Frame()
 		save(fmt.Sprintf("notch-hello-%d", ms), tt)
 	}
 
-	a.picked = pickedUp{id: 7, heard: "3分钟前在手机上听过"}
+	a.picked = pickedUp{ID: 7, Heard: "3分钟前在手机上听过"}
 	main.Advance(time.Second)
 	main.Frame()
 	save("pickup-bar", main)

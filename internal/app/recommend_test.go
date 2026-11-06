@@ -103,7 +103,7 @@ func TestSongShelfNavigationAndRefresh(t *testing.T) {
 	tt.Scroll(1000, 500, 0, 320)
 	tt.Advance(time.Second)
 	tt.Frame()
-	detailY := a.pageState().tracks.scroll.Y
+	detailY := a.pageState().tracks.Scroll.Y
 	if detailY <= 0 {
 		t.Fatal("detail did not scroll")
 	}
@@ -135,7 +135,7 @@ func TestSongShelfNavigationAndRefresh(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if a.route != detailRoute || len(a.route.Shelf.Tracks) != 30 || math.Abs(float64(a.pageState().tracks.scroll.Y-detailY)) > 1 {
+	if a.route != detailRoute || len(a.route.Shelf.Tracks) != 30 || math.Abs(float64(a.pageState().tracks.Scroll.Y-detailY)) > 1 {
 		t.Fatal("refresh replaced the previously opened shelf or its scroll position")
 	}
 }

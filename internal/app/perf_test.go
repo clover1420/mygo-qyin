@@ -159,9 +159,9 @@ func TestNowPlayingFrameBudget(t *testing.T) {
 	a.npPane = paneStage
 	a.settings.StageSparks = true
 	for _, s := range stageStyles {
-		a.settings.StageStyle = s.id
+		a.settings.StageStyle = s.ID
 		if n := framesAt(a, tt, 18*time.Second); n > 12 {
-			t.Errorf("the stage between lines, in %s: %d frames a second", s.label, n)
+			t.Errorf("the stage between lines, in %s: %d frames a second", s.Label, n)
 		}
 	}
 }

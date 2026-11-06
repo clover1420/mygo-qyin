@@ -208,10 +208,10 @@ func TestStageFrames(t *testing.T) {
 	}
 	for _, s := range stageStyles {
 		name := "stage.png"
-		if s.id != "" {
-			name = "stage-" + s.id + ".png"
+		if s.ID != "" {
+			name = "stage-" + s.ID + ".png"
 		}
-		stageFrames(t, s.id, filepath.Join(dir, name))
+		stageFrames(t, s.ID, filepath.Join(dir, name))
 	}
 }
 

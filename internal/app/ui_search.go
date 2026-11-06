@@ -6,8 +6,6 @@ import (
 	"net"
 	"strings"
 
-	"github.com/egoist/mygo/ui"
-
 	"lilt/internal/qqmusic"
 )
 
@@ -20,16 +18,6 @@ var (
 
 // searchLimit is how many results load at a time.
 const searchLimit = 20
-
-// searchKinds are the kinds of search, as their tabs show them.
-var searchKinds = []struct {
-	kind        qqmusic.SearchType
-	label, unit string
-}{
-	{qqmusic.SearchSongs, "单曲", "首单曲"},
-	{qqmusic.SearchArtists, "歌手", "位歌手"},
-	{qqmusic.SearchAlbums, "专辑", "张专辑"},
-}
 
 // searchData is what a search found, as far as its pages have loaded.
 type searchData struct {
@@ -156,107 +144,4 @@ func (a *app) rememberSearch(q string) {
 func (a *app) clearSearchHistory() {
 	a.settings.SearchHistory = nil
 	a.settings.Save()
-}
-
-func (a *app) searchPage(c *ui.Context) {
-	r := a.route
-	d := a.searches[r]
-	header := func(c *ui.Context) { a.searchHeader(c, d) }
-	more := func() { a.moreResults(r, d) }
-	if r.Kind == qqmusic.SearchSongs {
-		if !d.page.loaded && d.page.loading {
-			a.trackSkeleton(c, a.pageShimmer(c), true, header)
-			return
-		}
-		a.trackRows(c, d.res.Songs, true, header, func(c *ui.Context) {
-			a.pageFoot(c, &d.page, more)
-			a.searchEmpty(c, d)
-		})
-		return
-	}
-	a.scrollPage(c, func() {
-		header(c)
-		res := &d.res
-		switch r.Kind {
-		case qqmusic.SearchArtists:
-			ui.Grid(c).Columns(a.columns(c, 132)).GapX(20).GapY(28).Children(func() {
-				for i := range res.Artists {
-					a.artistCard(c.Key(res.Artists[i].ID), &res.Artists[i])
-				}
-			})
-		case qqmusic.SearchAlbums:
-			a.albumGrid(c, res.Albums)
-		case qqmusic.SearchUsers:
-			for i := range res.Users {
-				a.userRow(c.Key(res.Users[i].UserID), &res.Users[i])
-			}
-		case qqmusic.SearchPodcasts:
-			for i := range res.Podcasts {
-				a.podcastRow(c.Key(res.Podcasts[i].ID), &res.Podcasts[i])
-			}
-		}
-		if !d.page.loaded && d.page.loading {
-			a.playlistCardsSkeleton(c, a.pageShimmer(c), a.columns(c, 156), 156, false)
-			return
-		}
-		a.pageFoot(c, &d.page, more)
-		a.searchEmpty(c, d)
-	})
-}
-
-func (a *app) searchEmpty(c *ui.Context, d *searchData) {
-	if d.page.loaded && d.res.Len() == 0 {
-		a.empty(c, "没有找到相关结果")
-	}
-}
-
-// searchHeader is what was searched for, how many it found, and the tabs
-// of what it may look for instead.
-func (a *app) searchHeader(c *ui.Context, d *searchData) {
-	r := a.route
-	sub := "搜索"
-	at := 0
-	for i, k := range searchKinds {
-		if k.kind == r.Kind {
-			at = i
-			if d.page.loaded {
-				sub = fmt.Sprintf("搜索 · 找到 %d %s", d.res.Total, k.unit)
-			}
-		}
-	}
-	a.heading(c, "“"+r.Query+"”", sub)
-	ui.Row(c).Margin(0, 0, 18, 0).Children(func() {
-		labels := make([]string, len(searchKinds))
-		for i, k := range searchKinds {
-			labels[i] = k.label
-		}
-		if segmented(c.Key("kind"), &at, labels...) {
-			r.Kind = searchKinds[at].kind
-			a.show(r)
-		}
-	})
-}
-
-// artistCard is an artist's round photo over their name, opening their page.
-func (a *app) artistCard(c *ui.Context, ar *qqmusic.ArtistProfile) {
-	p := a.pal
-	card := ui.ButtonBase(c).Column().Gap(10).AlignItems(ui.Stretch).FocusRing(false).Label(ar.Name)
-	hovered := card.Hovered()
-	card.Children(func() {
-		photo := ar.Avatar
-		if photo == "" {
-			photo = ar.PicURL
-		}
-		art := ui.Box(c).AspectRatio(1).Radius(999)
-		if hovered {
-			art.Shadow(0, 12, 28, -6, p.CardShade)
-		} else {
-			art.Shadow(0, 2, 8, -2, p.CardShade)
-		}
-		art.Children(func() { a.coverFill(c, photo, 400, 999) })
-		ui.Text(c, ar.Name).FontSize(13).FontWeight(500).SingleLine().AlignSelf(ui.Center)
-	})
-	if card.Clicked() {
-		a.open(route{Page: pageArtist, ID: ar.ID})
-	}
 }

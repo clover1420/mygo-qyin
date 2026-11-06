@@ -8,6 +8,18 @@ import (
 )
 
 // songShelfPager keeps full pages at the end by overlapping the preceding page.
+// The exported methods let the pages read and page a shelf without owning
+// its state, which the app keeps for its maps and tests.
+func (p *songShelfPager) Pages() int                   { return p.pages() }
+func (p *songShelfPager) Start() int                   { return p.start() }
+func (p *songShelfPager) Size() int                    { return p.size }
+func (p *songShelfPager) Page() int                    { return p.page }
+func (p *songShelfPager) Layout(total, size int)       { p.layout(total, size) }
+func (p *songShelfPager) Move(delta int) bool          { return p.move(delta) }
+func (p *songShelfPager) Scroll(ev ui.InputEvent) bool { return p.scroll(ev) }
+func (p *songShelfPager) Previous() *ui.Handle         { return &p.previous }
+func (p *songShelfPager) Next() *ui.Handle             { return &p.next }
+
 type songShelfPager struct {
 	page, size, total int
 	previous, next    ui.Handle

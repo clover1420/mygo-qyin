@@ -91,16 +91,16 @@ func TestTiltSplitsAtPunctuation(t *testing.T) {
 	units := stageUnits(ws)
 	for n := 1; n <= min(4, len(units)); n++ {
 		parts := splitParts(ws, units, n)
-		if len(parts) != n || parts[0].from != 0 || parts[n-1].to != len(ws) {
+		if len(parts) != n || parts[0].From != 0 || parts[n-1].To != len(ws) {
 			t.Fatalf("%d parts: %+v", n, parts)
 		}
 		for i := 1; i < n; i++ {
-			if parts[i].from != parts[i-1].to || parts[i].from >= parts[i].to {
+			if parts[i].From != parts[i-1].To || parts[i].From >= parts[i].To {
 				t.Fatalf("%d parts: %+v", n, parts)
 			}
 		}
 	}
-	if parts := splitParts(ws, units, 2); parts[0].to != 7 {
-		t.Errorf("split at %d, not after 星，", parts[0].to)
+	if parts := splitParts(ws, units, 2); parts[0].To != 7 {
+		t.Errorf("split at %d, not after 星，", parts[0].To)
 	}
 }

@@ -22,9 +22,19 @@ var (
 	playerFeedback = appui.PlayerFeedback
 	segmented      = appui.Segmented
 
-	clock    = appui.Clock
-	plays    = appui.Plays
-	greeting = appui.Greeting
+	artIn    = appui.ArtIn
+	artImage = appui.ArtImage
+	artFade  = appui.ArtFade
+	bitmap   = appui.Bitmap
+
+	edgeShown = appui.EdgeShown
+
+	clock       = appui.Clock
+	plays       = appui.Plays
+	count       = appui.Count
+	greeting    = appui.Greeting
+	megabytes   = appui.Megabytes
+	commentTime = appui.RelativeTime
 )
 
 var (

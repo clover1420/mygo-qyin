@@ -201,8 +201,8 @@ func (a *app) redraw() {
 	if a.win != nil {
 		invalidateWindow(a.win)
 	}
-	if a.notch != nil && a.notch.win != nil {
-		invalidateWindow(a.notch.win)
+	if a.notch != nil && a.notch.Win != nil {
+		invalidateWindow(a.notch.Win)
 	}
 	if d := a.desktopLyrics; d != nil && d.Win != nil && a.settings.DesktopLyrics {
 		invalidateWindow(d.Win)

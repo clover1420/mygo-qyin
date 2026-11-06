@@ -1,10 +1,6 @@
 package app
 
 import (
-	"fmt"
-	"slices"
-	"strings"
-
 	"github.com/egoist/mygo/ui"
 
 	"lilt/internal/qqmusic"
@@ -93,15 +89,6 @@ type artistData struct {
 	eventsBefore  int64 // the time of the last event loaded, the next page's start
 	following     bool  // a follow or unfollow is on its way
 }
-
-// What an artist's page lists: their songs, the most popular or the
-// newest, their albums, or their events.
-const (
-	artistHot = iota
-	artistLatest
-	artistAlbums
-	artistEvents
-)
 
 // latestCount is how many of an artist's newest songs their page lists;
 // albumsPage and eventsPage how many albums and events load at a time.
@@ -256,63 +243,6 @@ func (a *app) toggleFollow(id int64) {
 	}()
 }
 
-// artistPage shows who an artist is over their songs, the most popular or
-// the newest, their albums or their events.
-func (a *app) artistPage(c *ui.Context) {
-	id := a.route.ID
-	d := a.artist(id)
-	if d.profile == nil {
-		if !d.loading {
-			a.centered(c, d.err, func() { a.loadArtist(id) })
-			return
-		}
-		s := a.pageShimmer(c)
-		a.trackSkeleton(c, s, true, func(c *ui.Context) { a.artistHeaderSkeleton(c, s) })
-		return
-	}
-	header := func(c *ui.Context) { a.artistHeader(c, d) }
-	switch a.artistTab {
-	case artistAlbums:
-		a.scrollPage(c, func() {
-			header(c)
-			a.albumGrid(c, d.albums)
-			a.pageFoot(c, &d.albumsPage, func() { a.loadAlbums(id) })
-			if d.albumsPage.loaded && len(d.albums) == 0 {
-				a.empty(c, "暂无专辑")
-			}
-		})
-		return
-	case artistEvents:
-		a.scrollPage(c, func() {
-			header(c)
-			a.artistEvents(c, d)
-		})
-		return
-	}
-	songs := d.profile.Songs
-	if a.artistTab == artistLatest {
-		switch {
-		case d.latest != nil:
-			songs = d.latest
-		case d.latestLoading:
-			a.trackSkeleton(c, a.pageShimmer(c), true, header)
-			return
-		default:
-			songs = nil
-			header = func(c *ui.Context) {
-				a.artistHeader(c, d)
-				ui.Column(c).Padding(40, 0).Gap(12).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, d.latestErr).TextColor(a.pal.Muted).FontSize(13)
-					if ui.Button(c.Key("retry"), "重试").Clicked() {
-						a.loadLatest(d.profile.ID)
-					}
-				})
-			}
-		}
-	}
-	a.trackRows(c, songs, true, header)
-}
-
 // scrollPage scrolls a page of cards and rows, inset as one of tracks is:
 // a tab of a page that lists tracks puts its header in the same place.
 func (a *app) scrollPage(c *ui.Context, content func()) {
@@ -351,69 +281,6 @@ func (a *app) empty(c *ui.Context, msg string) {
 	ui.Text(c, msg).FontSize(13).TextColor(a.pal.Muted).Padding(40, 0).AlignSelf(ui.Center)
 }
 
-// artistPhotoSize is the width of an artist's round photo on their page.
-const artistPhotoSize = 212
-
-func (a *app) artistHeader(c *ui.Context, d *artistData) {
-	p := a.pal
-	ar := d.profile
-	// What the buttons play: the songs listed, or else the most popular.
-	songs := ar.Songs
-	if a.artistTab == artistLatest && d.latest != nil {
-		songs = d.latest
-	}
-	ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 8, 0).Children(func() {
-		photo := ar.Avatar
-		if photo == "" {
-			photo = ar.PicURL
-		}
-		ui.Box(c).Size(artistPhotoSize, artistPhotoSize).Radius(artistPhotoSize/2).Shadow(0, 18, 40, -10, p.CardShade).Children(func() {
-			a.coverFill(c, photo, 600, artistPhotoSize/2)
-		})
-		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(8).Children(func() {
-			ui.Text(c, "歌手").FontSize(12).FontWeight(600).TextColor(p.Accent)
-			ui.Text(c, ar.Name).FontSize(30).FontWeight(800).LetterSpacing(-0.6).MaxLines(2).LineHeight(1.2)
-			var meta []string
-			if aka := distinct(append([]string{ar.Trans}, ar.Alias...)); len(aka) > 0 {
-				meta = append(meta, strings.Join(aka, " / "))
-			}
-			if ar.MusicSize > 0 {
-				meta = append(meta, fmt.Sprintf("%d 首歌曲", ar.MusicSize))
-			}
-			if ar.AlbumSize > 0 {
-				meta = append(meta, fmt.Sprintf("%d 张专辑", ar.AlbumSize))
-			}
-			ui.Text(c, strings.Join(meta, " · ")).FontSize(13).TextColor(p.Muted)
-			if d := strings.TrimSpace(ar.BriefDesc); d != "" {
-				ui.Text(c, strings.ReplaceAll(d, "\n", " ")).FontSize(12.5).TextColor(p.Muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0)
-			}
-			ui.Row(c).Gap(10).Margin(10, 0, 0, 0).Children(func() {
-				if pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Clicked() {
-					if a.pl.Shuffle() {
-						a.pl.ToggleShuffle()
-					}
-					a.pl.PlayQueue(songs, firstPlayable(songs))
-				}
-				if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Clicked() {
-					if !a.pl.Shuffle() {
-						a.pl.ToggleShuffle()
-					}
-					a.pl.PlayQueue(songs, firstPlayable(songs))
-				}
-			})
-		})
-	})
-	ui.Row(c).AlignItems(ui.Center).Margin(34, 0, 14, 0).Children(func() {
-		ui.Text(c, artistTabTitles[a.artistTab]).FontSize(19).FontWeight(700).LetterSpacing(-0.3)
-		ui.Spacer(c)
-		if segmented(c.Key("tab"), &a.artistTab, "热门", "最新", "专辑") {
-			a.loadArtist(ar.ID)
-		}
-	})
-}
-
-var artistTabTitles = [...]string{"歌曲", "歌曲", "专辑", "动态"}
-
 func (a *app) artistHeaderSkeleton(c *ui.Context, s shimmer) {
 	ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 8, 0).Children(func() {
 		s.bone(c, artistPhotoSize/2).Size(artistPhotoSize, artistPhotoSize)
@@ -432,16 +299,4 @@ func (a *app) artistHeaderSkeleton(c *ui.Context, s shimmer) {
 		})
 	})
 	a.section(c, "歌曲")
-}
-
-// distinct returns ss without empty strings, nor any after its first: an
-// artist's translated name is often among their aliases too.
-func distinct(ss []string) []string {
-	var out []string
-	for _, s := range ss {
-		if s != "" && !slices.Contains(out, s) {
-			out = append(out, s)
-		}
-	}
-	return out
 }

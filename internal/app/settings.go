@@ -33,38 +33,6 @@ const (
 	progressSquiggly = settingspkg.ProgressSquiggly
 )
 
-var volumeBalances = []struct{ id, label string }{
-	{volumeBalanceOff, "关闭"},
-	{volumeBalanceQuiet, "安静"},
-	{volumeBalanceStandard, "标准"},
-	{volumeBalanceHigh, "高音量"},
-}
-
-var progressEffects = []struct{ id, label string }{
-	{progressStandard, "标准"},
-	{progressSmoke, "烟雾"},
-	{progressSquiggly, "波浪"},
-}
-
-// qualityLevel is the stream level QQ Music names a quality by.
-var qualityLevels = []struct{ level, label string }{
-	{"standard", "标准（128k）"},
-	{"exhigh", "极高（320k）"},
-	{"lossless", "无损（FLAC）"},
-}
-
-// cacheLimits are the sizes the song cache may take, in megabytes.
-var cacheLimits = []struct {
-	mb    int
-	label string
-}{
-	{0, "关闭"},
-	{1024, "1 GB"},
-	{2048, "2 GB"},
-	{5120, "5 GB"},
-	{10240, "10 GB"},
-}
-
 // oldName is the app's previous name; older NetEase data stays separate.
 const oldName = "Lilt"
 

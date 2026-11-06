@@ -278,12 +278,6 @@ func (a *app) acrylicSidebar(c *ui.Context) bool {
 	return runtime.GOOS == "windows" && a.settings.SidebarVibrancy() == mygo.VibrancyAcrylic && c.Vibrancy()
 }
 
-// playerBarHeight is the height of the player along the foot of the pages.
-const playerBarHeight = 84
-
-// pageGap is the room between the bar over a page and its content.
-const pageGap = 12
-
 // insets returns the room the bars over a page take at its top and its
 // bottom: pages pad their content by it, and scroll under the bars.
 func (a *app) insets(c *ui.Context) (top, bottom float32) {
@@ -337,16 +331,6 @@ func (a *app) endMark(c *ui.Context) {
 		_, bottom := a.insets(c)
 		a.underBottom = b.Y > h-bottom+0.5
 	}
-}
-
-// edgeShown returns how much of a scroll edge shows over el: fully while
-// content is under its bar, and none at rest, as AppKit shows its edges.
-func edgeShown(el ui.Element, under bool) float32 {
-	target := float32(0)
-	if under {
-		target = 1
-	}
-	return el.AnimateTo("shown", target, ui.Animation{Duration: 180 * time.Millisecond})
 }
 
 // pageTop is the strip over the top of a page, frosting what scrolls under

@@ -1,8 +1,6 @@
 package app
 
 import (
-	"github.com/egoist/mygo/ui"
-
 	"lilt/internal/qqmusic"
 )
 
@@ -63,74 +61,4 @@ func (a *app) morePurchased(tab int, d *purchasedData) {
 			d.page.loaded, d.page.more = true, more && len(songs)+len(albums) > 0
 		})
 	}()
-}
-
-func (a *app) purchasedPage(c *ui.Context) {
-	if a.profile == nil {
-		top, bottom := a.insets(c)
-		ui.Column(c).Grow(1).Padding(top, 0, bottom, 0).Center().Gap(12).Children(func() {
-			ui.Text(c, "登录后查看已购音乐").FontSize(13).TextColor(a.pal.Muted)
-			if ui.Button(c, "登录 QQ 音乐").Clicked() {
-				a.openLogin()
-			}
-		})
-		return
-	}
-	tab := a.route.Tab
-	d := a.purchased[tab]
-	content := route{Page: pagePurchased}
-	header := func(c *ui.Context) { a.purchasedHeader(c, d) }
-	foot := func(c *ui.Context) {
-		a.pageFoot(c, &d.page, func() { a.morePurchased(tab, d) })
-		if d.page.loaded && len(d.songs)+len(d.albums) == 0 {
-			label := "暂无已购单曲"
-			if tab == purchasedAlbums {
-				label = "暂无已购专辑"
-			}
-			a.empty(c, label)
-		}
-	}
-	if tab == purchasedSongs {
-		if !d.page.loaded && d.page.loading {
-			a.listPageWithKey(c, content, &a.purchasedScroll[purchasedSongs].ListState, func() {
-				a.underTop, a.underBottom = false, true
-				a.trackSkeletonRows(c, a.pageShimmer(c), true, header)
-			})
-			return
-		}
-		a.trackRowsWithKey(c, content, &a.purchasedScroll[purchasedSongs], d.songs, true, header, foot)
-		return
-	}
-	a.listPageWithKey(c, content, &a.purchasedScroll[tab].ListState, func() {
-		header(c)
-		a.albumGrid(c, d.albums)
-		if !d.page.loaded && d.page.loading {
-			a.playlistCardsSkeleton(c, a.pageShimmer(c), a.columns(c, 156), 156, false)
-			return
-		}
-		foot(c)
-	})
-}
-
-func (a *app) purchasedHeader(c *ui.Context, d *purchasedData) {
-	a.heading(c, "已购音乐", "")
-	ui.Row(c).AlignItems(ui.Center).Gap(12).Margin(0, 0, 18, 0).Children(func() {
-		tab := a.route.Tab
-		if segmented(c.Key("purchased-kind"), &tab, "专辑", "单曲") {
-			r := a.route
-			r.Tab = tab
-			a.show(r)
-		}
-		ui.Box(c).Grow(1)
-		if len(d.songs) > 0 {
-			pillButton(c.Key("play-purchased"), iconPlay, "播放", a.pal.Accent, a.pal.OnAccent).OnClick(func() {
-				if a.pl.Shuffle() {
-					a.pl.ToggleShuffle()
-				}
-				a.pl.PlayQueue(d.songs, firstPlayable(d.songs))
-			})
-		}
-		iconButton(c.Key("refresh-purchased"), iconReload, 17, a.pal.Muted, "刷新已购音乐").Disabled(d.page.loading).
-			OnClick(func() { a.loadPurchased(a.route.Tab, true) })
-	})
 }

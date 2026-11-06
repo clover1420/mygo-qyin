@@ -1,4 +1,4 @@
-package app
+package nowplaying
 
 import (
 	"math"
@@ -7,8 +7,13 @@ import (
 	"github.com/egoist/mygo/plugins/glass"
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/appui"
+	"lilt/internal/art"
 	"lilt/internal/lyrics"
+	"lilt/internal/playerbar"
 	"lilt/internal/qqmusic"
+	"lilt/internal/theme"
+	"lilt/internal/transport"
 )
 
 // The wall lays the queue out as a wall of its covers, under the song
@@ -21,22 +26,25 @@ import (
 // next.
 const (
 	wallTile  = 112
-	wallGap   = 14
-	wallPitch = wallTile + wallGap
+	WallGap   = 14
+	WallPitch = wallTile + WallGap
 )
 
 // wallGlide is how the wall glides on once thrown, and to the song
 // playing.
 var wallGlide = ui.Animation{Spring: ui.SpringOptions{Duration: 800 * time.Millisecond}}
 
-// wallState is the wall as the pointer and the trackpad move it.
-type wallState struct {
-	off   ui.Point // where Draggable rests it
-	pan   ui.Point // where the trackpad moved it, besides
-	shown ui.Point // where Draggable showed it in the last frame
+// WallState is the wall as the pointer and the trackpad move it.
+type WallState struct {
+	Off   ui.Point // where Draggable rests it
+	Pan   ui.Point // where the trackpad moved it, besides
+	Shown ui.Point // where Draggable showed it in the last frame
 	// The song the wall last brought into view, 0 until it shows.
-	track int64
+	Track int64
 }
+
+// wallSongKey keys the wall's cover by its song.
+type wallSongKey int64
 
 // wallLayout is how the wall lays out its covers in an area: as many
 // columns as rows, and the offsets it rests at, within bounds.
@@ -52,11 +60,11 @@ type wallLayout struct {
 // a short one is centered, as wide as it needs.
 func layWall(n int, w, h, top, foot float32) wallLayout {
 	const pad = 48
-	fit := max(1, int((w-2*pad+wallGap)/wallPitch))
+	fit := max(1, int((w-2*pad+WallGap)/WallPitch))
 	cols := max(min(n, fit), int(math.Ceil(math.Sqrt(float64(n)*2.5))))
 	cols = max(1, min(cols, n))
 	rows := (n + cols - 1) / cols
-	cw, ch := float32(cols)*wallPitch-wallGap, float32(rows)*wallPitch-wallGap
+	cw, ch := float32(cols)*WallPitch-WallGap, float32(rows)*WallPitch-WallGap
 	b := ui.Rect{X: w - pad - cw, W: cw + 2*pad - w, Y: h - foot - ch, H: ch + top + foot - h}
 	if b.W < 0 {
 		b.X, b.W = (w-cw)/2, 0
@@ -75,7 +83,7 @@ func (l wallLayout) clamp(p ui.Point) ui.Point {
 
 // cell returns where the cover of the i-th song is on the wall.
 func (l wallLayout) cell(i int) ui.Point {
-	return ui.Point{X: float32(i%l.cols) * wallPitch, Y: float32(i/l.cols) * wallPitch}
+	return ui.Point{X: float32(i%l.cols) * WallPitch, Y: float32(i/l.cols) * WallPitch}
 }
 
 // centre returns the offset that brings the i-th song's cover to the
@@ -93,71 +101,71 @@ func (l wallLayout) shows(i int, off ui.Point, w, h, top, foot float32) bool {
 	return x >= 0 && x+wallTile <= w && y >= top && y+wallTile <= h-foot
 }
 
-// wallPane fills Now Playing with the wall, the song playing over it and
+// WallPane fills Now Playing with the wall, the song playing over it and
 // the controls along its foot.
-func (a *app) wallPane(c *ui.Context, tr *qqmusic.Track, art *artwork, accent ui.Color, w, h float32, pointerIn bool) {
+func WallPane(c *ui.Context, d Deps, tr *qqmusic.Track, coverArt *art.Artwork, accent ui.Color, w, h float32, pointerIn bool) {
 	// The song starts below the shared row of tabs.
-	top := topBar(c) + npTabsHeight
+	top := d.TopBar(c) + TabsHeight
 	songH := min(max(h*0.36, 200), 320)
 	// The wall goes on under the foot of the song, into the frost; at
 	// rest, its first row is clear of the frost and its last of the
 	// controls' blur, which only covers going by pass under.
 	const frost, foot = 72, 112
 	wallY := top + songH - frost/2
-	a.wall(c, wallY, w, h-wallY, frost, foot, frost)
+	wall(c, d, wallY, w, h-wallY, frost, foot, frost)
 	// Up into the frost, covers blur more and more and fade into the
 	// backdrop, painted again over them, opaque by the frost's top: there
 	// it shows what shows above it, so that no edge does.
 	ui.Box(c.Key("wall-frost")).Absolute().Top(wallY).Left(0).Right(0).Height(frost).PassThrough().
-		Material(glass.Blur{Radius: 16, Mask: &ui.LinearGradient{From: ink, To: ui.Transparent, Angle: 180}}).
+		Material(glass.Blur{Radius: 16, Mask: &ui.LinearGradient{From: theme.Ink, To: ui.Transparent, Angle: 180}}).
 		Draw(func(p *ui.Painter, r ui.Rect) {
-			a.backdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 {
+			d.BackdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 {
 				return 1 - smoothstep(0.1, 0.85, t)
 			})
 		})
 	// Down under the controls, they blur and fade most of the way, for
 	// the controls to read over them.
 	ui.Box(c.Key("wall-foot")).Absolute().Left(0).Right(0).Bottom(0).Height(foot).PassThrough().
-		Material(glass.Blur{Radius: 14, Mask: &ui.LinearGradient{From: ink, To: ui.Transparent, Angle: 0}}).
+		Material(glass.Blur{Radius: 14, Mask: &ui.LinearGradient{From: theme.Ink, To: ui.Transparent, Angle: 0}}).
 		Draw(func(p *ui.Painter, r ui.Rect) {
-			a.backdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 { return 0.7 * smoothstep(0, 0.9, t) })
+			d.BackdropOver(p, ui.Rect{W: w, H: h}, r, func(t float32) float32 { return 0.7 * smoothstep(0, 0.9, t) })
 		})
-	a.wallSong(c, tr, art, top, songH)
-	a.wallBar(c, accent)
-	reveal(npTabsRow(c, w, h), pointerIn).Children(func() { a.paneTabs(c) })
+	wallSong(c, d, tr, coverArt, top, songH)
+	wallBar(c, d, accent)
+	Reveal(TabsRow(c, w, h, d.TopBar(c)), pointerIn).Children(func() { d.PaneTabs(c) })
 }
 
 // wallSong is the song playing, over the wall: its cover, which breathes
 // as Now Playing's does, its name, and the line of its lyrics sung, with
 // the next.
-func (a *app) wallSong(c *ui.Context, tr *qqmusic.Track, art *artwork, top, h float32) {
-	pl := a.pl
+func wallSong(c *ui.Context, d Deps, tr *qqmusic.Track, coverArt *art.Artwork, top, h float32) {
+	pl := d.Player
 	ui.Row(c.Key("wall-song")).Absolute().Top(top).Left(0).Right(0).Height(h).Padding(0, 72).Gap(36).
 		Justify(ui.Center).AlignItems(ui.Center).Children(func() {
 		// Not Now Playing's cover, which the pointer tilts and flings: here
 		// the wall is what the pointer moves.
 		size := h - 48
-		cov := ui.Box(c.Key(coverKey{tr.ID, 0})).Size(size, size).Radius(20).Shadow(0, 24, 50, -12, ink.Alpha(0.55))
+		cov := ui.Box(c.Key(wallSongKey(tr.ID))).Size(size, size).Radius(20).Shadow(0, 24, 50, -12, theme.Ink.Alpha(0.55))
 		scale := float32(1)
 		if !pl.Playing() {
 			scale = 0.92
 		}
 		cov.AnimatePose(ui.Pose{Scale: scale}, ui.Animation{Spring: ui.SpringOptions{Duration: 600 * time.Millisecond, Bounce: 0.25}})
-		in := artIn(cov, bitmap(art))
+		in := appui.ArtIn(cov, appui.Bitmap(coverArt))
 		if in < 1 {
 			cov.Background(white.Alpha(0.08))
 		}
-		cov.Children(func() { artImage(c, bitmap(art), 16, in) })
+		cov.Children(func() { appui.ArtImage(c, appui.Bitmap(coverArt), 16, in) })
 		ui.Column(c).Width(440).Shrink(1).MinWidth(0).Gap(4).Children(func() {
 			if r := pl.Radio(); r != "" {
-				a.radioChip(c, r)
+				d.RadioChip(c, r)
 			}
 			ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 				ui.Text(c, tr.Name).FontSize(26).FontWeight(800).LetterSpacing(-0.4).SingleLine().Shrink(1).MinWidth(0)
-				a.likeButton(c.Key("like"), tr, 20, white.Alpha(0.7), mediaSurface)
-				a.songMenu(c.Key("more"), tr, 20, white.Alpha(0.7), mediaSurface).Margin(0, -8, 0, 0)
+				d.Like(c.Key("like"), tr, 20, white.Alpha(0.7), appui.MediaSurface)
+				d.SongMenu(c.Key("more"), tr, 20, white.Alpha(0.7), appui.MediaSurface).Margin(0, -8, 0, 0)
 			})
-			a.artistLinks(c, tr, white.Alpha(0.6), white, true).FontSize(14).SingleLine()
+			d.ArtistLinks(c, tr, white.Alpha(0.6), white, true).FontSize(14).SingleLine()
 			lines, _ := pl.Lyrics()
 			if len(lines) == 0 {
 				return
@@ -183,8 +191,8 @@ func (a *app) wallSong(c *ui.Context, tr *qqmusic.Track, art *artwork, top, h fl
 // wall lays the queue's covers out in an area from y down to the
 // window's foot, w×h, its first row top down from the area's top and its
 // last foot above its foot, frost the height of the frost over its top.
-func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
-	pl, ws := a.pl, &a.wallState
+func wall(c *ui.Context, d Deps, y, w, h, top, foot, frost float32) {
+	pl, ws := d.Player, d.Wall
 	queue := pl.Queue()
 	l := layWall(len(queue), w, h, top, foot)
 	playing := -1
@@ -193,13 +201,13 @@ func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
 	}
 	// Shown, the wall brings the song playing to its middle; after, it
 	// glides to the next as little as shows it, unless held.
-	if tr := pl.Current(); tr != nil && tr.ID != ws.track && playing >= 0 {
-		if ws.track == 0 {
-			ws.pan, ws.off = ui.Point{}, l.centre(playing, w, h, top, foot)
-		} else if !l.shows(playing, addPoint(ws.shown, ws.pan), w, h, top, foot) {
-			ws.off = subPoint(l.centre(playing, w, h, top, foot), ws.pan)
+	if tr := pl.Current(); tr != nil && tr.ID != ws.Track && playing >= 0 {
+		if ws.Track == 0 {
+			ws.Pan, ws.Off = ui.Point{}, l.centre(playing, w, h, top, foot)
+		} else if !l.shows(playing, addPoint(ws.Shown, ws.Pan), w, h, top, foot) {
+			ws.Off = subPoint(l.centre(playing, w, h, top, foot), ws.Pan)
 		}
-		ws.track = tr.ID
+		ws.Track = tr.ID
 	}
 
 	// Covers go only into the frost, never past it over the song: the area
@@ -211,21 +219,21 @@ func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
 		if ev.Kind != ui.InputScroll {
 			return false
 		}
-		ws.off = ws.shown // a glide stops where it shows
-		at := addPoint(ws.shown, ws.pan)
-		ws.pan = subPoint(l.clamp(ui.Point{X: at.X - ev.DX, Y: at.Y - ev.DY}), ws.shown)
+		ws.Off = ws.Shown // a glide stops where it shows
+		at := addPoint(ws.Shown, ws.Pan)
+		ws.Pan = subPoint(l.clamp(ui.Point{X: at.X - ev.DX, Y: at.Y - ev.DY}), ws.Shown)
 		return true
 	})
 	area.Children(func() {
 		bounds := l.bounds
-		bounds.X -= ws.pan.X
-		bounds.Y -= ws.pan.Y
+		bounds.X -= ws.Pan.X
+		bounds.Y -= ws.Pan.Y
 		plane := ui.Box(c.Key("wall-plane")).Absolute().Top(0).Left(0).
-			Size(float32(l.cols)*wallPitch, float32(l.rows)*wallPitch).
-			Translate(ws.pan.X, ws.pan.Y).
-			Draggable(&ws.off, ui.DraggableOptions{Bounds: &bounds, Snap: func(p ui.Point) ui.Point { return p }, Animation: wallGlide})
-		ws.shown = plane.DragOffset()
-		at := addPoint(ws.shown, ws.pan)
+			Size(float32(l.cols)*WallPitch, float32(l.rows)*WallPitch).
+			Translate(ws.Pan.X, ws.Pan.Y).
+			Draggable(&ws.Off, ui.DraggableOptions{Bounds: &bounds, Snap: func(p ui.Point) ui.Point { return p }, Animation: wallGlide})
+		ws.Shown = plane.DragOffset()
+		at := addPoint(ws.Shown, ws.Pan)
 		// The rows sway while the song plays, and settle while it is paused.
 		swaying := pl.Playing() && !c.Preferences().ReduceMotion
 		now := c.Now()
@@ -240,26 +248,26 @@ func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
 		// it takes the pointer from.
 		pointRow, pointX := -1, float32(0)
 		if px, py, over := plane.PointerPosition(); over && plane.Hovered() && !plane.Dragging() && px >= 0 && py >= 0 &&
-			at.Y+py > frost/2 && at.Y+py < h-foot && py-float32(int(py/wallPitch))*wallPitch < wallTile {
-			pointRow, pointX = int(py/wallPitch), px
+			at.Y+py > frost/2 && at.Y+py < h-foot && py-float32(int(py/WallPitch))*WallPitch < wallTile {
+			pointRow, pointX = int(py/WallPitch), px
 		}
 		planeX := plane.Bounds().X
 		hover := -1
 		pressed := plane.Pressed()
 		// Only the covers in view, or nearly, as far as the rows sway.
-		c0 := max(0, int(math.Floor(float64((-at.X-wallSway)/wallPitch))))
-		c1 := min(l.cols-1, int(math.Floor(float64((w-at.X+wallSway)/wallPitch))))
-		r0 := max(0, int(math.Floor(float64(-at.Y/wallPitch))))
-		r1 := min(l.rows-1, int(math.Floor(float64((h-at.Y)/wallPitch))))
+		c0 := max(0, int(math.Floor(float64((-at.X-wallSway)/WallPitch))))
+		c1 := min(l.cols-1, int(math.Floor(float64((w-at.X+wallSway)/WallPitch))))
+		r0 := max(0, int(math.Floor(float64(-at.Y/WallPitch))))
+		r1 := min(l.rows-1, int(math.Floor(float64((h-at.Y)/WallPitch))))
 		plane.Children(func() {
 			for r := r0; r <= r1; r++ {
 				// Under the frost's opaque top, a row is not built.
-				if at.Y+float32(r)*wallPitch+wallTile < frost*0.1 {
+				if at.Y+float32(r)*WallPitch+wallTile < frost*0.1 {
 					continue
 				}
 				// A row sways as a pose, in frames that only paint.
-				row := ui.Box(c.Key(wallRow(r))).Absolute().Top(float32(r)*wallPitch).Left(0).
-					Size(float32(l.cols)*wallPitch, wallTile)
+				row := ui.Box(c.Key(wallRow(r))).Absolute().Top(float32(r)*WallPitch).Left(0).
+					Size(float32(l.cols)*WallPitch, wallTile)
 				if swaying {
 					to, _ := rowSwayTarget(r, now)
 					row.AnimatePose(ui.Pose{X: to}, ui.Animation{Duration: wallSwayHalf, Ease: ui.EaseInOut})
@@ -271,8 +279,8 @@ func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
 					if b := row.Bounds(); b.W > 0 {
 						x -= b.X - planeX // how far it had swayed
 					}
-					col := int(math.Floor(float64(x / wallPitch)))
-					if i := r*l.cols + col; x >= 0 && col < l.cols && i < len(queue) && x-float32(col)*wallPitch < wallTile {
+					col := int(math.Floor(float64(x / WallPitch)))
+					if i := r*l.cols + col; x >= 0 && col < l.cols && i < len(queue) && x-float32(col)*WallPitch < wallTile {
 						hover = i
 						plane.Cursor(ui.CursorPointer)
 					}
@@ -292,7 +300,7 @@ func (a *app) wall(c *ui.Context, y, w, h, top, foot, frost float32) {
 						case i == hover:
 							lift = 1.04
 						}
-						a.wallTile(c, &queue[i], i, float32(col)*wallPitch, i == playing, i == hover, lift)
+						wallTileView(c, d, &queue[i], i, float32(col)*WallPitch, i == playing, i == hover, lift)
 					}
 				})
 			}
@@ -325,27 +333,27 @@ func rowSwayTarget(r int, now time.Time) (float32, time.Duration) {
 	return to, time.Duration(half - now.UnixNano()%half)
 }
 
-// wallTile is the cover of the i-th song of the queue, tr, x along its
-// row, scaled to lift: the song playing stands out,
-// ringed, and the one under the pointer says what it is.
-func (a *app) wallTile(c *ui.Context, tr *qqmusic.Track, i int, x float32, playing, hovered bool, lift float32) {
+// wallTileView is the cover of the i-th song of the queue, tr, x along its
+// row, scaled to lift: the song playing stands out, ringed, and the one
+// under the pointer says what it is.
+func wallTileView(c *ui.Context, d Deps, tr *qqmusic.Track, i int, x float32, playing, hovered bool, lift float32) {
 	tile := ui.Box(c.Key(i)).Absolute().Left(x).Top(0).Size(wallTile, wallTile).Radius(14).
-		Label(tr.Name).ContextMenu(a.songItems(tr, 0))
+		Label(tr.Name).ContextMenu(d.SongItems(tr, 0))
 	tile.AnimatePose(ui.Pose{Scale: lift}, ui.Animation{Spring: ui.SpringOptions{Duration: 400 * time.Millisecond, Bounce: 0.2}})
 	if !tr.Playable() {
 		tile.Opacity(0.4)
 	}
 	if playing {
-		tile.Shadow(0, 14, 30, -8, ink.Alpha(0.6))
+		tile.Shadow(0, 14, 30, -8, theme.Ink.Alpha(0.6))
 	}
 	tile.Children(func() {
-		a.cover(c, tr.Album.PicURL, 240, wallTile, 12)
+		d.Cover(c, tr.Album.PicURL, 240, wallTile, 12)
 		if hovered {
 			// Its name and artists over a shade along its foot, on the
 			// cover, so that they move with it.
 			ui.Column(c.Key("caption")).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(14).Padding(8).Gap(1).
 				Justify(ui.End).PassThrough().TextColor(white).
-				Gradient(ink.Alpha(0.78), ui.Transparent, 0).
+				Gradient(theme.Ink.Alpha(0.78), ui.Transparent, 0).
 				Children(func() {
 					ui.Text(c, tr.Name).FontSize(12).FontWeight(700).SingleLine()
 					if names := tr.ArtistNames(); names != "" {
@@ -361,17 +369,17 @@ func (a *app) wallTile(c *ui.Context, tr *qqmusic.Track, i int, x float32, playi
 
 // wallBar is the controls along the foot of the wall: where the song is,
 // and the transport between how far it has gone and how far it has left.
-func (a *app) wallBar(c *ui.Context, accent ui.Color) {
-	pl := a.pl
+func wallBar(c *ui.Context, d Deps, accent ui.Color) {
+	pl := d.Player
 	ui.Column(c.Key("wall-bar")).Absolute().Left(0).Right(0).Bottom(0).Padding(0, 48, 24, 48).Gap(10).Children(func() {
-		a.scrubber(c.Key("wall-scrub"), &a.npScrub, white.Alpha(0.18), white.Alpha(0.9), 14, accent.Mix(white, 0.35))
+		transport.Scrubber(c.Key("wall-scrub"), pl, d.Settings.ProgressEffectMode(), d.NpScrub, white.Alpha(0.18), white.Alpha(0.9), 14, accent.Mix(white, 0.35))
 		ui.Row(c).Gap(14).AlignItems(ui.Center).Children(func() {
 			ui.Row(c).Grow(1).Basis(0).MinWidth(0).Children(func() {
-				ui.Text(c, clock(pl.Position())).FontSize(11.5).FontFeatures("tnum").TextColor(white.Alpha(0.5))
+				ui.Text(c, appui.Clock(pl.Position())).FontSize(11.5).FontFeatures("tnum").TextColor(white.Alpha(0.5))
 			})
-			a.transport(c, white, white.Alpha(0.45), white, 22, mediaSurface)
+			playerbar.Transport(c, pl, white, white.Alpha(0.45), white, 22, appui.MediaSurface)
 			ui.Row(c).Grow(1).Basis(0).MinWidth(0).Justify(ui.End).Children(func() {
-				ui.Text(c, "-"+clock(pl.Duration()-pl.Position())).FontSize(11.5).FontFeatures("tnum").TextColor(white.Alpha(0.5))
+				ui.Text(c, "-"+appui.Clock(pl.Duration()-pl.Position())).FontSize(11.5).FontFeatures("tnum").TextColor(white.Alpha(0.5))
 			})
 		})
 	})

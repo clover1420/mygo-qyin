@@ -1,6 +1,6 @@
 //go:build darwin
 
-package app
+package notch
 
 import "github.com/ebitengine/purego/objc"
 
@@ -103,8 +103,8 @@ func menuBarScreen() objc.ID {
 	return screens.Send(objc.RegisterName("objectAtIndex:"), uint(0))
 }
 
-// windowFrame returns a window's frame, for checking where it went.
-func windowFrame(handle uintptr) (x, y, w, h float64) {
+// WindowFrame returns a window's frame, for checking where it went.
+func WindowFrame(handle uintptr) (x, y, w, h float64) {
 	f := objc.Send[nsRect](objc.ID(handle), objc.RegisterName("frame"))
 	return f.Origin.X, f.Origin.Y, f.Size.W, f.Size.H
 }

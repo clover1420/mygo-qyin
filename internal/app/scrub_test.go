@@ -15,7 +15,7 @@ import (
 // play the next song, before it is let go.
 func TestScrubSeeksOnRelease(t *testing.T) {
 	for _, effect := range progressEffects {
-		t.Run(effect.id, func(t *testing.T) { testScrubSeeksOnRelease(t, effect.id) })
+		t.Run(effect.ID, func(t *testing.T) { testScrubSeeksOnRelease(t, effect.ID) })
 	}
 }
 
