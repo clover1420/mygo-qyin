@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // artistLinks shows a track's artists as its credits read, each a link to
@@ -283,18 +283,18 @@ func (a *app) empty(c *ui.Context, msg string) {
 
 func (a *app) artistHeaderSkeleton(c *ui.Context, s shimmer) {
 	ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 8, 0).Children(func() {
-		s.bone(c, artistPhotoSize/2).Size(artistPhotoSize, artistPhotoSize)
+		s.Bone(c, artistPhotoSize/2).Size(artistPhotoSize, artistPhotoSize)
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(8).Children(func() {
-			s.text(c, 12, 1.3).Width(24)
-			s.text(c, 30, 1.2).WidthPercent(32)
-			s.text(c, 13, 1.3).Width(160)
+			s.Text(c, 12, 1.3).Width(24)
+			s.Text(c, 30, 1.2).WidthPercent(32)
+			s.Text(c, 13, 1.3).Width(160)
 			ui.Column(c).Margin(2, 0, 0, 0).Children(func() {
-				s.text(c, 12.5, 1.45).WidthPercent(78)
-				s.text(c, 12.5, 1.45).WidthPercent(52)
+				s.Text(c, 12.5, 1.45).WidthPercent(78)
+				s.Text(c, 12.5, 1.45).WidthPercent(52)
 			})
 			ui.Row(c).Gap(10).Margin(10, 0, 0, 0).Children(func() {
-				s.bone(c, 18).Size(92, 36)
-				s.bone(c, 18).Size(120, 36)
+				s.Bone(c, 18).Size(92, 36)
+				s.Bone(c, 18).Size(120, 36)
 			})
 		})
 	})

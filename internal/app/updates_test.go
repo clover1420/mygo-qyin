@@ -8,7 +8,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // fakeUpdater swaps the update plugin's preferences for ones in memory,

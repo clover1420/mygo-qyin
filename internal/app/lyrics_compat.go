@@ -3,10 +3,10 @@ package app
 import (
 	"github.com/egoist/mygo"
 
-	"lilt/internal/lyricsui"
+	"lilt/internal/ui/features/lyricsui"
 )
 
-// The lyrics windows live in lilt/internal/lyricsui; the app keeps these
+// The lyrics windows live in lilt/internal/ui/features/lyricsui; the app keeps these
 // names for its controller fields and tests.
 type desktopLyrics = lyricsui.Desktop
 type taskbarLyrics = lyricsui.Taskbar

@@ -11,7 +11,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // wallApp is an app showing the wall of a queue of n songs, the at-th

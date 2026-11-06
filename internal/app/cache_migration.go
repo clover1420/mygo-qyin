@@ -5,7 +5,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/player"
+	"lilt/internal/media/player"
 )
 
 // startCacheMigration runs before boot restores playback, so no cached files are open.

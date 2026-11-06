@@ -7,7 +7,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Each artist's name opens their page: from Now Playing, which closes, and

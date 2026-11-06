@@ -10,7 +10,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // With NM_FRAMES set, previews Acrylic controls over a synthetic soft backdrop, without claiming to render the Windows material.
@@ -119,7 +119,7 @@ func TestNewPlaylistInCollapsedSidebar(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if !a.naming.open {
+	if !a.naming.Open {
 		t.Error("the plus did not open the naming dialog")
 	}
 	if !a.mineCollapsed || !a.savedCollapsed {

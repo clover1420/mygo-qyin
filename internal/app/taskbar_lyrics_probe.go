@@ -9,9 +9,9 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/lyrics"
-	"lilt/internal/player"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/player"
+	"lilt/internal/media/qqmusic"
 )
 
 // RunTaskbarLyricsCheck validates the production owner without login, network or user preferences.

@@ -9,8 +9,8 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
 )
 
 // Clicking a QRC line seeks to its absolute start and keeps a paused player

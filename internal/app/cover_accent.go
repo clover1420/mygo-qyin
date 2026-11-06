@@ -3,7 +3,8 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/base/theme"
 )
 
 // followCover keeps the cover of the song playing, so its color can accent
@@ -30,16 +31,7 @@ func (a *app) coverAccent() (ui.Color, bool) {
 	if art == nil || art.Failed {
 		return ui.Color{}, false
 	}
-	h, s, _ := hsv(float64(art.Tint.R)/255, float64(art.Tint.G)/255, float64(art.Tint.B)/255)
-	if s < 0.12 {
-		return ui.Color{}, false
-	}
-	return hsvColor(h, min(max(s, 0.5), 0.8), 0.8), true
-}
-
-// accentVariants are the interactive shades of an accent.
-func accentVariants(base ui.Color) (hover, pressed ui.Color) {
-	return base.Mix(paper, 0.12), base.Mix(ink, 0.12)
+	return theme.CoverAccent(art.Tint)
 }
 
 // applyTheme sets a window's theme for this frame. Every window calls it, so
@@ -58,7 +50,7 @@ func (a *app) applyTheme(c *ui.Context) palette {
 	}
 	p.Accent = base
 	a.pal = p
-	hover, pressed := accentVariants(base)
+	hover, pressed := theme.AccentVariants(base)
 	t.Accent, t.AccentHover, t.AccentPressed = base, hover, pressed
 	t.AccentText = p.OnAccent
 	t.Selection = base.Alpha(0.3)

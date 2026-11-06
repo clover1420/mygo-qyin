@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // searchResults and searchSuggest search QQ Music; tests replace them.

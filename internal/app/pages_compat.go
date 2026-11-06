@@ -5,12 +5,12 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/navigation"
-	"lilt/internal/pages"
-	"lilt/internal/qqmusic"
+	"lilt/internal/core/navigation"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/features/pages"
 )
 
-// The shapes the pages share live in lilt/internal/pages; the app keeps
+// The shapes the pages share live in lilt/internal/ui/features/pages; the app keeps
 // these names while its page bodies still live here.
 const pagePad = pages.Pad
 
@@ -61,10 +61,10 @@ func (a *app) dailyDeps() pages.DailyDeps {
 		},
 		SkeletonHeader: func(c *ui.Context) {
 			s := a.pageShimmer(c)
-			s.text(c, 13, 1.3).Width(240)
+			s.Text(c, 13, 1.3).Width(240)
 			ui.Row(c).Gap(10).Margin(8, 0, 0, 0).Children(func() {
-				s.bone(c, 18).Size(112, 36)
-				s.bone(c, 18).Size(112, 36)
+				s.Bone(c, 18).Size(112, 36)
+				s.Bone(c, 18).Size(112, 36)
 			})
 		},
 		Tracks: func(c *ui.Context, tracks []qqmusic.Track, header func(*ui.Context)) {
@@ -138,11 +138,11 @@ func (a *app) playlistEditDeps() pages.PlaylistEditDeps {
 		PaneLook: a.pane,
 		Name: func() pages.NameState {
 			d := &a.naming
-			return pages.NameState{Open: &d.open, Name: &d.name, Rename: d.rename, Busy: d.busy}
+			return pages.NameState{Open: &d.Open, Name: &d.Name, Rename: d.Rename, Busy: d.Busy}
 		},
 		Delete: func() pages.DeleteState {
 			d := &a.deleting
-			return pages.DeleteState{Open: &d.open, Name: d.name, Saved: d.saved}
+			return pages.DeleteState{Open: &d.Open, Name: d.Name, Saved: d.Saved}
 		},
 		SubmitName:   a.submitName,
 		DeleteChosen: a.deleteChosen,

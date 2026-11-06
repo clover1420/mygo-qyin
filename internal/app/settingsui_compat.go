@@ -4,10 +4,10 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/settingsui"
+	"lilt/internal/ui/features/settingsui"
 )
 
-// The settings live in lilt/internal/settingsui; the app keeps its state
+// The settings live in lilt/internal/ui/features/settingsui; the app keeps its state
 // and these names while its other views still live here.
 const (
 	settingsGeneral    = settingsui.General

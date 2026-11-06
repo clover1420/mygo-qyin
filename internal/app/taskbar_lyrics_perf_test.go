@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/lyrics"
+	"lilt/internal/media/lyrics"
 )
 
 // Paused, hidden, missing and completed taskbar lyrics stay idle; active highlighting and long-line scrolling are bounded.

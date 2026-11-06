@@ -11,7 +11,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 type purchaseRequest struct {
@@ -142,7 +142,7 @@ func TestPurchasedRequiresLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	wait(t, started, "login")
-	if !a.login.open {
+	if !a.login.Open {
 		t.Fatal("login did not open")
 	}
 }

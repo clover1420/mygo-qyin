@@ -6,8 +6,8 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/audio"
-	"lilt/internal/lyricsui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/features/lyricsui"
 )
 
 // Locking never removes the external tray action that restores pointer input.

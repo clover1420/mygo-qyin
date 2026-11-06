@@ -3,12 +3,12 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	notchpkg "lilt/internal/notch"
-	"lilt/internal/player"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/player"
+	"lilt/internal/media/qqmusic"
+	notchpkg "lilt/internal/ui/features/notch"
 )
 
-// The notch player lives in lilt/internal/notch; the app keeps its
+// The notch player lives in lilt/internal/ui/features/notch; the app keeps its
 // listener's state and these names while its views still live here.
 type notch = notchpkg.Notch
 

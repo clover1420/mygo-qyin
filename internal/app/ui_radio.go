@@ -4,7 +4,7 @@ import (
 	"math/rand/v2"
 	"strings"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Radios play on without end: the personal FM, in one of its modes, as

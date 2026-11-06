@@ -1,8 +1,8 @@
 package app
 
 import (
-	"lilt/internal/player"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/player"
+	"lilt/internal/media/qqmusic"
 )
 
 func newTestApp() *app {

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Opening the account's page refreshes membership, and a failed result can be retried.

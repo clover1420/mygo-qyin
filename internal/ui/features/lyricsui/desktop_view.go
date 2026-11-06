@@ -1,0 +1,356 @@
+package lyricsui
+
+import (
+	"math"
+	"strings"
+	"time"
+	"unicode"
+
+	"github.com/egoist/mygo/ui"
+
+	"lilt/internal/ui/base/appui"
+	"lilt/internal/ui/base/theme"
+
+	"lilt/internal/media/lyrics"
+)
+
+const DesktopToolbarHeight float32 = 44
+const DesktopFade = 240 * time.Millisecond
+const DesktopRestAlpha float32 = 0.478
+const DesktopSungAlpha float32 = 0.95
+
+// desktopLyricContent is a snapshot of the player's timeline, never a second clock.
+type desktopLyricContent struct {
+	line              lyrics.Line
+	preview           string
+	index             int
+	text, translation string
+	next              time.Duration
+}
+
+// desktopLyricAt keeps the current line through instrumental gaps until its successor starts.
+func desktopLyricAt(lines []lyrics.Line, loaded bool, position time.Duration, doubleLine bool) desktopLyricContent {
+	return lyricAt(lines, loaded, position, doubleLine, DesktopTranslation(lines))
+}
+
+func lyricAt(lines []lyrics.Line, loaded bool, position time.Duration, doubleLine, translation bool) desktopLyricContent {
+	out := desktopLyricContent{index: -1}
+	if !loaded {
+		out.text = "歌词加载中…"
+		return out
+	}
+	if len(lines) == 0 {
+		out.text = "暂无歌词"
+		return out
+	}
+	index := lyrics.Index(lines, position)
+	if index+1 < len(lines) {
+		out.next = lines[index+1].At - position
+	}
+	if index < 0 {
+		return out
+	}
+	line := lines[index]
+	out.line, out.index, out.text = line, index, line.Text
+	if translation {
+		out.translation = line.Translation
+	} else if doubleLine && index+1 < len(lines) {
+		out.preview = lines[index+1].Text
+	}
+	if desktopLyricComparable(out.translation) == desktopLyricComparable(out.text) {
+		out.translation = ""
+	}
+	return out
+}
+
+func desktopLyricComparable(text string) string {
+	return strings.Map(func(r rune) rune {
+		if unicode.IsSpace(r) || unicode.IsPunct(r) {
+			return -1
+		}
+		return unicode.ToLower(r)
+	}, text)
+}
+
+// Track language is not available in QQ's current model. Kana or Hangul anywhere
+// in the lyrics keeps translations, even for a Han-only line. The small set below
+// contains common simplified Chinese forms absent from Japanese shinjitai; Han
+// alone (including traditional Chinese) remains unknown and keeps distinct text.
+func DesktopTranslation(lines []lyrics.Line) bool {
+	chinese := false
+	for _, line := range lines {
+		for _, r := range line.Text {
+			if unicode.In(r, unicode.Hiragana, unicode.Katakana, unicode.Hangul) {
+				return true
+			}
+			if strings.ContainsRune("们这说吗别该爱谢为对妈亲谁让", r) {
+				chinese = true
+			}
+		}
+	}
+	return !chinese
+}
+
+// desktopLyricWake waits through genuine word gaps instead of keeping a 25 Hz loop.
+func desktopLyricWake(content desktopLyricContent, position time.Duration) time.Duration {
+	next := content.next
+	if content.index < 0 || !content.line.Timed {
+		return next
+	}
+	for _, word := range content.line.Words {
+		delay := time.Duration(0)
+		if position < word.Start {
+			delay = word.Start - position
+		} else if position < word.End {
+			delay = min(40*time.Millisecond, word.End-position)
+		}
+		if delay > 0 && (next == 0 || delay < next) {
+			next = delay
+		}
+	}
+	return next
+}
+
+type desktopLyricViewState struct {
+	track             int64
+	mid               string
+	revision          uint64
+	current, previous desktopLyricContent
+	changed, seen     time.Time
+	position          time.Duration
+	initialized       bool
+}
+
+type desktopLyricBlend struct {
+	currentAlpha, previousAlpha float32
+	currentY, previousY         float32
+}
+
+// Clear the outgoing sentence before revealing the new one, avoiding the
+// illegible double image of two outlined sentences crossfading in place.
+func (s *desktopLyricViewState) blend(c *ui.Context) desktopLyricBlend {
+	if s.changed.IsZero() {
+		return desktopLyricBlend{currentAlpha: 1}
+	}
+	elapsed := max(0, c.Now().Sub(s.changed))
+	if elapsed >= DesktopFade {
+		return desktopLyricBlend{currentAlpha: 1}
+	}
+	c.After(min(time.Second/60, DesktopFade-elapsed))
+	exit := time.Duration(0)
+	out := float32(0)
+	if s.previous.text != "" {
+		exit = 60 * time.Millisecond
+		p := min(1, float32(elapsed)/float32(exit))
+		out = 1 - p*p
+	}
+	p := max(0, float32(elapsed-exit)/float32(DesktopFade-exit))
+	in := 1 - (1-p)*(1-p)*(1-p)
+	return desktopLyricBlend{currentAlpha: in, previousAlpha: out,
+		currentY: 4 * (1 - in), previousY: -2 * (1 - out)}
+}
+
+func (s *desktopLyricViewState) step(track int64, mid string, revision uint64, content desktopLyricContent, position time.Duration, now time.Time, playing, reduced bool) {
+	changed := !s.initialized || s.track != track || s.mid != mid || s.revision != revision
+	jump := position < s.position
+	if s.initialized && !changed && playing {
+		drift := (position - s.position) - now.Sub(s.seen)
+		jump = jump || drift > 500*time.Millisecond || drift < -500*time.Millisecond
+	} else if s.initialized && position != s.position {
+		jump = true
+	}
+	different := content.index != s.current.index || content.text != s.current.text || content.translation != s.current.translation || content.preview != s.current.preview
+	if changed || jump || reduced {
+		s.previous, s.changed = desktopLyricContent{}, time.Time{}
+	} else if different {
+		s.previous, s.changed = s.current, now
+	}
+	if !s.changed.IsZero() && now.Sub(s.changed) >= DesktopFade {
+		s.previous, s.changed = desktopLyricContent{}, time.Time{}
+	}
+	s.track, s.mid, s.current, s.position, s.seen, s.initialized = track, mid, content, position, now, true
+	s.revision = revision
+}
+
+func (d *Desktop) View(c *ui.Context) {
+	c.Root().Background(ui.Transparent)
+	if !d.Settings.DesktopLyrics {
+		return
+	}
+	root := ui.Box(c.Key("desktop-lyrics")).Fill().TextColor(theme.Veil(12))
+	state := ui.Local(root, "presentation", func() desktopLyricViewState { return desktopLyricViewState{} })
+	unlocked := !d.Settings.DesktopLyricsLocked
+	if unlocked {
+		root.DragWindow()
+	}
+	hovered := unlocked && root.Hovered()
+	if hovered {
+		root.Background(theme.Shade(4)).Radius(16).Border(1, theme.Veil(2))
+	}
+	width, windowHeight := c.Size()
+	textWidth := max(width-48, 1)
+	size := d.FontSize()
+	content := desktopLyricContent{index: -1}
+	var track int64
+	var mid string
+	if tr := d.Player.Current(); tr != nil {
+		track, mid = tr.ID, tr.MID
+		lines, loaded := d.Player.Lyrics()
+		content = desktopLyricAt(lines, loaded, d.Player.Position(), d.Settings.DesktopLyricsDoubleLine)
+	}
+	position := d.Player.Position()
+	playing := d.Player.Playing()
+	state.step(track, mid, d.Revision, content, position, c.Now(), playing, c.Preferences().ReduceMotion)
+	blend := state.blend(c)
+	current := DesktopLayouts(c, content, position, size, textWidth)
+	previous := DesktopLayouts(c, state.previous, position, size, textWidth)
+	height := max(current.height, previous.height)
+	d.FitHeight(float64(DesktopToolbarHeight + height + 28))
+	// Use the committed viewport until the deferred native resize completes.
+	// A layout-height change must not move a line for that intervening frame.
+	bodyHeight := max(0, windowHeight-DesktopToolbarHeight-28)
+	root.Children(func() {
+		ui.Box(c.Key("toolbar-space")).Absolute().Top(4).Left(16).Right(16).Height(36).Children(func() {
+			if hovered {
+				d.toolbar(c)
+			}
+		})
+		body := ui.Box(c.Key("lyric-body")).Absolute().Top(DesktopToolbarHeight).Left(24).Right(24).Height(bodyHeight).Label(content.text)
+		if unlocked {
+			body.Cursor(ui.CursorGrab)
+		}
+		body.Children(func() {
+			drawDesktopLyricLayers(c, current, previous, bodyHeight, blend)
+		})
+		if unlocked {
+			d.widthGrips(c, hovered)
+		}
+	})
+	if playing {
+		if next := desktopLyricWake(content, position); next > 0 {
+			c.After(next)
+		}
+	}
+}
+
+func drawDesktopLyricLayers(c *ui.Context, current, previous desktopLyricLayouts, height float32, blend desktopLyricBlend) {
+	layer := func(key string, layout desktopLyricLayouts, alpha, offset float32) {
+		if layout.text == nil || alpha <= 0 {
+			return
+		}
+		ui.Box(c.Key(key)).Absolute().Top(0).Left(0).Right(0).Height(height).Opacity(alpha).
+			Draw(func(p *ui.Painter, r ui.Rect) {
+				// The window keeps its bottom edge when it fits a shorter line.
+				// Bottom-align both blocks so removing the old height cannot
+				// make the new sentence jump after the transition completes.
+				r.Y += r.H - layout.height + offset
+				layout.draw(p, r, 1)
+			})
+	}
+	layer("previous", previous, blend.previousAlpha, blend.previousY)
+	layer("current", current, blend.currentAlpha, blend.currentY)
+}
+
+var DesktopLockIcon = appui.StrokeIcon(`<rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>`)
+var DesktopMinusIcon = appui.StrokeIcon(`<path d="M5 12h14"/>`)
+
+func (d *Desktop) toolbar(c *ui.Context) {
+	ui.Row(c.Key("toolbar")).Height(36).Justify(ui.Center).AlignItems(ui.Center).Children(func() {
+		ui.Row(c).Padding(1, 6).Gap(2).AlignItems(ui.Center).Radius(12).Background(theme.Shade(10)).Border(1, theme.Veil(3)).Children(func() {
+			DesktopButton(c.Key("previous"), appui.IconPrev, "上一首").OnClick(func() { d.Player.Prev(); d.Redraw() })
+			icon := appui.IconPlay
+			if d.Player.Playing() {
+				icon = appui.IconPause
+			}
+			DesktopButton(c.Key("play"), icon, "播放/暂停").OnClick(func() { d.Player.TogglePlay(); d.Redraw() })
+			DesktopButton(c.Key("next"), appui.IconNext, "下一首").OnClick(func() { d.Player.Next(); d.Redraw() })
+			ui.Box(c).Width(1).Height(16).Background(theme.Veil(4)).MarginX(5)
+			DesktopButton(c.Key("smaller"), DesktopMinusIcon, "减小桌面歌词字号").Disabled(d.FontSize() <= 18).OnClick(func() { d.SetFontSize(d.FontSize() - 2) })
+			DesktopButton(c.Key("larger"), appui.IconPlus, "增大桌面歌词字号").Disabled(d.FontSize() >= 64).OnClick(func() { d.SetFontSize(d.FontSize() + 2) })
+			DesktopButton(c.Key("lock"), DesktopLockIcon, "锁定桌面歌词").OnClick(func() { d.SetLocked(true) })
+			DesktopButton(c.Key("close"), appui.IconX, "关闭桌面歌词").OnClick(d.Close)
+		})
+	})
+}
+
+func DesktopButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
+	button := ui.ButtonBase(c).Size(32, 32).Center().Radius(8).Label(label).Tooltip(label).TextColor(theme.Veil(12))
+	if button.Hovered() || button.FocusVisible() {
+		button.Background(theme.Veil(3))
+	}
+	if button.Pressed() {
+		button.Background(theme.Veil(4))
+	}
+	return button.Children(func() { ui.Icon(c, icon).Size(17, 17) })
+}
+
+func (d *Desktop) widthGrips(c *ui.Context, shown bool) {
+	grip := ui.ButtonBase(c.Key("width-grip")).Absolute().Right(0).Top(DesktopToolbarHeight).Bottom(8).Width(16).Cursor(ui.CursorResizeEW).Label("调整桌面歌词宽度")
+	if shown {
+		grip.Draw(func(p *ui.Painter, r ui.Rect) {
+			p.Fill(ui.Rect{X: r.X + 7, Y: r.Y + r.H/2 - 12, W: 2, H: 24}, theme.Veil(5), 1)
+		})
+	}
+	if dx, _, dragging := grip.Dragged(); dragging && dx != 0 {
+		d.ResizeWidth(float64(dx))
+	}
+}
+
+type desktopLyricLayouts struct {
+	outline, text, translationOutline, translation *ui.TextLayout
+	previewOutline, preview                        *ui.TextLayout
+	originalHeight, height                         float32
+}
+
+func DesktopLayouts(c *ui.Context, content desktopLyricContent, position time.Duration, size, width float32) desktopLyricLayouts {
+	if content.text == "" {
+		return desktopLyricLayouts{}
+	}
+	font := ui.Font{Family: c.Theme().Font, Size: size, Weight: 700, LineHeight: 1.3}
+	shape := ui.TextShape{Width: width, Align: ui.Center}
+	text := content.text
+	spans := []ui.Span{{Text: text, Color: theme.Veil(12)}}
+	if content.line.Timed && len(content.line.Words) > 0 {
+		spans = make([]ui.Span, 0, len(content.line.Words))
+		for _, word := range content.line.Words {
+			brightness := DesktopRestAlpha + (DesktopSungAlpha-DesktopRestAlpha)*word.Progress(position)
+			spans = append(spans, ui.Span{Text: word.Text, Color: theme.Paper.Alpha(brightness)})
+		}
+	}
+	layout := desktopLyricLayouts{outline: ui.ShapeRichTextWith([]ui.Span{{Text: text}}, font, shape), text: ui.ShapeRichTextWith(spans, font, shape)}
+	_, layout.originalHeight = layout.text.Size()
+	layout.height = layout.originalHeight
+	if content.translation != "" {
+		font.Size, font.Weight = size*0.625, 500
+		layout.translationOutline = ui.ShapeRichTextWith([]ui.Span{{Text: content.translation}}, font, shape)
+		layout.translation = layout.translationOutline
+		_, h := layout.translation.Size()
+		layout.height += h + 6
+	} else if content.preview != "" {
+		layout.previewOutline = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview}}, font, shape)
+		layout.preview = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview, Color: theme.Paper.Alpha(DesktopRestAlpha)}}, font, shape)
+		_, h := layout.preview.Size()
+		layout.height += h + 6
+	}
+	return layout
+}
+
+func (layout desktopLyricLayouts) draw(p *ui.Painter, r ui.Rect, alpha float32) {
+	if layout.text == nil || alpha <= 0 {
+		return
+	}
+	draw := func(outline, text *ui.TextLayout, y float32, color ui.Color) {
+		if text == nil {
+			return
+		}
+		p.TextLayout(outline, r.X, y+2, theme.Shade(7).Alpha(0.5*alpha))
+		for i := 0; i < 8; i++ {
+			angle := float64(i) * math.Pi / 4
+			p.TextLayout(outline, r.X+float32(math.Cos(angle))*0.8, y+float32(math.Sin(angle))*0.8, theme.Shade(12).Alpha(0.95*alpha))
+		}
+		p.TextLayout(text, r.X, y, color)
+	}
+	draw(layout.outline, layout.text, r.Y, theme.Veil(12))
+	draw(layout.translationOutline, layout.translation, r.Y+layout.originalHeight+6, theme.Neutral(true, 12))
+	draw(layout.previewOutline, layout.preview, r.Y+layout.originalHeight+6, theme.Veil(12))
+}

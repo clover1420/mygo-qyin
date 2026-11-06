@@ -7,8 +7,8 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
 )
 
 // Hovering a paused player control stops requesting frames once its feedback settles.
@@ -208,12 +208,12 @@ func TestBackdropFadeEnds(t *testing.T) {
 	tt.Frame()
 	a.pl.Next()
 	tt.Frame()
-	if a.backdropCache.before == nil {
+	if a.backdropCache.Before == nil {
 		t.Fatal("the backdrop changed songs without fading")
 	}
 	tt.Advance(backdropFade + 100*time.Millisecond)
 	tt.Frame()
-	if a.backdropCache.before != nil {
+	if a.backdropCache.Before != nil {
 		t.Error("the last song's backdrop still fades after the fade")
 	}
 }

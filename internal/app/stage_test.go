@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"lilt/internal/lyrics"
+	"lilt/internal/media/lyrics"
 )
 
 // Choosing a style from the stage's menu sets its lyrics in it, and

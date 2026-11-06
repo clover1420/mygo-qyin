@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // userDetail and userPlaylists load a user and their playlists from

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/lyrics"
+	"lilt/internal/media/lyrics"
 )
 
 // Paused, hidden, inter-word-gap and completed lyrics do not keep rebuilding themselves.

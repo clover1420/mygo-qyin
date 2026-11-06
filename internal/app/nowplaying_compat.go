@@ -4,11 +4,12 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/nowplaying"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/base/skeleton"
+	"lilt/internal/ui/features/nowplaying"
 )
 
-// Now Playing's shell, cover and panes live in lilt/internal/nowplaying;
+// Now Playing's shell, cover and panes live in lilt/internal/ui/features/nowplaying;
 // the app keeps its listener's state and these names while its other views
 // still live here.
 type coverState = nowplaying.CoverState
@@ -52,6 +53,7 @@ func (a *app) nowplayingDeps() nowplaying.Deps {
 		Pane:              &a.npPane,
 		PaneTop:           &a.npPaneTop,
 		NPArt:             &a.npArt,
+		BackdropCache:     &a.backdropCache,
 		GlowColor:         &a.glowColor,
 		CoverState:        &a.npCoverState,
 		Volume:            &a.volume,
@@ -81,11 +83,13 @@ func (a *app) nowplayingDeps() nowplaying.Deps {
 		Cover:             a.cover,
 		SongItems:         a.songItems,
 		Avatar:            a.avatar,
+		Quiet:             &a.quiet,
 		QuietShown:        a.quietShown,
 		QuietCard:         a.quietCard,
-		Skeleton:          func(c *ui.Context) { lyricsSkeleton(c, npShimmer(c)) },
+		OpenComments:      func() { a.npPane = paneComments },
+		Skeleton:          func(c *ui.Context) { skeleton.Lyrics(c, npShimmer(c)) },
 		StageQuiet:        a.stageQuiet,
-		StageSkeleton:     func(c *ui.Context, f, w float32) { stageSkeleton(c, npShimmer(c), f, w) },
+		StageSkeleton:     func(c *ui.Context, f, w float32) { skeleton.Stage(c, npShimmer(c), f, w) },
 		BackdropOver:      a.backdropOver,
 		Wall:              &a.wallState,
 		Comments:          commentFeed{a},
@@ -93,10 +97,10 @@ func (a *app) nowplayingDeps() nowplaying.Deps {
 		ToggleCommentLike: a.toggleCommentLike,
 		CommentSkeleton: func(c *ui.Context, n int) {
 			s := npShimmer(c)
-			s.text(c, 13, 1.3).Width(56).Margin(18, 12, 6, 12)
-			commentSkeleton(c, s, n)
+			s.Text(c, 13, 1.3).Width(56).Margin(18, 12, 6, 12)
+			skeleton.Comment(c, s, n)
 		},
-		MoreSkeleton:        func(c *ui.Context) { commentSkeleton(c.Key("more"), npShimmer(c), 2) },
+		MoreSkeleton:        func(c *ui.Context) { skeleton.Comment(c.Key("more"), npShimmer(c), 2) },
 		Accent:              a.pal.Accent,
 		Captions:            &a.captions,
 		SyncCaptions:        a.syncCaptions,

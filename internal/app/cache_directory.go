@@ -8,7 +8,7 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/player"
+	"lilt/internal/media/player"
 )
 
 // Tests replace the native picker without opening a system dialog.

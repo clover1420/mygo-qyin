@@ -7,7 +7,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 type suggestionRequest struct {
@@ -88,22 +88,22 @@ func TestSuggestionReplyAfterQueryReentered(t *testing.T) {
 	a := newTestApp()
 	t.Cleanup(a.dismissSuggestions)
 	a.suggest("晴天")
-	old := a.suggestions.gen
+	old := a.suggestions.Gen
 	a.suggest("春日影")
 	a.suggest("晴天")
-	current := a.suggestions.gen
-	if a.suggestions.timer != nil {
-		a.suggestions.timer.Stop()
+	current := a.suggestions.Gen
+	if a.suggestions.Timer != nil {
+		a.suggestions.Timer.Stop()
 	}
 	stale := qqmusic.Suggestions{Songs: []qqmusic.Track{{MID: "old", Name: "old"}}}
 	a.finishSuggestions(old, "晴天", stale, nil)
 	a.finishSuggestions(old, "晴天", qqmusic.Suggestions{}, errors.New("old failure"))
-	if !a.suggestions.loading || a.suggestions.failed || len(a.suggestions.items) != 0 {
+	if !a.suggestions.Loading || a.suggestions.Failed || len(a.suggestions.Items) != 0 {
 		t.Fatal("obsolete reply changed the reentered query")
 	}
 	fresh := qqmusic.Suggestions{Songs: []qqmusic.Track{{MID: "new", Name: "new"}}}
 	a.finishSuggestions(current, "晴天", fresh, nil)
-	if a.suggestions.loading || a.suggestions.failed || len(a.suggestions.items) != 1 || a.suggestions.items[0].name != "new" {
+	if a.suggestions.Loading || a.suggestions.Failed || len(a.suggestions.Items) != 1 || a.suggestions.Items[0].Name != "new" {
 		t.Fatal("the current reply was not applied")
 	}
 }
@@ -124,9 +124,9 @@ func TestSuggestionMIDIdentity(t *testing.T) {
 	}
 	tt.Type("晴")
 	tt.Frame()
-	a.suggestions.loading = false
-	a.suggestions.items = suggestionList(qqmusic.Suggestions{Songs: []qqmusic.Track{{MID: "first", Name: "晴天"}, {MID: "second", Name: "春日影"}}})
-	if len(a.suggestions.items) != 2 || a.suggestions.items[0].key == a.suggestions.items[1].key {
+	a.suggestions.Loading = false
+	a.suggestions.Items = suggestionList(qqmusic.Suggestions{Songs: []qqmusic.Track{{MID: "first", Name: "晴天"}, {MID: "second", Name: "春日影"}}})
+	if len(a.suggestions.Items) != 2 || a.suggestions.Items[0].Key == a.suggestions.Items[1].Key {
 		t.Fatal("suggestions share an identity")
 	}
 	tt.Frame()

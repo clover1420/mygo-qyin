@@ -10,7 +10,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // editTestApp is signed in, with liked songs, two playlists of their own
@@ -148,7 +148,7 @@ func TestCreatePlaylistForSong(t *testing.T) {
 		t.Fatalf("%v; the menu shows %q", err, tt.Menu())
 	}
 	tt.Frame()
-	if !a.naming.open || a.naming.add == nil || a.naming.add.ID != 2 {
+	if !a.naming.Open || a.naming.Add == nil || a.naming.Add.ID != 2 {
 		t.Fatalf("the dialog is %+v, want it open to add song 2", a.naming)
 	}
 }
@@ -356,7 +356,7 @@ func TestCancelUnfavoritePlaylist(t *testing.T) {
 	}
 	tt.Advance(300 * time.Millisecond)
 	tt.Frame()
-	if len(a.saved) != 1 || a.saved[0].ID != 20 || a.route != before || a.deleting.open {
+	if len(a.saved) != 1 || a.saved[0].ID != 20 || a.route != before || a.deleting.Open {
 		t.Fatal("cancelling changed the library or page, or left confirmation open")
 	}
 	select {
@@ -416,15 +416,15 @@ func TestPlaylistEditFrames(t *testing.T) {
 		save("playlist" + suffix)
 		a.newPlaylist(nil)
 		save("create" + suffix)
-		a.naming.open = false
+		a.naming.Open = false
 		a.startRename(a.editable(11))
 		save("rename" + suffix)
-		a.naming.open = false
+		a.naming.Open = false
 		a.confirmDelete(a.editable(11))
 		save("delete" + suffix)
-		a.deleting.open = false
+		a.deleting.Open = false
 		a.confirmUnfavorite(&a.saved[0])
 		save("unfavorite" + suffix)
-		a.deleting.open = false
+		a.deleting.Open = false
 	}
 }

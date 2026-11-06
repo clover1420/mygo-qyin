@@ -13,7 +13,7 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // With NM_FRAMES set, saves flowing, settling and endpoint frames in both

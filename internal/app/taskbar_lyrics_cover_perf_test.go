@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // A ready taskbar cover must not introduce an artwork fade or keep paused lyrics rebuilding.

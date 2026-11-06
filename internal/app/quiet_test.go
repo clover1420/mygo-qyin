@@ -6,8 +6,8 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
 )
 
 // quietApp is Now Playing a song sung from 20 s to 30 s, quiet before and

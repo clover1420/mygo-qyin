@@ -5,7 +5,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 var readSongShelves = qqmusic.RecommendedSongShelves
@@ -106,14 +106,14 @@ func (a *app) playShelfSong(shelf *qqmusic.SongShelf, i int) {
 }
 func (a *app) songShelfSkeleton(c *ui.Context, s shimmer) {
 	ui.Column(c).Margin(28, 0, 0, 0).Gap(10).Children(func() {
-		s.text(c, 19, 1.4).WidthPercent(40)
+		s.Text(c, 19, 1.4).WidthPercent(40)
 		ui.Grid(c).Columns(a.songShelfColumns(c)).GapX(16).GapY(4).Children(func() {
 			for i := range a.songShelfColumns(c) * 2 {
 				ui.Row(c.Key(i)).Height(76).Padding(6).Gap(10).AlignItems(ui.Center).Children(func() {
-					s.bone(c, 6).Size(48, 48)
+					s.Bone(c, 6).Size(48, 48)
 					ui.Column(c).Grow(1).MinWidth(0).Gap(5).Children(func() {
-						s.text(c, 13.5, 1.3).WidthPercent(boneWidth(i))
-						s.text(c, 12, 1.3).WidthPercent(45)
+						s.Text(c, 13.5, 1.3).WidthPercent(boneWidth(i))
+						s.Text(c, 12, 1.3).WidthPercent(45)
 					})
 				})
 			}

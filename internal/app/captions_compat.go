@@ -3,10 +3,10 @@ package app
 import (
 	"time"
 
-	"lilt/internal/captions"
+	"lilt/internal/media/captions"
 )
 
-// The captions model lives in lilt/internal/captions; the app keeps these
+// The captions model lives in lilt/internal/media/captions; the app keeps these
 // names while the pane that shows it still lives here.
 type captionState = captions.Model
 type modelState = captions.ModelState

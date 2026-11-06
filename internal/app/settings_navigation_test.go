@@ -13,7 +13,7 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Opening the guest account menu must not start login until its login action is chosen.
@@ -29,7 +29,7 @@ func TestGuestAccountMenuLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if !a.accountOpen || a.login.open || len(asked) != 0 {
+	if !a.accountOpen || a.login.Open || len(asked) != 0 {
 		t.Fatal("opening the account menu started login")
 	}
 	if !tt.Focused("登录 QQ 音乐") {
@@ -48,7 +48,7 @@ func TestGuestAccountMenuLogin(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if a.accountOpen || !a.login.open {
+	if a.accountOpen || !a.login.Open {
 		t.Fatal("login did not replace the guest menu")
 	}
 	wait(t, asked, "the guest login QR")
@@ -71,7 +71,7 @@ func TestAccountMenuOpensSettings(t *testing.T) {
 					t.Fatal(err)
 				}
 				tt.Frame()
-				if !a.settingsOpen || a.accountOpen || a.login.open {
+				if !a.settingsOpen || a.accountOpen || a.login.Open {
 					t.Fatalf("settings did not open over the window: open %v", a.settingsOpen)
 				}
 				if a.route != route || len(a.history) != 0 {

@@ -14,7 +14,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // An authorization error after scanning must offer retry instead of leaving the scanned overlay stuck.
@@ -29,13 +29,13 @@ func TestLoginErrorAfterScanCanRefresh(t *testing.T) {
 
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.login = loginState{open: true, gen: 7, key: "old-key", status: qqmusic.QRScanned, scanner: "listener", err: "authorization failed"}
+	a.login = loginState{Open: true, Gen: 7, Key: "old-key", Status: qqmusic.QRScanned, Scanner: "listener", Err: "authorization failed"}
 	tt := ui.NewTester(a.view, 1000, 700)
 	tt.Frame()
 	if err := tt.Click("刷新二维码"); err != nil {
 		t.Fatal(err)
 	}
-	if !a.login.open || a.login.gen != 8 || a.login.status != 0 || a.login.key != "" || a.login.err != "" || a.login.scanner != "" {
+	if !a.login.Open || a.login.Gen != 8 || a.login.Status != 0 || a.login.Key != "" || a.login.Err != "" || a.login.Scanner != "" {
 		t.Fatalf("retry retained the failed login: %+v", a.login)
 	}
 	wait(t, asked, "a new QQ login QR")
@@ -50,16 +50,16 @@ func TestLoginQRRefreshAfterFetchFailure(t *testing.T) {
 	t.Cleanup(func() { beginLoginQR = old })
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.login = loginState{open: true, gen: 1, err: "previous failure"}
+	a.login = loginState{Open: true, Gen: 1, Err: "previous failure"}
 	tt := ui.NewTester(a.view, 1000, 700)
 	tt.Frame()
 	if err := tt.Click("刷新二维码"); err != nil {
 		t.Fatal(err)
 	}
 	wait(t, asked, "the first QR refresh")
-	first := a.login.gen
+	first := a.login.Gen
 	failure := &qqmusic.LoginError{Step: "qr-show", Err: &url.Error{Op: "Get", URL: "https://xui.ptlogin2.qq.com/ssl/ptqrshow?private=fake", Err: io.EOF}}
-	if a.acceptLoginQR(first, "", nil, failure) || a.login.err == "" || a.login.key != "" || a.login.code != nil {
+	if a.acceptLoginQR(first, "", nil, failure) || a.login.Err == "" || a.login.Key != "" || a.login.Code != nil {
 		t.Fatal("failed fetch left a ready QR")
 	}
 	tt.Frame()
@@ -67,7 +67,7 @@ func TestLoginQRRefreshAfterFetchFailure(t *testing.T) {
 		t.Fatal(err)
 	}
 	wait(t, asked, "the second QR refresh")
-	second := a.login.gen
+	second := a.login.Gen
 	bitmap := ui.NewBitmap(image.NewRGBA(image.Rect(0, 0, 37, 37)))
 	if a.acceptLoginQR(first, "stale", bitmap, nil) {
 		t.Fatal("old QR response replaced the new refresh")
@@ -75,7 +75,7 @@ func TestLoginQRRefreshAfterFetchFailure(t *testing.T) {
 	if !a.acceptLoginQR(second, "fresh", bitmap, nil) {
 		t.Fatal("fresh QR was discarded")
 	}
-	if a.login.key != "fresh" || a.login.code != bitmap || a.login.status != qqmusic.QRWaiting || a.login.err != "" {
+	if a.login.Key != "fresh" || a.login.Code != bitmap || a.login.Status != qqmusic.QRWaiting || a.login.Err != "" {
 		t.Fatal("fresh QR did not replace the failed fetch")
 	}
 	tt.Frame()
@@ -89,14 +89,14 @@ func TestLoginSwitchesToWechatAndRefreshes(t *testing.T) {
 	t.Cleanup(func() { beginWechatLoginQR = old })
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.login = loginState{open: true, gen: 4, key: "old-qq", status: qqmusic.QRWaiting}
+	a.login = loginState{Open: true, Gen: 4, Key: "old-qq", Status: qqmusic.QRWaiting}
 	tt := ui.NewTester(a.view, 1000, 700)
 	tt.Frame()
 	if err := tt.Click("微信"); err != nil {
 		t.Fatal(err)
 	}
 	wait(t, asked, "a WeChat QR")
-	if !a.login.wechat || a.login.gen != 5 || a.login.key != "" {
+	if !a.login.Wechat || a.login.Gen != 5 || a.login.Key != "" {
 		t.Fatal("switch retained QQ login")
 	}
 	if a.acceptLoginQR(4, "stale-qq", nil, nil) {
@@ -108,7 +108,7 @@ func TestLoginSwitchesToWechatAndRefreshes(t *testing.T) {
 		t.Fatal(err)
 	}
 	wait(t, asked, "a refreshed WeChat QR")
-	if !a.login.wechat || a.login.gen != 6 {
+	if !a.login.Wechat || a.login.Gen != 6 {
 		t.Fatal("refresh changed the login channel")
 	}
 	tt.Frame()
@@ -133,7 +133,7 @@ func TestWechatLoginFrames(t *testing.T) {
 	for _, dark := range []bool{false, true} {
 		a := newTestApp()
 		a.settings = defaultSettings()
-		a.login = loginState{open: true, wechat: true, status: qqmusic.QRWaiting, code: ui.NewBitmap(qr)}
+		a.login = loginState{Open: true, Wechat: true, Status: qqmusic.QRWaiting, Code: ui.NewBitmap(qr)}
 		tt := ui.NewTester(a.view, 1000, 700)
 		tt.SetDark(dark)
 		tt.Advance(time.Second)

@@ -1,9 +1,9 @@
 package app
 
-import "lilt/internal/theme"
+import "lilt/internal/ui/base/theme"
 
 // The app reads the theme through these names while its views still live in
-// this package; feature packages import lilt/internal/theme directly.
+// this package; feature packages import lilt/internal/ui/base/theme directly.
 type palette = theme.Palette
 
 var (

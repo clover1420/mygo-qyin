@@ -10,9 +10,9 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	"lilt/internal/lyricsui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/features/lyricsui"
 )
 
 // Locking removes the hover adjustment plate so only the lyrics remain over the desktop.

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/lyrics"
+	"lilt/internal/media/lyrics"
 )
 
 // Choosing single or double desktop lyrics applies immediately and saves the choice in both directions.

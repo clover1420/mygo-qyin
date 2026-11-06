@@ -13,9 +13,9 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	notchpkg "lilt/internal/notch"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
+	notchpkg "lilt/internal/ui/features/notch"
 )
 
 // Seeking in the main window while paused refreshes the compact lyric;

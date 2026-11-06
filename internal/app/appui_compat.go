@@ -1,9 +1,9 @@
 package app
 
-import "lilt/internal/appui"
+import "lilt/internal/ui/base/appui"
 
 // The app reads the shared controls through these names while its views
-// still live in this package; feature packages import lilt/internal/appui.
+// still live in this package; feature packages import lilt/internal/ui/base/appui.
 type buttonSurface = appui.ButtonSurface
 
 const (

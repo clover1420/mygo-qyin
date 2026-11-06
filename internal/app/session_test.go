@@ -6,7 +6,7 @@ import (
 
 	"github.com/egoist/mygo/audio"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // The session is kept a while after playback changes and every while as

@@ -6,7 +6,7 @@ import (
 
 	"github.com/egoist/mygo"
 
-	"lilt/internal/player"
+	"lilt/internal/media/player"
 )
 
 // newSongCache returns the cache of songs played, in the app's cache

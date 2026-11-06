@@ -8,7 +8,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Closing Now Playing used to keep its backdrop canvas, and the texture
@@ -24,16 +24,16 @@ func TestNowPlayingReleasesBackdrop(t *testing.T) {
 	tt.Advance(time.Second)
 	tt.Frame()
 	tt.Image()
-	if a.backdropCache.canvas == nil {
+	if a.backdropCache.Canvas == nil {
 		t.Fatal("Now Playing did not create its backdrop")
 	}
-	old := weak.Make(a.backdropCache.canvas)
+	old := weak.Make(a.backdropCache.Canvas)
 	a.nowPlaying = false
 	tt.Frame()
 	tt.Advance(2 * time.Second)
 	tt.Frame()
 	tt.Image()
-	if a.backdropCache.canvas != nil || a.backdropCache.before != nil {
+	if a.backdropCache.Canvas != nil || a.backdropCache.Before != nil {
 		t.Fatal("the closed view retained its backdrop")
 	}
 	runtime.GC()

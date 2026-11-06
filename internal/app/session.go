@@ -5,8 +5,8 @@ import (
 
 	"github.com/egoist/mygo"
 
-	"lilt/internal/qqmusic"
-	"lilt/internal/session"
+	"lilt/internal/core/session"
+	"lilt/internal/media/qqmusic"
 )
 
 // saveSession keeps where playback is, if it moved on since last kept.

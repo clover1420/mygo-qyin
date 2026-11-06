@@ -10,7 +10,7 @@ import (
 
 	"github.com/egoist/mygo"
 
-	"lilt/internal/lyricsui"
+	"lilt/internal/ui/features/lyricsui"
 )
 
 func taskbarLyricsNativeSnapshot(a *app) map[string]any {

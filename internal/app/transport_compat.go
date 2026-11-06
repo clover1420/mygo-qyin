@@ -3,10 +3,10 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/transport"
+	"lilt/internal/ui/base/transport"
 )
 
-// The playback controls live in lilt/internal/transport; the app keeps
+// The playback controls live in lilt/internal/ui/base/transport; the app keeps
 // these names while its views still live here.
 type scrubState = transport.State
 type barState = transport.Bar

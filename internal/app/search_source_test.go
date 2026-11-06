@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 type sourceSearchRequest struct {

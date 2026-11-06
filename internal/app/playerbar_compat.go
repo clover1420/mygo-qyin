@@ -3,10 +3,10 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/playerbar"
+	"lilt/internal/ui/features/playerbar"
 )
 
-// The player bar lives in lilt/internal/playerbar; the app keeps its
+// The player bar lives in lilt/internal/ui/features/playerbar; the app keeps its
 // listener's state and these names while its views still live here.
 type pickedUp = playerbar.Picked
 

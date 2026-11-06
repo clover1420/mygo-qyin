@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 func taskbarFrameHasInk(frame image.Image) bool {

@@ -11,8 +11,8 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/player"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/player"
+	"lilt/internal/media/qqmusic"
 )
 
 // The drift eases in as the music plays and glides to a stop as it
@@ -23,32 +23,32 @@ func TestBackdropDrifts(t *testing.T) {
 	var quiet [player.Bands]float32
 	for range 120 {
 		now = now.Add(backdropFrame)
-		bd.step(now, true, quiet, true)
+		bd.Step(now, true, quiet, true)
 	}
-	if bd.speed != 1 || bd.drift <= 0 {
-		t.Fatalf("playing: speed %v, drift %v", bd.speed, bd.drift)
+	if bd.Speed != 1 || bd.Drift <= 0 {
+		t.Fatalf("playing: speed %v, drift %v", bd.Speed, bd.Drift)
 	}
 	var loud [player.Bands]float32
 	for i := range loud {
 		loud[i] = 1
 	}
 	now = now.Add(backdropFrame)
-	bd.step(now, true, loud, true)
-	if bd.level.Group(0, 6) <= 0.2 {
-		t.Errorf("bass %v on a beat", bd.level.Group(0, 6))
+	bd.Step(now, true, loud, true)
+	if bd.Level.Group(0, 6) <= 0.2 {
+		t.Errorf("bass %v on a beat", bd.Level.Group(0, 6))
 	}
 	moving := true
 	for range 120 {
 		now = now.Add(backdropFrame)
-		moving = bd.step(now, false, quiet, false)
+		moving = bd.Step(now, false, quiet, false)
 	}
-	if moving || bd.speed != 0 {
-		t.Errorf("paused: still moving, speed %v", bd.speed)
+	if moving || bd.Speed != 0 {
+		t.Errorf("paused: still moving, speed %v", bd.Speed)
 	}
-	at := bd.drift
+	at := bd.Drift
 	now = now.Add(time.Second)
-	bd.step(now, false, quiet, false)
-	if bd.drift != at {
+	bd.Step(now, false, quiet, false)
+	if bd.Drift != at {
 		t.Error("drifted while paused")
 	}
 }

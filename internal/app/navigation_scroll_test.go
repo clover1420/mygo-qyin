@@ -7,7 +7,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // Returning from a scrolled playlist used to reset the home and chart grids, and Forward lost the playlist's place too.

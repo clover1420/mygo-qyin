@@ -13,7 +13,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // searchRequest is a search asked of NetEase.
@@ -261,8 +261,8 @@ func TestSuggestionOpensPage(t *testing.T) {
 		t.Fatalf("suggestions for %q", q)
 	}
 	// As they land, which post drops without a window.
-	a.suggestions.loading = false
-	a.suggestions.items = suggestionList(qqmusic.Suggestions{
+	a.suggestions.Loading = false
+	a.suggestions.Items = suggestionList(qqmusic.Suggestions{
 		Albums: []qqmusic.AlbumProfile{{Album: qqmusic.Album{ID: 8, Name: "迷跡波"}, Artists: []qqmusic.Artist{{Name: "MyGO!!!!!"}}}},
 		Order:  []string{"albums"},
 	})

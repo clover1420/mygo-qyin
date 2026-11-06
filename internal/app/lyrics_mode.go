@@ -1,6 +1,6 @@
 package app
 
-import "lilt/internal/lyricsui"
+import "lilt/internal/ui/features/lyricsui"
 
 const (
 	lyricsDesktop = lyricsui.DesktopMode

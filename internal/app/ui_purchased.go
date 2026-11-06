@@ -1,7 +1,7 @@
 package app
 
 import (
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 const (

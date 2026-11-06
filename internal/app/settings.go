@@ -7,11 +7,11 @@ import (
 
 	"github.com/egoist/mygo"
 
-	settingspkg "lilt/internal/settings"
+	settingspkg "lilt/internal/core/settings"
 )
 
 // settings are the listener's choices; the model and its persistence live in
-// lilt/internal/settings while the views still live here.
+// lilt/internal/core/settings while the views still live here.
 type settings = settingspkg.Settings
 
 var defaultSettings = settingspkg.Default

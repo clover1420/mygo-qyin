@@ -13,8 +13,8 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyrics"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/lyrics"
+	"lilt/internal/media/qqmusic"
 )
 
 func TestLikeFromPlayerBar(t *testing.T) {

@@ -8,9 +8,9 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/captions"
-	"lilt/internal/qqmusic"
-	"lilt/internal/speech"
+	"lilt/internal/media/captions"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/media/speech"
 )
 
 const sec = time.Second

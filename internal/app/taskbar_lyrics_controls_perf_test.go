@@ -6,7 +6,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/lyricsui"
+	"lilt/internal/ui/features/lyricsui"
 )
 
 // Paused or dismissed taskbar controls must not ask for frames after their interaction animations settle.

@@ -9,7 +9,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // skeletonScenes are the views that load, as they show while they do.
@@ -32,7 +32,7 @@ var skeletonScenes = []struct {
 		a.route = route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchArtists}
 		a.searches[a.route] = &searchData{page: paged{loading: true}}
 	}},
-	{"login", func(a *app) { a.login = loginState{open: true} }},
+	{"login", func(a *app) { a.login = loginState{Open: true} }},
 	{"comments", func(a *app) {
 		a.nowPlaying, a.npPane = true, paneComments
 		a.comments = commentState{track: 1, loading: true}

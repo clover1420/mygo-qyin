@@ -3,7 +3,7 @@ package app
 import (
 	"slices"
 
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
 )
 
 // These load a podcast and its episodes from NetEase, and subscribe to it,

@@ -9,8 +9,8 @@ import (
 
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
-	"lilt/internal/lyricsui"
-	"lilt/internal/qqmusic"
+	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/features/lyricsui"
 )
 
 func taskbarControlsFixture() (*app, *taskbarLyrics) {

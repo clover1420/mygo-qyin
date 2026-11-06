@@ -7,9 +7,9 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
-	"lilt/internal/navigation"
-	"lilt/internal/player"
-	"lilt/internal/qqmusic"
+	"lilt/internal/core/navigation"
+	"lilt/internal/media/player"
+	"lilt/internal/media/qqmusic"
 )
 
 type pageKind = navigation.Page
