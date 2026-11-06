@@ -162,7 +162,7 @@ func TestWallFrames(t *testing.T) {
 		for i := range a.pl.Queue() {
 			url := fmt.Sprintf("art%d", i)
 			a.pl.Queue()[i].Album.PicURL = url
-			a.art.art[qqmusic.Sized(url, 240)] = &artwork{bmp: solidBitmap(colors[i%len(colors)]), tint: colors[i%len(colors)]}
+			a.art.Add(qqmusic.Sized(url, 240), &artwork{BMP: solidBitmap(colors[i%len(colors)]), Tint: colors[i%len(colors)]})
 		}
 		tt.Advance(time.Second)
 		tt.Frame()

@@ -17,7 +17,7 @@ import (
 func queuePopupApp(n int) *app {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.route = route{page: pageCharts}
+	a.route = route{Page: pageCharts}
 	tracks := make([]qqmusic.Track, n)
 	for i := range tracks {
 		tracks[i] = qqmusic.Track{ID: int64(i + 1), Name: fmt.Sprintf("队列歌曲 %02d", i+1), Duration: 200000,
@@ -174,7 +174,7 @@ func TestPlayerQueuePopoverNavigation(t *testing.T) {
 	// A single artist's rich paragraph spans the row; click its first word.
 	tt.ClickAt(r.X+5, r.Y+r.H/2)
 	tt.Frame()
-	if a.queueOpen || a.route.page != pageArtist || a.route.id != 2 {
+	if a.queueOpen || a.route.Page != pageArtist || a.route.ID != 2 {
 		t.Fatalf("artist navigation: queue open=%v, route=%+v", a.queueOpen, a.route)
 	}
 	if err := tt.Click("待播清单"); err != nil {

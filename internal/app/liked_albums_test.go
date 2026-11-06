@@ -70,7 +70,7 @@ func TestLikedTabsKeepHeaderGeometry(t *testing.T) {
 	for _, width := range []int{1000, 1200} {
 		t.Run(fmt.Sprint(width), func(t *testing.T) {
 			a := likedLayoutApp()
-			a.open(route{page: pagePlaylist, id: 7})
+			a.open(route{Page: pagePlaylist, ID: 7})
 			tt := newNavTester(a, width, 800)
 			tt.Frame()
 			songsTab, albumsTab := likedBounds(t, tt, "单曲"), likedBounds(t, tt, "专辑")
@@ -100,7 +100,7 @@ func TestLikedTabsKeepHeaderGeometry(t *testing.T) {
 // Each liked tab remembers its own actual scroll position, including after visiting an album detail page.
 func TestLikedTabsRememberIndependentScroll(t *testing.T) {
 	a := likedLayoutApp()
-	a.open(route{page: pagePlaylist, id: 7})
+	a.open(route{Page: pagePlaylist, ID: 7})
 	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	startSong := likedBounds(t, tt, "喜欢的单曲01")
@@ -134,7 +134,7 @@ func TestLikedTabsRememberIndependentScroll(t *testing.T) {
 	if err := tt.Click("迷跡波"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route != (route{page: pageAlbum, id: 8}) {
+	if a.route != (route{Page: pageAlbum, ID: 8}) {
 		t.Fatalf("album route: %+v", a.route)
 	}
 	tt.Key(0, ui.KeyBack)
@@ -150,7 +150,7 @@ func TestLikedTabsRememberIndependentScroll(t *testing.T) {
 // The shared liked header still starts the song queue in order and honors its shuffle action.
 func TestLikedHeaderPlayback(t *testing.T) {
 	a := likedLayoutApp()
-	a.open(route{page: pagePlaylist, id: 7})
+	a.open(route{Page: pagePlaylist, ID: 7})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if err := tt.Click("随机播放"); err != nil {
@@ -180,25 +180,25 @@ func TestLikedAlbumNavigation(t *testing.T) {
 	if err := tt.Click("专辑"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route != (route{page: pagePlaylist, id: 7, tab: 1}) {
+	if a.route != (route{Page: pagePlaylist, ID: 7, Tab: 1}) {
 		t.Fatalf("album tab route: %+v", a.route)
 	}
 	tt.Frame()
 	if err := tt.Click("迷跡波"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route != (route{page: pageAlbum, id: 8}) {
+	if a.route != (route{Page: pageAlbum, ID: 8}) {
 		t.Fatalf("album route: %+v", a.route)
 	}
 	a.back()
 	tt.Frame()
-	if a.route != (route{page: pagePlaylist, id: 7, tab: 1}) {
+	if a.route != (route{Page: pagePlaylist, ID: 7, Tab: 1}) {
 		t.Fatalf("back route: %+v", a.route)
 	}
 	if err := tt.Click("单曲"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route != (route{page: pagePlaylist, id: 7}) {
+	if a.route != (route{Page: pagePlaylist, ID: 7}) {
 		t.Fatalf("single tab route: %+v", a.route)
 	}
 }
@@ -215,7 +215,7 @@ func TestLikedAlbumPaginationAndRefresh(t *testing.T) {
 	a := likedAlbumsApp()
 	d := a.likedAlbums
 	d.page.more = true
-	a.open(route{page: pagePlaylist, id: 7, tab: 1})
+	a.open(route{Page: pagePlaylist, ID: 7, Tab: 1})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	tt.Frame()
@@ -251,7 +251,7 @@ func TestAlbumHeartWritesAndConfirms(t *testing.T) {
 	asks := make(chan request, 4)
 	likeAlbum = func(mid string, liked bool) error { asks <- request{mid, liked}; return nil }
 	a := likedAlbumsApp()
-	a.open(route{page: pageAlbum, id: 8})
+	a.open(route{Page: pageAlbum, ID: 8})
 	d := a.albums[8]
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
@@ -299,7 +299,7 @@ func TestAlbumHeartRetriesUnknownStatus(t *testing.T) {
 	a := likedAlbumsApp()
 	d := a.albums[8]
 	d.likeKnown = false
-	a.open(route{page: pageAlbum, id: 8})
+	a.open(route{Page: pageAlbum, ID: 8})
 	if mid := wait(t, reads, "album status"); mid != "AlbumMID" {
 		t.Fatalf("read MID: %s", mid)
 	}
@@ -331,7 +331,7 @@ func TestLikedAlbumFrames(t *testing.T) {
 	for tab, name := range []string{"songs", "albums"} {
 		for _, dark := range []bool{false, true} {
 			a := likedLayoutApp()
-			a.open(route{page: pagePlaylist, id: 7, tab: tab})
+			a.open(route{Page: pagePlaylist, ID: 7, Tab: tab})
 			tt := ui.NewTester(a.view, 1200, 800)
 			tt.SetDark(dark)
 			tt.Advance(time.Second)

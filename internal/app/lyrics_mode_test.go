@@ -29,18 +29,18 @@ func TestLyricsModeSettingsMigration(t *testing.T) {
 			if !supportsTaskbarLyrics() {
 				mode, desktop, taskbar = "desktop", s.DesktopLyrics && supportsDesktopLyrics(), false
 			}
-			s.normalizeLyrics()
-			if s.LyricsMode != mode || s.lyricsMode() != mode || s.DesktopLyrics != desktop || s.TaskbarLyrics != taskbar || s.lyricsEnabled() != (desktop || taskbar) {
-				t.Fatalf("migration = mode %q desktop %t taskbar %t enabled %t, want %q/%t/%t/%t", s.LyricsMode, s.DesktopLyrics, s.TaskbarLyrics, s.lyricsEnabled(), mode, desktop, taskbar, desktop || taskbar)
+			normalizeLyrics(&s)
+			if s.LyricsMode != mode || lyricsMode(s) != mode || s.DesktopLyrics != desktop || s.TaskbarLyrics != taskbar || lyricsEnabled(s) != (desktop || taskbar) {
+				t.Fatalf("migration = mode %q desktop %t taskbar %t enabled %t, want %q/%t/%t/%t", s.LyricsMode, s.DesktopLyrics, s.TaskbarLyrics, lyricsEnabled(s), mode, desktop, taskbar, desktop || taskbar)
 			}
 			a := newTestApp()
 			a.settings = s
-			a.settings.path = filepath.Join(t.TempDir(), "settings.json")
-			if err := a.settings.save(); err != nil {
+			a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
+			if err := a.settings.Save(); err != nil {
 				t.Fatal(err)
 			}
 			restored := readDesktopLyricsEntrySettings(t, a)
-			restored.normalizeLyrics()
+			normalizeLyrics(&restored)
 			if restored.LyricsMode != mode || restored.DesktopLyrics != desktop || restored.TaskbarLyrics != taskbar {
 				t.Fatal("saving and restoring migrated settings changed the selected lyric owner")
 			}
@@ -57,7 +57,7 @@ func TestLyricsModeOwnerControls(t *testing.T) {
 	a.settings = defaultSettings()
 	a.setDesktopLyricsEnabled(true)
 	a.setTaskbarLyricsEnabled(true)
-	if a.settings.DesktopLyrics || !a.settings.TaskbarLyrics || a.settings.lyricsMode() != "taskbar" {
+	if a.settings.DesktopLyrics || !a.settings.TaskbarLyrics || lyricsMode(a.settings) != "taskbar" {
 		t.Fatal("opening taskbar lyrics did not replace desktop lyrics")
 	}
 	a.setDesktopLyricsEnabled(false)
@@ -65,17 +65,17 @@ func TestLyricsModeOwnerControls(t *testing.T) {
 		t.Fatal("closing inactive desktop lyrics turned off taskbar lyrics")
 	}
 	stopped := 0
-	a.taskbarLyrics.stop = func() { stopped++ }
+	a.taskbarLyrics.Stop = func() { stopped++ }
 	a.setDesktopLyricsEnabled(true)
-	if !a.settings.DesktopLyrics || a.settings.TaskbarLyrics || a.settings.lyricsMode() != "desktop" || a.taskbarLyrics != nil || stopped != 1 {
+	if !a.settings.DesktopLyrics || a.settings.TaskbarLyrics || lyricsMode(a.settings) != "desktop" || a.taskbarLyrics != nil || stopped != 1 {
 		t.Fatal("opening desktop lyrics did not replace and stop taskbar lyrics")
 	}
 	a.setTaskbarLyricsEnabled(false)
 	if !a.settings.DesktopLyrics {
 		t.Fatal("closing inactive taskbar lyrics turned off desktop lyrics")
 	}
-	a.desktopLyrics.close()
-	if a.settings.lyricsEnabled() || a.settings.lyricsMode() != "desktop" {
+	a.desktopLyrics.Close()
+	if lyricsEnabled(a.settings) || lyricsMode(a.settings) != "desktop" {
 		t.Fatal("closing the desktop window lost its selected mode")
 	}
 	a.setLyricsEnabled(true)
@@ -91,7 +91,7 @@ func TestLyricsModeRejectUnavailable(t *testing.T) {
 	if supportsDesktopLyrics() {
 		a.setDesktopLyricsEnabled(true)
 	}
-	mode, desktop, taskbar := a.settings.lyricsMode(), a.settings.DesktopLyrics, a.settings.TaskbarLyrics
+	mode, desktop, taskbar := lyricsMode(a.settings), a.settings.DesktopLyrics, a.settings.TaskbarLyrics
 	unavailable := []string{"invalid"}
 	if !supportsTaskbarLyrics() {
 		unavailable = append(unavailable, "taskbar")
@@ -101,7 +101,7 @@ func TestLyricsModeRejectUnavailable(t *testing.T) {
 	}
 	for _, choice := range unavailable {
 		a.setLyricsMode(choice)
-		if a.settings.lyricsMode() != mode || a.settings.DesktopLyrics != desktop || a.settings.TaskbarLyrics != taskbar {
+		if lyricsMode(a.settings) != mode || a.settings.DesktopLyrics != desktop || a.settings.TaskbarLyrics != taskbar {
 			t.Fatalf("unavailable mode %q changed the active lyrics", choice)
 		}
 	}

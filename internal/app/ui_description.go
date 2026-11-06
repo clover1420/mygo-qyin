@@ -33,7 +33,7 @@ func (a *app) collectionDescription(c *ui.Context, description string) {
 	p := a.pal
 	preview := strings.ReplaceAll(description, "\n", " ")
 	anchor := ui.Text(c.Key("description"), preview).
-		FontSize(12.5).TextColor(p.muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0).Label("简介").Description(description)
+		FontSize(12.5).TextColor(p.Muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0).Label("简介").Description(description)
 	s := ui.Local(anchor, "hover", func() descriptionHover { return descriptionHover{} })
 	hovered := anchor.Hovered()
 	width := anchor.LayoutBounds().W
@@ -78,7 +78,7 @@ func (a *app) collectionDescription(c *ui.Context, description string) {
 		panel.Width(cardWidth).Padding(16, 4, 16, 16).Margin(8, 0, 0, 0).Label("完整简介")
 		a.pane(panel, 14, false)
 		ui.Scroll(c.Key("description-scroll")).Height(min(s.popupHeight, min(float32(320), h*0.45)-32)).Padding(0, scrollbarGutter, 0, 0).Focusable().Label("简介内容").Children(func() {
-			ui.Text(c, description).FontSize(13).TextColor(p.text).LineHeight(1.6).Selectable()
+			ui.Text(c, description).FontSize(13).TextColor(p.Text).LineHeight(1.6).Selectable()
 		})
 	})
 	if wasOpen && !s.open {

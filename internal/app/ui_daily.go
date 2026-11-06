@@ -17,11 +17,11 @@ import (
 func (a *app) dailyArt(c *ui.Context, now time.Time, size float32) {
 	var art *artwork
 	if len(a.daily) > 0 {
-		art = a.art.get(qqmusic.Sized(a.daily[0].Album.PicURL, 600), true)
+		art = a.art.Get(qqmusic.Sized(a.daily[0].Album.PicURL, 600), true)
 	}
 	radius := size * 0.07
 	box := ui.Box(c).Size(size, size).Radius(radius).Background(neutral(true, 6)).
-		Shadow(0, 18, 40, -10, a.pal.cardShade)
+		Shadow(0, 18, 40, -10, a.pal.CardShade)
 	in := artIn(box, backdrop(art))
 	box.Children(func() {
 		artImage(c, backdrop(art), radius, in)
@@ -51,7 +51,7 @@ func (a *app) dailyCard(c *ui.Context, now time.Time) {
 	w, _ := c.Size()
 	inner := w - sidebarWidth - 2*pagePad
 	still := c.Preferences().ReduceMotion
-	art := a.art.get(qqmusic.Sized(songs[0].Album.PicURL, 600), true)
+	art := a.art.Get(qqmusic.Sized(songs[0].Album.PicURL, 600), true)
 	card := ui.ButtonBase(c.Key("daily")).Height(dailyHeight).Radius(dailyRadius).FocusRing(false).Label("每日推荐").TextColor(white)
 	hovered := card.Hovered()
 	ours, playing := a.dailyPlaying()
@@ -62,7 +62,7 @@ func (a *app) dailyCard(c *ui.Context, now time.Time) {
 	deep, rich, glow = card.AnimateColor("deep", deep, fade), card.AnimateColor("rich", rich, fade), card.AnimateColor("glow", glow, fade)
 	card.Background(deep)
 	lift := card.AnimateTo("lift", b2f(hovered), ui.Snappy)
-	card.Shadow(0, 14+8*lift, 34+12*lift, -14, a.pal.cardShade)
+	card.Shadow(0, 14+8*lift, 34+12*lift, -14, a.pal.CardShade)
 	// A sheen sweeps across once as the pointer comes in.
 	sweep := float32(0)
 	if hovered && !still {
@@ -132,7 +132,7 @@ func (a *app) dailyCard(c *ui.Context, now time.Time) {
 		})
 	})
 	if card.Clicked() {
-		a.open(route{page: pageDaily})
+		a.open(route{Page: pageDaily})
 	}
 }
 
@@ -174,8 +174,8 @@ func (a *app) dailyPlaying() (ours, playing bool) {
 // still loading, takes NetEase's red.
 func dailyColors(art *artwork) (deep, rich, glow ui.Color) {
 	h, s := 356.0, 0.74
-	if art != nil && !art.failed {
-		th, ts, _ := hsv(float64(art.tint.R)/255, float64(art.tint.G)/255, float64(art.tint.B)/255)
+	if art != nil && !art.Failed {
+		th, ts, _ := hsv(float64(art.Tint.R)/255, float64(art.Tint.G)/255, float64(art.Tint.B)/255)
 		if ts > 0.15 {
 			h, s = th, min(max(ts*1.2, 0.5), 0.78)
 		}
@@ -318,12 +318,12 @@ func (a *app) dailyPlayButton(c *ui.Context, songs []qqmusic.Track, ours, playin
 	b.Label(label)
 	b.Children(func() {
 		if playing && !b.Hovered() {
-			accent := a.pal.accent
+			accent := a.pal.Accent
 			ui.Box(c).Size(14, 13).Draw(func(p *ui.Painter, r ui.Rect) {
 				lv, live := a.pl.Levels()
-				a.dailyBars.step(p.Now(), lv, live)
+				a.dailyBars.Step(p.Now(), lv, live)
 				drawBars(p, r, &a.dailyBars, 4, accent, 2.5)
-				if live || a.dailyBars.group(0, player.Bands) > 0.01 {
+				if live || a.dailyBars.Group(0, player.Bands) > 0.01 {
 					p.AnimationFrameRate(dailyRate)
 				}
 			})
@@ -406,7 +406,7 @@ func (a *app) dailyStack(c *ui.Context, songs []qqmusic.Track, fanned bool, out 
 		ui.Box(c.Key("record")).Absolute().Left(mid+recordOut(out)-recordSize/2).Top((sleeveSize-recordSize)/2).
 			Size(recordSize, recordSize).Radius(recordSize/2).Shadow(0, 8, 20, -4, ink.Alpha(0.5)).
 			Draw(func(p *ui.Painter, r ui.Rect) {
-				drawRecord(p, r, bitmap(a.art.get(qqmusic.Sized(songs[0].Album.PicURL, 240), false)), float32(a.dailySpin.angle))
+				drawRecord(p, r, bitmap(a.art.Get(qqmusic.Sized(songs[0].Album.PicURL, 240), false)), float32(a.dailySpin.angle))
 			})
 		// The sleeve.
 		sleeve := ui.Box(c.Key("sleeve")).Absolute().Left(sleeveLeft).Top(0).Size(sleeveSize, sleeveSize).Radius(14).
@@ -489,7 +489,7 @@ func (a *app) dailyPage(c *ui.Context) {
 		ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 26, 0).Children(func() {
 			a.dailyArt(c, now, 212)
 			ui.Column(c).Gap(8).Children(func() {
-				ui.Text(c, "每日推荐").FontSize(12).FontWeight(600).TextColor(p.accent)
+				ui.Text(c, "每日推荐").FontSize(12).FontWeight(600).TextColor(p.Accent)
 				ui.Text(c, "每日歌曲推荐").FontSize(30).FontWeight(800).LetterSpacing(-0.6)
 				if loading {
 					s.text(c, 13, 1.3).Width(240)
@@ -499,15 +499,15 @@ func (a *app) dailyPage(c *ui.Context) {
 					})
 					return
 				}
-				ui.Text(c, fmt.Sprintf("%d 首 · %s", len(songs), a.dailyBlurb())).FontSize(13).TextColor(p.muted)
+				ui.Text(c, fmt.Sprintf("%d 首 · %s", len(songs), a.dailyBlurb())).FontSize(13).TextColor(p.Muted)
 				ui.Row(c).Gap(10).Margin(8, 0, 0, 0).Children(func() {
-					if pillButton(c.Key("play"), iconPlay, "播放全部", p.accent, p.onAccent).Clicked() {
+					if pillButton(c.Key("play"), iconPlay, "播放全部", p.Accent, p.OnAccent).Clicked() {
 						if a.pl.Shuffle() {
 							a.pl.ToggleShuffle()
 						}
 						a.pl.PlayQueue(songs, firstPlayable(songs))
 					}
-					if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.hover.Over(p.bg), p.text).Clicked() {
+					if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Clicked() {
 						if !a.pl.Shuffle() {
 							a.pl.ToggleShuffle()
 						}

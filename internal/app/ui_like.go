@@ -75,19 +75,19 @@ func (a *app) moreLikedAlbums(d *likedAlbumData) {
 
 func (a *app) likedPlaylistPage(c *ui.Context, id int64) {
 	pl := a.playlists[id]
-	content := route{page: pagePlaylist, id: id}
+	content := route{Page: pagePlaylist, ID: id}
 	header := func(c *ui.Context) {
 		a.likedCollectionHeader(c, id)
 		ui.Row(c).AlignItems(ui.Center).Gap(12).Margin(0, 0, 18, 0).Children(func() {
-			tab := a.route.tab
+			tab := a.route.Tab
 			if segmented(c.Key("liked-kind"), &tab, "单曲", "专辑") {
 				r := a.route
-				r.tab = tab
+				r.Tab = tab
 				a.show(r)
 			}
 		})
 	}
-	if a.route.tab == 1 {
+	if a.route.Tab == 1 {
 		d := a.likedAlbums
 		if d == nil {
 			a.loadLikedAlbums(false)
@@ -147,7 +147,7 @@ func (a *app) likedCollectionHeader(c *ui.Context, id int64) {
 		count = len(pl.Tracks)
 	}
 	meta := fmt.Sprintf("%d 首单曲", count)
-	if a.route.tab == 1 {
+	if a.route.Tab == 1 {
 		meta = "正在加载专辑"
 		if d := a.likedAlbums; d != nil {
 			switch {
@@ -163,21 +163,21 @@ func (a *app) likedCollectionHeader(c *ui.Context, id int64) {
 		}
 	}
 	a.collectionHeader(c, pl, "收藏", meta, func() {
-		if a.route.tab == 1 {
+		if a.route.Tab == 1 {
 			d := a.likedAlbums
-			pillButton(c.Key("refresh-liked-albums"), iconReload, "刷新", p.hover.Over(p.bg), p.text).
+			pillButton(c.Key("refresh-liked-albums"), iconReload, "刷新", p.Hover.Over(p.Bg), p.Text).
 				Label("刷新收藏专辑").Disabled(d == nil || d.page.loading).
 				OnClick(func() { a.loadLikedAlbums(true) })
 			return
 		}
-		pillButton(c.Key("play"), iconPlay, "播放", p.accent, p.onAccent).Disabled(!loaded || len(pl.Tracks) == 0).
+		pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Disabled(!loaded || len(pl.Tracks) == 0).
 			OnClick(func() {
 				if a.pl.Shuffle() {
 					a.pl.ToggleShuffle()
 				}
 				a.pl.PlayQueue(pl.Tracks, firstPlayable(pl.Tracks))
 			})
-		pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.hover.Over(p.bg), p.text).Disabled(!loaded || len(pl.Tracks) == 0).
+		pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Disabled(!loaded || len(pl.Tracks) == 0).
 			OnClick(func() {
 				if !a.pl.Shuffle() {
 					a.pl.ToggleShuffle()
@@ -219,13 +219,13 @@ func (a *app) albumLikeButton(c *ui.Context, al *qqmusic.AlbumProfile) {
 		if d.likeLoading {
 			label = "正在读取专辑收藏状态"
 		}
-		iconButton(c.Key("like-album"), iconReload, 20, a.pal.muted, label).Disabled(d.likeLoading).
+		iconButton(c.Key("like-album"), iconReload, 20, a.pal.Muted, label).Disabled(d.likeLoading).
 			OnClick(func() { a.loadAlbumLike(d) })
 		return
 	}
-	icon, label, color := iconHeart, "收藏专辑", a.pal.muted
+	icon, label, color := iconHeart, "收藏专辑", a.pal.Muted
 	if a.profile != nil && d.likeUID == a.profile.UserID && d.likeKnown && d.liked {
-		icon, label, color = iconHeartFill, "取消收藏专辑", accent(a.pal.dark, 9)
+		icon, label, color = iconHeartFill, "取消收藏专辑", accent(a.pal.Dark, 9)
 	}
 	iconButton(c.Key("like-album"), icon, 20, color, label).Disabled(d.likeLoading).
 		OnClick(func() { a.toggleAlbumLike(d) })
@@ -264,7 +264,7 @@ func (a *app) albumLikeAnswered(uid int64, d *albumData, liked bool, err error) 
 	d.liked, d.likeKnown = liked, true
 	// Re-read the collection next time; its ordering belongs to QQ Music.
 	a.likedAlbums = nil
-	if a.route.page == pagePlaylist && a.route.tab == 1 && a.isLikedPlaylist(a.route.id) {
+	if a.route.Page == pagePlaylist && a.route.Tab == 1 && a.isLikedPlaylist(a.route.ID) {
 		a.loadLikedAlbums(false)
 	}
 }
@@ -315,7 +315,7 @@ func (a *app) toggleLike(tr *qqmusic.Track) {
 			for _, pl := range a.mine {
 				if pl.SpecialType == 5 {
 					delete(a.playlists, pl.ID)
-					if a.route.page == pagePlaylist && a.route.id == pl.ID {
+					if a.route.Page == pagePlaylist && a.route.ID == pl.ID {
 						a.loadPlaylist(pl.ID, false)
 					}
 				}
@@ -437,7 +437,7 @@ func (a *app) likeButton(c *ui.Context, tr *qqmusic.Track, size float32, color u
 	liked := a.isLiked(tr)
 	icon, label := iconHeart, "喜欢"
 	if liked {
-		icon, color, label = iconHeartFill, accent(a.pal.dark, 9), "取消喜欢"
+		icon, color, label = iconHeartFill, accent(a.pal.Dark, 9), "取消喜欢"
 	}
 	// The burst goes on a wrapper, which the heart's pop does not scale.
 	wrap := ui.Box(c).Center()
@@ -458,7 +458,7 @@ func (a *app) likeButton(c *ui.Context, tr *qqmusic.Track, size float32, color u
 		a.toggleLike(tr)
 	}
 	if !burst.IsZero() {
-		start, accent := *burst, accent(a.pal.dark, 9)
+		start, accent := *burst, accent(a.pal.Dark, 9)
 		wrap.DrawOver(func(p *ui.Painter, r ui.Rect) {
 			if drawBurst(p, r, size, p.Now().Sub(start), accent) {
 				p.AnimationFrame()

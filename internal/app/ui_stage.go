@@ -23,13 +23,6 @@ type wordShape struct {
 	last                       bool
 }
 
-// lineRandom is a small random number generator seeded by a line and a word,
-// so a line is laid out the same way every time it shows.
-func lineRandom(seed, offset float64) float32 {
-	x := math.Sin(seed+offset) * 10000
-	return float32(x - math.Floor(x))
-}
-
 // springStep is how far a critically-ish damped spring (stiffness 200,
 // damping 20, Folia's) has gone towards its target t seconds after it set
 // off: it overshoots a little and settles in about half a second.

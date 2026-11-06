@@ -18,18 +18,18 @@ var skeletonScenes = []struct {
 	set  func(a *app)
 }{
 	{"home", func(a *app) {}},
-	{"charts", func(a *app) { a.route = route{page: pageCharts} }},
-	{"daily", func(a *app) { a.route = route{page: pageDaily} }},
+	{"charts", func(a *app) { a.route = route{Page: pageCharts} }},
+	{"daily", func(a *app) { a.route = route{Page: pageDaily} }},
 	{"playlist", func(a *app) {
-		a.route = route{page: pagePlaylist, id: 7}
+		a.route = route{Page: pagePlaylist, ID: 7}
 		a.loadingPl[7] = true
 	}},
 	{"search", func(a *app) {
-		a.route = route{page: pageSearch, query: "春日影", kind: qqmusic.SearchSongs}
+		a.route = route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchSongs}
 		a.searches[a.route] = &searchData{page: paged{loading: true}}
 	}},
 	{"artists", func(a *app) {
-		a.route = route{page: pageSearch, query: "春日影", kind: qqmusic.SearchArtists}
+		a.route = route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchArtists}
 		a.searches[a.route] = &searchData{page: paged{loading: true}}
 	}},
 	{"login", func(a *app) { a.login = loginState{open: true} }},

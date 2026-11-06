@@ -29,7 +29,7 @@ func TestSearchPaginationPinsSourceAndOffset(t *testing.T) {
 		return qqmusic.SearchResult{}, errors.New("offline")
 	}
 	a := newTestApp()
-	r := route{page: pageSearch, query: "晴天", kind: qqmusic.SearchSongs}
+	r := route{Page: pageSearch, Query: "晴天", Kind: qqmusic.SearchSongs}
 	d := &searchData{}
 	first := qqmusic.SearchResult{Source: qqmusic.SearchLegacy, NextOffset: 20, Total: 40}
 	for i := range 18 {

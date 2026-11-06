@@ -25,7 +25,7 @@ func TestSquigglyFrames(t *testing.T) {
 	}
 	for _, dark := range []bool{false, true} {
 		a := newTestApp()
-		a.settings.setProgressEffect(progressSquiggly)
+		a.settings.SetProgressEffect(progressSquiggly)
 		a.pl.Cue([]qqmusic.Track{{ID: 7, Duration: 200000}})
 		out := audio.NewPlayer(&silence{})
 		out.SetVolume(0)

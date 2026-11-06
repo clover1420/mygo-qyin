@@ -31,7 +31,7 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 	mygo.App.SetPath(mygo.PathUserData, filepath.Join(dir, "data"))
 	mygo.App.SetPath(mygo.PathCache, filepath.Join(dir, "cache"))
 	a := &app{settings: defaultSettings()}
-	a.settings.path = filepath.Join(dir, "settings.json")
+	a.settings.Path = filepath.Join(dir, "settings.json")
 	a.pl = player.New(a.post)
 	a.pl.Changed = func() { a.redraw() }
 	mygo.App.WhenReady(func() {
@@ -41,8 +41,8 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 					ui.Text(c, "桌面歌词 · 原生窗口验证").FontSize(20)
 					ui.Row(c).Gap(8).Children(func() {
 						ui.Button(c, "打开歌词").OnClick(func() { a.setDesktopLyricsEnabled(true) })
-						ui.Button(c, "锁定歌词").OnClick(func() { a.desktopLyrics.setLocked(true) })
-						ui.Button(c, "解锁歌词").OnClick(func() { a.desktopLyrics.setLocked(false) })
+						ui.Button(c, "锁定歌词").OnClick(func() { a.desktopLyrics.SetLocked(true) })
+						ui.Button(c, "解锁歌词").OnClick(func() { a.desktopLyrics.SetLocked(false) })
 						ui.Button(c, "关闭歌词").OnClick(func() { a.setDesktopLyricsEnabled(false) })
 					})
 					ui.Row(c).Gap(8).Children(func() {
@@ -73,8 +73,8 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 		go func() {
 			time.Sleep(time.Second)
 			mygo.RunOnMain(func() {
-				if d := a.desktopLyrics; d != nil && d.win != nil {
-					if data, err := d.win.CapturePage(); err == nil {
+				if d := a.desktopLyrics; d != nil && d.Win != nil {
+					if data, err := d.Win.CapturePage(); err == nil {
 						os.WriteFile(filepath.Join(dir, "desktop-lyrics.png"), data, 0600)
 					}
 				}
@@ -84,7 +84,7 @@ func RunDesktopLyricsProbe(dir string, duration time.Duration, check bool) error
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) {
 		a.quitting = true
 		if a.desktopLyrics != nil {
-			a.desktopLyrics.destroy()
+			a.desktopLyrics.Destroy()
 		}
 		if a.tray != nil {
 			a.tray.Destroy()
@@ -101,7 +101,7 @@ func runDesktopLyricsNativeChecks(a *app, dir string) {
 		action func()
 	}{
 		{"shown", func() {}},
-		{"resized", func() { a.desktopLyrics.resizeWidth(40) }},
+		{"resized", func() { a.desktopLyrics.ResizeWidth(40) }},
 		{"long-line", func() {
 			a.pl.SetLyrics(lyrics.Build("[00:01]让每个平凡瞬间化作旋律，陪伴我们走过漫长的夜晚，一起听见那些熟悉的声音", "", ""))
 			a.redraw()
@@ -129,14 +129,14 @@ func runDesktopLyricsNativeChecks(a *app, dir string) {
 			a.redraw()
 		}},
 		{"main-hidden", func() { a.win.Hide() }},
-		{"locked", func() { a.desktopLyrics.setLocked(true) }},
+		{"locked", func() { a.desktopLyrics.SetLocked(true) }},
 		{"locked-moved", func() {
-			r := a.desktopLyrics.win.Bounds()
+			r := a.desktopLyrics.Win.Bounds()
 			r.X += 32
 			r.Y -= 32
-			a.desktopLyrics.win.SetBounds(r)
+			a.desktopLyrics.Win.SetBounds(r)
 		}},
-		{"unlocked", func() { a.desktopLyrics.setLocked(false) }},
+		{"unlocked", func() { a.desktopLyrics.SetLocked(false) }},
 		{"closed", func() { a.setDesktopLyricsEnabled(false) }},
 		{"reopened", func() { a.setDesktopLyricsEnabled(true); a.win.ShowInactive() }},
 		{"locked-again", func() { a.setDesktopLyricsLocked(true) }},
@@ -151,8 +151,8 @@ func runDesktopLyricsNativeChecks(a *app, dir string) {
 				time.AfterFunc(300*time.Millisecond, func() {
 					mygo.RunOnMain(func() {
 						results[stage.name] = desktopLyricsNativeSnapshot(a)
-						if strings.HasSuffix(stage.name, "-line") && a.desktopLyrics.win != nil {
-							if data, err := a.desktopLyrics.win.CapturePage(); err == nil {
+						if strings.HasSuffix(stage.name, "-line") && a.desktopLyrics.Win != nil {
+							if data, err := a.desktopLyrics.Win.CapturePage(); err == nil {
 								os.WriteFile(filepath.Join(dir, stage.name+".png"), data, 0600)
 							}
 						}

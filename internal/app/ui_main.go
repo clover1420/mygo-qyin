@@ -28,7 +28,7 @@ func (a *app) view(c *ui.Context) {
 	}
 	root := ui.Box(c).Fill()
 	// The settings, a pane over the page, keep Space for their own controls.
-	settingsFocused := a.settingsOpen || a.route.page == pageSettings && !a.nowPlaying && a.settingsPane.FocusWithin(c)
+	settingsFocused := a.settingsOpen || a.route.Page == pageSettings && !a.nowPlaying && a.settingsPane.FocusWithin(c)
 	if !c.Focused(a.searchBox) && !settingsFocused {
 		// Space plays and pauses wherever the focus is, as in Music. On
 		// the container around everything, it comes before a button the
@@ -55,18 +55,18 @@ func (a *app) view(c *ui.Context) {
 			}
 			side := ui.Column(c).Width(sidebarWidth)
 			if !c.Vibrancy() {
-				side.Background(p.sidebar)
+				side.Background(p.Sidebar)
 			} else if a.acrylicSidebar(c) {
 				// Neutral frost quiets the desktop's color while leaving the
 				// system acrylic visible beneath.
-				side.Background(neutral(p.dark, 2).Alpha(0.5))
+				side.Background(neutral(p.Dark, 2).Alpha(0.5))
 			}
 			side.Children(func() { a.sidebar(c) })
 			// Keyed, so that a popover of the sidebar opening or closing
 			// keeps what the page and its bars hold, their edges' fades.
 			// The page and the sidebar are told apart by their tint alone,
 			// as Cloudy's are: no rule runs between them.
-			ui.Box(c.Key("main")).Grow(1).Background(p.bg).Children(func() {
+			ui.Box(c.Key("main")).Grow(1).Background(p.Bg).Children(func() {
 				a.content(c)
 				// The bars float over the page, which scrolls under them:
 				// positioned, they paint over it.
@@ -128,38 +128,38 @@ func (a *app) show(r route) {
 	a.pageDir = pageLevel(r) - pageLevel(a.route)
 	// A tab of the page open is not another page: it changes in place, so
 	// that the control chosen stays where the pointer left it.
-	a.pageIn = r.page != a.route.page || r.id != a.route.id
+	a.pageIn = r.Page != a.route.Page || r.ID != a.route.ID
 	a.route = r
-	if r.page == pageSearch {
-		a.query, a.searched = r.query, r
+	if r.Page == pageSearch {
+		a.query, a.searched = r.Query, r
 	}
 	a.load(r)
 }
 
 // load loads what the page of r shows, unless it has.
 func (a *app) load(r route) {
-	switch r.page {
+	switch r.Page {
 	case pageHome:
 		a.freshenHome()
 	case pagePlaylist:
-		a.loadPlaylist(r.id, false)
-		if r.tab == 1 && a.isLikedPlaylist(r.id) {
+		a.loadPlaylist(r.ID, false)
+		if r.Tab == 1 && a.isLikedPlaylist(r.ID) {
 			a.loadLikedAlbums(false)
 		}
 	case pageSearch:
 		a.loadSearch(r, false)
 	case pageArtist:
-		a.loadArtist(r.id)
+		a.loadArtist(r.ID)
 	case pageAlbum:
-		a.loadAlbum(r.id)
+		a.loadAlbum(r.ID)
 	case pageUser:
-		a.loadUser(r.id)
+		a.loadUser(r.ID)
 	case pagePodcast:
-		a.loadPodcast(r.id)
+		a.loadPodcast(r.ID)
 	case pagePodcasts:
 		a.loadPodcastTab()
 	case pagePurchased:
-		a.loadPurchased(r.tab, false)
+		a.loadPurchased(r.Tab, false)
 	case pageSettings:
 		a.measureCache()
 	}
@@ -207,38 +207,38 @@ func (a *app) sidebar(c *ui.Context) {
 		a.searchField(c)
 
 		ui.Scroll(c.Key("nav")).TrackScroll(&a.navScroll).Grow(1).Margin(0, -6).Padding(0, 6).Gap(4).Children(func() {
-			a.navItem(c, iconHome, "为你推荐", route{page: pageHome})
-			a.navItem(c, iconDaily, "每日推荐", route{page: pageDaily})
-			a.navItem(c, iconRadio, "电台", route{page: pageFM})
-			a.navItem(c, iconCharts, "排行榜", route{page: pageCharts})
-			a.navItem(c, iconPurchased, "已购音乐", route{page: pagePurchased, tab: purchasedAlbums})
-			if a.searched.query != "" {
+			a.navItem(c, iconHome, "为你推荐", route{Page: pageHome})
+			a.navItem(c, iconDaily, "每日推荐", route{Page: pageDaily})
+			a.navItem(c, iconRadio, "电台", route{Page: pageFM})
+			a.navItem(c, iconCharts, "排行榜", route{Page: pageCharts})
+			a.navItem(c, iconPurchased, "已购音乐", route{Page: pagePurchased, Tab: purchasedAlbums})
+			if a.searched.Query != "" {
 				a.navItem(c, iconSearch, "搜索结果", a.searched)
 			}
 			a.myPlaylists(c, "我的歌单", a.mine, true, &a.mineCollapsed)
 			a.myPlaylists(c, "收藏的歌单", a.saved, false, &a.savedCollapsed)
 		})
 
-		a.navItem(c, iconSettings, "设置", route{page: pageSettings})
+		a.navItem(c, iconSettings, "设置", route{Page: pageSettings})
 		a.accountRow(c)
 	})
 }
 
 func (a *app) navItem(c *ui.Context, icon *ui.SVG, label string, r route) {
 	p := a.pal
-	selected := a.route.page == r.page && !a.nowPlaying
+	selected := a.route.Page == r.Page && !a.nowPlaying
 	b := ui.ButtonBase(c.Key(label)).Height(34).PaddingX(9).Gap(10).Radius(8).AlignItems(ui.Center).Justify(ui.Start).FocusRing(false)
 	a.styleSidebarItem(c, b, selected)
-	color := p.text
+	color := p.Text
 	if selected {
-		color = p.accent
+		color = p.Accent
 	}
 	b.Children(func() {
 		ui.Icon(c, icon).Size(17, 17).TextColor(color)
-		ui.Text(c, label).FontSize(13.5).FontWeight(500).TextColor(p.text)
+		ui.Text(c, label).FontSize(13.5).FontWeight(500).TextColor(p.Text)
 	})
 	if b.Clicked() {
-		if r.page == pageSettings {
+		if r.Page == pageSettings {
 			a.openSettings()
 		} else {
 			a.open(r)
@@ -253,9 +253,9 @@ func (a *app) styleSidebarItem(c *ui.Context, b ui.Element, selected bool) {
 	bg := ui.Transparent
 	switch {
 	case selected:
-		bg = p.press
+		bg = p.Press
 	case b.Hovered():
-		bg = p.hover
+		bg = p.Hover
 	}
 	b.Selected(selected).
 		Background(b.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
@@ -268,14 +268,14 @@ func (a *app) sidebarSurface(c *ui.Context, fallback ui.Color, opacity float32) 
 		return fallback
 	}
 	tint := ink
-	if a.pal.dark {
+	if a.pal.Dark {
 		tint = paper
 	}
 	return tint.Alpha(opacity)
 }
 
 func (a *app) acrylicSidebar(c *ui.Context) bool {
-	return runtime.GOOS == "windows" && a.settings.sidebarVibrancy() == mygo.VibrancyAcrylic && c.Vibrancy()
+	return runtime.GOOS == "windows" && a.settings.SidebarVibrancy() == mygo.VibrancyAcrylic && c.Vibrancy()
 }
 
 // playerBarHeight is the height of the player along the foot of the pages.
@@ -355,18 +355,18 @@ func edgeShown(el ui.Element, under bool) float32 {
 func (a *app) pageTop(c *ui.Context) {
 	top, _ := a.insets(c)
 	edge := ui.Box(c.Key("top-edge")).Absolute().Top(0).Left(0).Right(0).Height(top).DragWindow().
-		Material(glass.ScrollEdge{Hard: true, Background: a.pal.bg})
+		Material(glass.ScrollEdge{Hard: true, Background: a.pal.Bg})
 	edge.Opacity(edgeShown(edge, a.underTop))
 	if len(a.history) > 0 || len(a.forward) > 0 {
 		ui.Row(c).Absolute().Top(0).Left(20).Height(topBar(c)).AlignItems(ui.Center).Children(func() {
-			back := iconButton(c.Key("back"), iconBack, 18, a.pal.muted, "返回").Disabled(len(a.history) == 0)
+			back := iconButton(c.Key("back"), iconBack, 18, a.pal.Muted, "返回").Disabled(len(a.history) == 0)
 			if len(a.history) == 0 {
 				back.Opacity(0.35)
 			}
 			if back.Clicked() {
 				a.back()
 			}
-			if len(a.forward) > 0 && iconButton(c.Key("forward"), iconForward, 18, a.pal.muted, "前进").Clicked() {
+			if len(a.forward) > 0 && iconButton(c.Key("forward"), iconForward, 18, a.pal.Muted, "前进").Clicked() {
 				a.goForward()
 			}
 		})
@@ -380,7 +380,7 @@ func (a *app) content(c *ui.Context) {
 	page := ui.Box(c.Key(keyOf(a.route))).Absolute().Top(0).Left(0).Right(0).Bottom(0)
 	a.pageMotion(c, page)
 	page.Children(func() {
-		switch a.route.page {
+		switch a.route.Page {
 		case pageHome:
 			a.homePage(c)
 		case pageDaily:
@@ -418,7 +418,7 @@ func (a *app) content(c *ui.Context) {
 func (a *app) centered(c *ui.Context, err string, retry func()) {
 	top, bottom := a.insets(c)
 	ui.Column(c).Grow(1).Padding(top, 0, bottom, 0).Center().Gap(12).Children(func() {
-		ui.Text(c, err).TextColor(a.pal.muted).FontSize(13)
+		ui.Text(c, err).TextColor(a.pal.Muted).FontSize(13)
 		if retry != nil && ui.Button(c, "重试").Clicked() {
 			retry()
 		}

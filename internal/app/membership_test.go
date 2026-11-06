@@ -19,7 +19,7 @@ func TestOwnMembershipRefreshAndRetry(t *testing.T) {
 		return qqmusic.MembershipGreen, nil
 	}
 	a := ownPageApp()
-	a.open(route{page: pageUser, id: 9})
+	a.open(route{Page: pageUser, ID: 9})
 	wait(t, asked, "membership status")
 	d := a.users[9]
 	a.acceptMembership(9, d, qqmusic.MembershipGreen, nil)

@@ -175,7 +175,7 @@ func (a *app) toggleSubscribe(d *podcastData) {
 
 func (a *app) podcastPage(c *ui.Context) {
 	p := a.pal
-	id := a.route.id
+	id := a.route.ID
 	d := a.podcasts[id]
 	if d.podcast == nil {
 		if !d.loading {
@@ -190,7 +190,7 @@ func (a *app) podcastPage(c *ui.Context) {
 	cur := a.pl.Current()
 	a.scrollPage(c, func() {
 		ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 8, 0).Children(func() {
-			ui.Box(c).Size(212, 212).Radius(14).Shadow(0, 18, 40, -10, p.cardShade).Children(func() {
+			ui.Box(c).Size(212, 212).Radius(14).Shadow(0, 18, 40, -10, p.CardShade).Children(func() {
 				a.coverFill(c, pod.PicURL, 600, 14)
 			})
 			ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(8).Children(func() {
@@ -198,27 +198,27 @@ func (a *app) podcastPage(c *ui.Context) {
 				if pod.Category != "" {
 					kind += " · " + pod.Category
 				}
-				ui.Text(c, kind).FontSize(12).FontWeight(600).TextColor(p.accent)
+				ui.Text(c, kind).FontSize(12).FontWeight(600).TextColor(p.Accent)
 				ui.Text(c, pod.Name).FontSize(30).FontWeight(800).LetterSpacing(-0.6).MaxLines(2).LineHeight(1.2)
-				ui.RichText(c).FontSize(13).TextColor(p.muted).Children(func() {
+				ui.RichText(c).FontSize(13).TextColor(p.Muted).Children(func() {
 					if pod.DJ.UserID != 0 {
-						a.link(c.Key("dj"), pod.DJ.Nickname, p.muted, p.text, route{page: pageUser, id: pod.DJ.UserID})
+						a.link(c.Key("dj"), pod.DJ.Nickname, p.Muted, p.Text, route{Page: pageUser, ID: pod.DJ.UserID})
 						ui.Text(c, " · ")
 					}
 					ui.Text(c, fmt.Sprintf("%d 期 · %s 人订阅", pod.ProgramCount, count(int(pod.SubCount))))
 				})
 				if desc := strings.TrimSpace(pod.Description); desc != "" {
-					ui.Text(c, strings.ReplaceAll(desc, "\n", " ")).FontSize(12.5).TextColor(p.muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0)
+					ui.Text(c, strings.ReplaceAll(desc, "\n", " ")).FontSize(12.5).TextColor(p.Muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0)
 				}
 				ui.Row(c).Gap(10).Margin(10, 0, 0, 0).Children(func() {
-					if pillButton(c.Key("play"), iconPlay, "播放", p.accent, p.onAccent).Clicked() {
+					if pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Clicked() {
 						a.playProgram(d, 0)
 					}
 					icon, label := iconPlus, "订阅"
 					if pod.Subed {
 						icon, label = iconCheck, "已订阅"
 					}
-					if pillButton(c.Key("subscribe"), icon, label, p.hover.Over(p.bg), p.text).Clicked() {
+					if pillButton(c.Key("subscribe"), icon, label, p.Hover.Over(p.Bg), p.Text).Clicked() {
 						a.toggleSubscribe(d)
 					}
 				})
@@ -244,13 +244,13 @@ func (a *app) programRow(c *ui.Context, d *podcastData, i int, cur *qqmusic.Trac
 		Label(pr.Name).Disabled(pr.MainSong.ID == 0)
 	switch {
 	case playing && row.Pressed():
-		row.Background(accent(p.dark, 5))
+		row.Background(accent(p.Dark, 5))
 	case playing && row.Hovered():
-		row.Background(accent(p.dark, 4))
+		row.Background(accent(p.Dark, 4))
 	case playing:
-		row.Background(accent(p.dark, 3))
+		row.Background(accent(p.Dark, 3))
 	case row.Hovered():
-		row.Background(p.hover)
+		row.Background(p.Hover)
 	}
 	row.Children(func() {
 		cover := pr.CoverURL
@@ -261,21 +261,21 @@ func (a *app) programRow(c *ui.Context, d *podcastData, i int, cur *qqmusic.Trac
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(3).Children(func() {
 			title := ui.Text(c, pr.Name).FontSize(13.5).FontWeight(500).SingleLine()
 			if playing {
-				title.TextColor(p.accent)
+				title.TextColor(p.Accent)
 			}
-			ui.Text(c, time.UnixMilli(pr.CreateTime).Format("2006-01-02")).FontSize(12).TextColor(p.muted)
+			ui.Text(c, time.UnixMilli(pr.CreateTime).Format("2006-01-02")).FontSize(12).TextColor(p.Muted)
 		})
 		if playing {
-			a.nowPlayingBars(c, p.accent)
+			a.nowPlayingBars(c, p.Accent)
 		}
 		// A liked episode's heart shows; the others' as the pointer is on them.
 		ui.Box(c).Size(32, 32).Center().Children(func() {
 			if a.likedPrograms[pr.ID] || row.Hovered() {
 				tr := pr.Track(d.podcast)
-				a.likeButton(c.Key("like"), &tr, 15, p.muted)
+				a.likeButton(c.Key("like"), &tr, 15, p.Muted)
 			}
 		})
-		ui.Text(c, clock(time.Duration(pr.Duration)*time.Millisecond)).FontSize(12).FontFeatures("tnum").TextColor(p.muted)
+		ui.Text(c, clock(time.Duration(pr.Duration)*time.Millisecond)).FontSize(12).FontFeatures("tnum").TextColor(p.Muted)
 	})
 	if row.Clicked() {
 		if playing {
@@ -291,7 +291,7 @@ func (a *app) podcastRow(c *ui.Context, pod *qqmusic.Podcast) {
 	p := a.pal
 	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(pod.Name)
 	if row.Hovered() {
-		row.Background(p.hover)
+		row.Background(p.Hover)
 	}
 	row.Children(func() {
 		a.cover(c, pod.PicURL, 160, 64, 8)
@@ -301,14 +301,14 @@ func (a *app) podcastRow(c *ui.Context, pod *qqmusic.Podcast) {
 			if pod.DJ.Nickname != "" {
 				meta = append([]string{pod.DJ.Nickname}, meta...)
 			}
-			ui.Text(c, strings.Join(meta, " · ")).FontSize(12.5).TextColor(p.muted).SingleLine()
+			ui.Text(c, strings.Join(meta, " · ")).FontSize(12.5).TextColor(p.Muted).SingleLine()
 			if pod.Description != "" {
-				ui.Text(c, pod.Description).FontSize(12.5).TextColor(p.muted).SingleLine()
+				ui.Text(c, pod.Description).FontSize(12.5).TextColor(p.Muted).SingleLine()
 			}
 		})
 	})
 	if row.Clicked() {
-		a.open(route{page: pagePodcast, id: pod.ID})
+		a.open(route{Page: pagePodcast, ID: pod.ID})
 	}
 }
 
@@ -472,6 +472,6 @@ func (a *app) podcastCard(c *ui.Context, pod *qqmusic.Podcast) {
 	}
 	id := pod.ID
 	if a.coverCard(c, pod.Name, pod.PicURL, pod.PlayCount, sub, func() { a.playPodcast(id) }) {
-		a.open(route{page: pagePodcast, id: id})
+		a.open(route{Page: pagePodcast, ID: id})
 	}
 }

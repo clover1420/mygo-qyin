@@ -61,7 +61,7 @@ func TestSongShelfFrameBudget(t *testing.T) {
 	for _, detail := range []bool{false, true} {
 		a := songShelfApp()
 		if detail {
-			a.open(route{page: pageSongShelf, shelf: &a.songShelves.shelves[0]})
+			a.open(route{Page: pageSongShelf, Shelf: &a.songShelves.shelves[0]})
 		}
 		tt := ui.NewTester(a.view, 1200, 800)
 		tt.Frame()
@@ -83,7 +83,7 @@ func TestSongShelfFrameBudget(t *testing.T) {
 func TestPurchasedFrameBudget(t *testing.T) {
 	for _, tab := range []int{purchasedSongs, purchasedAlbums} {
 		a := purchasedApp()
-		a.open(route{page: pagePurchased, tab: tab})
+		a.open(route{Page: pagePurchased, Tab: tab})
 		tt := ui.NewTester(a.view, 1200, 800)
 		tt.Advance(time.Second)
 		tt.Frame()
@@ -201,8 +201,8 @@ func TestLyricsWordFrameBudget(t *testing.T) {
 // go, so that the backdrop stops asking for frames.
 func TestBackdropFadeEnds(t *testing.T) {
 	a, tt, _ := coverApp(t)
-	a.art.art[qqmusic.Sized("a", 600)+"#backdrop"] = &artwork{tint: ui.RGB(200, 40, 40)}
-	a.art.art[qqmusic.Sized("b", 600)+"#backdrop"] = &artwork{tint: ui.RGB(40, 40, 200)}
+	a.art.Add(qqmusic.Sized("a", 600)+"#backdrop", &artwork{Tint: ui.RGB(200, 40, 40)})
+	a.art.Add(qqmusic.Sized("b", 600)+"#backdrop", &artwork{Tint: ui.RGB(40, 40, 200)})
 	q := a.pl.Queue()
 	q[1].Album.PicURL, q[2].Album.PicURL = "a", "b"
 	tt.Frame()
@@ -222,7 +222,7 @@ func TestBackdropFadeEnds(t *testing.T) {
 func TestSquigglyFrameBudget(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.setProgressEffect(progressSquiggly)
+	a.settings.SetProgressEffect(progressSquiggly)
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "宝船", Duration: 200000}})
 	out := audio.NewPlayer(&silence{})
 	defer out.Close()

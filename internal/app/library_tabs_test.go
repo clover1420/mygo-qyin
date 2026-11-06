@@ -17,15 +17,15 @@ func TestLibraryTabsAnimateSelection(t *testing.T) {
 		open    route
 		next    string
 	}{
-		{"liked", likedAlbumsApp, nil, route{page: pagePlaylist, id: 7}, "专辑"},
+		{"liked", likedAlbumsApp, nil, route{Page: pagePlaylist, ID: 7}, "专辑"},
 		{"liked loading", likedAlbumsApp, func(a *app) {
 			delete(a.playlists, 7)
 			a.loadingPl[7] = true
-		}, route{page: pagePlaylist, id: 7, tab: 1}, "单曲"},
-		{"purchased", purchasedApp, nil, route{page: pagePurchased, tab: purchasedAlbums}, "单曲"},
+		}, route{Page: pagePlaylist, ID: 7, Tab: 1}, "单曲"},
+		{"purchased", purchasedApp, nil, route{Page: pagePurchased, Tab: purchasedAlbums}, "单曲"},
 		{"purchased loading", purchasedApp, func(a *app) {
 			a.purchased[purchasedSongs] = &purchasedData{page: paged{loading: true}}
-		}, route{page: pagePurchased, tab: purchasedAlbums}, "单曲"},
+		}, route{Page: pagePurchased, Tab: purchasedAlbums}, "单曲"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

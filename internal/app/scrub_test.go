@@ -22,7 +22,7 @@ func TestScrubSeeksOnRelease(t *testing.T) {
 func testScrubSeeksOnRelease(t *testing.T, effect string) {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.setProgressEffect(effect)
+	a.settings.SetProgressEffect(effect)
 	tr := qqmusic.Track{ID: 7, Name: "宝船", Duration: 200000}
 	a.pl.Cue([]qqmusic.Track{tr, {ID: 8, Name: "下一首"}})
 	a.pl.SetLyrics(nil)
@@ -68,7 +68,7 @@ func testScrubSeeksOnRelease(t *testing.T, effect string) {
 // the same slider still accepts keyboard seeking after the drag.
 func TestSquigglyPausedSeek(t *testing.T) {
 	a := newTestApp()
-	a.settings.setProgressEffect(progressSquiggly)
+	a.settings.SetProgressEffect(progressSquiggly)
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "宝船", Duration: 200000}})
 	a.pl.Seek(40 * time.Second)
 	tt := ui.NewTester(func(c *ui.Context) {

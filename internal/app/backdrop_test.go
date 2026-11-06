@@ -34,8 +34,8 @@ func TestBackdropDrifts(t *testing.T) {
 	}
 	now = now.Add(backdropFrame)
 	bd.step(now, true, loud, true)
-	if bd.level.group(0, 6) <= 0.2 {
-		t.Errorf("bass %v on a beat", bd.level.group(0, 6))
+	if bd.level.Group(0, 6) <= 0.2 {
+		t.Errorf("bass %v on a beat", bd.level.Group(0, 6))
 	}
 	moving := true
 	for range 120 {
@@ -71,12 +71,12 @@ func TestBackdropDriftFrames(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		art := &artwork{tint: dominantColor(img)}
+		art := &artwork{Tint: dominantColor(img)}
 		shots := []struct{ drift, bass float32 }{{0, 0}, {2, 0}, {4, 0}, {4, 0.9}}
 		row := image.NewRGBA(image.Rect(0, 0, w*len(shots), h))
 		for i, s := range shots {
 			tt := ui.NewTester(func(c *ui.Context) {
-				ui.Box(c).Fill().Draw(func(p *ui.Painter, r ui.Rect) { drawFog(p, r, art.tint, s.drift, s.bass) })
+				ui.Box(c).Fill().Draw(func(p *ui.Painter, r ui.Rect) { drawFog(p, r, art.Tint, s.drift, s.bass) })
 			}, w, h)
 			tt.Frame()
 			shot := tt.Image()

@@ -1,28 +1,13 @@
 package app
 
 import (
-	"encoding/json"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/egoist/mygo"
 
-	"lilt/internal/player"
 	"lilt/internal/qqmusic"
+	"lilt/internal/session"
 )
-
-// Where playback was left is kept in session.json in the user data
-// directory: on quitting, and every little while as it plays, in case the
-// app does not get to quit.
-
-func sessionPath() (string, error) {
-	dir, err := mygo.App.Path(mygo.PathUserData)
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(dir, "session.json"), nil
-}
 
 // saveSession keeps where playback is, if it moved on since last kept.
 func (a *app) saveSession() {
@@ -30,16 +15,12 @@ func (a *app) saveSession() {
 	if !ok {
 		return
 	}
-	b, err := json.Marshal(s)
-	if err != nil || string(b) == a.savedSession {
+	raw, err := session.Encode(s)
+	if err != nil || raw == a.savedSession {
 		return
 	}
-	path, err := sessionPath()
-	if err != nil {
-		return
-	}
-	if os.WriteFile(path+".part", b, 0o600) == nil && os.Rename(path+".part", path) == nil {
-		a.savedSession = string(b)
+	if err := session.Write(raw); err == nil {
+		a.savedSession = raw
 	}
 }
 
@@ -76,19 +57,11 @@ func (a *app) restoreSession() {
 		return
 	}
 	a.restored = true
-	path, err := sessionPath()
-	if err != nil {
+	s, raw, ok := session.Load()
+	if !ok {
 		return
 	}
-	b, err := os.ReadFile(path)
-	if err != nil {
-		return
-	}
-	var s player.Session
-	if json.Unmarshal(b, &s) != nil {
-		return
-	}
-	a.savedSession = string(b)
+	a.savedSession = raw
 	qqmusic.RememberTracks(s.Queue)
 	a.pl.Restore(s)
 	if s.Radio != "" && a.pl.Current() != nil {

@@ -164,7 +164,7 @@ func (n *notch) greet() {
 		return
 	}
 	s.NotchGreeted = true
-	s.save()
+	s.Save()
 	n.hello = true
 	if n.win == nil {
 		return // as in tests
@@ -216,7 +216,7 @@ func (n *notch) bye() {
 func (n *notch) keep() {
 	n.hello = false
 	n.a.settings.Notch = true
-	n.a.settings.save()
+	n.a.settings.Save()
 	n.setEnabled(true)
 }
 
@@ -398,7 +398,7 @@ func (n *notch) compact(c *ui.Context, tr *qqmusic.Track, shown float32, showLyr
 	if shown < 0.02 {
 		return
 	}
-	art := n.a.art.get(qqmusic.Sized(tr.Album.PicURL, 96), false)
+	art := n.a.art.Get(qqmusic.Sized(tr.Album.PicURL, 96), false)
 	s := n.h0 - 12
 	ui.Row(c).Absolute().Top(0).Left(0).Right(0).Height(n.h0).PaddingX(7).Gap(10).AlignItems(ui.Center).Opacity(shown).Children(func() {
 		cov := ui.Box(c).Size(s, s).Shrink(0).Radius(s * 0.28)
@@ -445,14 +445,14 @@ func (n *notch) lyricText(c *ui.Context, tr *qqmusic.Track) string {
 func (n *notch) levels(c *ui.Context, tr *qqmusic.Track, w, h float32, count int) {
 	a := n.a
 	color := paper
-	if art := a.art.get(qqmusic.Sized(tr.Album.PicURL, 96), false); art != nil && !art.failed {
-		color = art.tint.Mix(white, 0.35)
+	if art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 96), false); art != nil && !art.Failed {
+		color = art.Tint.Mix(white, 0.35)
 	}
 	ui.Box(c).Size(w, h).Draw(func(p *ui.Painter, r ui.Rect) {
 		lv, live := a.pl.Levels()
-		n.bars.step(p.Now(), lv, live)
+		n.bars.Step(p.Now(), lv, live)
 		drawBars(p, r, &n.bars, count, color, 2.5)
-		if live || n.bars.group(0, player.Bands) > 0.01 {
+		if live || n.bars.Group(0, player.Bands) > 0.01 {
 			p.AnimationFrame()
 		}
 	})
@@ -461,7 +461,7 @@ func (n *notch) levels(c *ui.Context, tr *qqmusic.Track, w, h float32, count int
 func (n *notch) expanded(c *ui.Context, tr *qqmusic.Track, open, left float32) {
 	a := n.a
 	pl := a.pl
-	art := a.art.get(qqmusic.Sized(tr.Album.PicURL, 200), false)
+	art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 200), false)
 	a.tickTimes(c)
 	col := ui.Column(c).Absolute().Top(n.h0+6).Left(left).Width(notchOpenW).Padding(8, 22, 16, 22).Gap(12).Opacity(max(0, open*1.4-0.4))
 	col.Translate(0, (1-open)*-10)
@@ -526,7 +526,7 @@ func (n *notch) helloRow(c *ui.Context, shown, left float32) {
 			ui.Text(c, title).FontSize(13.5).FontWeight(700).SingleLine()
 			ui.Text(c, hint).FontSize(11.5).TextColor(white.Alpha(0.55)).SingleLine()
 		})
-		b := ui.ButtonBase(c.Key("keep")).Padding(6, 14).Radius(999).Background(a.pal.accent).FocusRing(false).Label("开启刘海播放器")
+		b := ui.ButtonBase(c.Key("keep")).Padding(6, 14).Radius(999).Background(a.pal.Accent).FocusRing(false).Label("开启刘海播放器")
 		b.Children(func() { ui.Text(c, "开启").FontSize(12.5).FontWeight(600) })
 		if b.Clicked() {
 			n.keep()
@@ -542,7 +542,7 @@ func (n *notch) idle(c *ui.Context, open, left float32) {
 	a := n.a
 	ui.Row(c).Absolute().Top(n.h0+4).Left(left).Width(notchIdleW).Padding(10, 20, 14, 20).Gap(12).AlignItems(ui.Center).
 		Opacity(max(0, open*1.4-0.4)).Children(func() {
-		ui.Box(c).Size(36, 36).Radius(12).Background(a.pal.accent).Center().Children(func() {
+		ui.Box(c).Size(36, 36).Radius(12).Background(a.pal.Accent).Center().Children(func() {
 			ui.Icon(c, iconNote).Size(18, 18).TextColor(white)
 		})
 		ui.Column(c).Grow(1).Gap(2).Children(func() {

@@ -23,7 +23,7 @@ func (a *app) columns(c *ui.Context, min float32) int {
 func (a *app) heading(c *ui.Context, title, sub string) {
 	ui.Column(c).Gap(4).Margin(0, 0, 18, 0).Children(func() {
 		if sub != "" {
-			ui.Text(c, sub).FontSize(12).FontWeight(600).TextColor(a.pal.muted).LetterSpacing(0.4)
+			ui.Text(c, sub).FontSize(12).FontWeight(600).TextColor(a.pal.Muted).LetterSpacing(0.4)
 		}
 		ui.Text(c, title).FontSize(30).FontWeight(700).LetterSpacing(-0.6)
 	})
@@ -136,7 +136,7 @@ func (a *app) chartsPage(c *ui.Context) {
 // under the pointer, where a play button shows on it.
 func (a *app) playlistCard(c *ui.Context, pl *qqmusic.Playlist) {
 	if a.coverCard(c, pl.Name, pl.Cover(), pl.PlayCount, pl.UpdateFreq, func() { a.loadPlaylist(pl.ID, true) }) {
-		a.open(route{page: pagePlaylist, id: pl.ID})
+		a.open(route{Page: pagePlaylist, ID: pl.ID})
 	}
 }
 
@@ -154,9 +154,9 @@ func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, su
 		lift := ui.Pose{}
 		if hovered {
 			lift = ui.Pose{Y: -3}
-			art.Shadow(0, 12, 28, -6, p.cardShade)
+			art.Shadow(0, 12, 28, -6, p.CardShade)
 		} else {
-			art.Shadow(0, 2, 8, -2, p.cardShade)
+			art.Shadow(0, 2, 8, -2, p.CardShade)
 		}
 		art.AnimatePose(lift, ui.Snappy)
 		art.Children(func() {
@@ -172,7 +172,7 @@ func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, su
 		})
 		ui.Text(c, name).FontSize(13).FontWeight(500).MaxLines(2).LineHeight(1.35)
 		if sub != "" {
-			ui.Text(c, sub).FontSize(12).TextColor(p.muted).SingleLine().Margin(-6, 0, 0, 0)
+			ui.Text(c, sub).FontSize(12).TextColor(p.Muted).SingleLine().Margin(-6, 0, 0, 0)
 		}
 	})
 	return card.Clicked()
@@ -182,11 +182,11 @@ func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, su
 // The cover rounds itself rather than its parent clipping it: a clip moved
 // by a transform, as a card lifting under the pointer, is drawn on the CPU.
 func (a *app) coverFill(c *ui.Context, url string, px int, radius float32) {
-	bmp := bitmap(a.art.get(qqmusic.Sized(url, px), false))
+	bmp := bitmap(a.art.Get(qqmusic.Sized(url, px), false))
 	box := ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(radius)
 	in := artIn(box, bmp)
 	if in < 1 {
-		box.Background(a.pal.hover)
+		box.Background(a.pal.Hover)
 	}
 	box.Children(func() { artImage(c, bmp, radius, in) })
 }
@@ -195,7 +195,7 @@ func (a *app) coverFill(c *ui.Context, url string, px int, radius float32) {
 // opening it.
 func (a *app) coverPlayButton(c *ui.Context, shown bool, play func()) {
 	b := ui.ButtonBase(c.Key("play")).Absolute().Bottom(10).Right(10).Size(38, 38).Radius(999).Center().
-		Background(a.pal.accent).TextColor(paper).Label("播放").FocusRing(false).
+		Background(a.pal.Accent).TextColor(paper).Label("播放").FocusRing(false).
 		Shadow(0, 4, 12, 0, ink.Alpha(0.3))
 	pose := ui.Pose{Fade: 1, Scale: 0.8, Y: 6}
 	if shown || b.Hovered() {
@@ -216,38 +216,38 @@ func (a *app) chartCard(c *ui.Context, pl *qqmusic.Playlist) {
 	p := a.pal
 	card := ui.ButtonBase(c).Gap(14).Padding(12).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(pl.Name)
 	hovered := card.Hovered()
-	bg := p.hover
+	bg := p.Hover
 	if hovered {
-		bg = p.press
+		bg = p.Press
 	}
 	card.Background(card.AnimateColor("bg", bg, ui.Animation{Duration: 140 * time.Millisecond}))
 	card.Children(func() {
-		ui.Box(c).Size(84, 84).Radius(8).Shadow(0, 3, 10, -2, p.cardShade).Children(func() {
+		ui.Box(c).Size(84, 84).Radius(8).Shadow(0, 3, 10, -2, p.CardShade).Children(func() {
 			a.coverFill(c, pl.Cover(), 200, 9)
 		})
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(5).Children(func() {
 			ui.Row(c).Gap(6).AlignItems(ui.Baseline).Children(func() {
 				ui.Text(c, pl.Name).FontSize(14).FontWeight(700).SingleLine()
-				ui.Text(c, pl.UpdateFreq).FontSize(11).TextColor(p.faint).SingleLine()
+				ui.Text(c, pl.UpdateFreq).FontSize(11).TextColor(p.Faint).SingleLine()
 			})
 			for i, line := range pl.Preview {
 				ui.Row(c).Gap(7).Children(func() {
-					ui.Textf(c, "%d", i+1).FontSize(12).FontWeight(700).Width(10).FontFeatures("tnum").TextColor(p.muted)
+					ui.Textf(c, "%d", i+1).FontSize(12).FontWeight(700).Width(10).FontFeatures("tnum").TextColor(p.Muted)
 					ui.RichText(c,
 						ui.Span{Text: line.First, Weight: 500},
-						ui.Span{Text: "  " + line.Second, Color: p.muted},
+						ui.Span{Text: "  " + line.Second, Color: p.Muted},
 					).FontSize(12).SingleLine().Shrink(1).MinWidth(0)
 				})
 			}
 		})
 	})
 	if card.Clicked() {
-		a.open(route{page: pagePlaylist, id: pl.ID})
+		a.open(route{Page: pagePlaylist, ID: pl.ID})
 	}
 }
 
 func (a *app) playlistPage(c *ui.Context) {
-	id := a.route.id
+	id := a.route.ID
 	if a.isLikedPlaylist(id) {
 		a.likedPlaylistPage(c, id)
 		return
@@ -280,20 +280,20 @@ func (a *app) playlistHeader(c *ui.Context, pl *qqmusic.Playlist) {
 		meta = append(meta, plays(pl.PlayCount)+" 次播放")
 	}
 	a.collectionHeader(c, pl, kind, strings.Join(meta, " · "), func() {
-		if pillButton(c.Key("play"), iconPlay, "播放", p.accent, p.onAccent).Clicked() {
+		if pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Clicked() {
 			if a.pl.Shuffle() {
 				a.pl.ToggleShuffle()
 			}
 			a.pl.PlayQueue(pl.Tracks, firstPlayable(pl.Tracks))
 		}
-		if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.hover.Over(p.bg), p.text).Clicked() {
+		if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Clicked() {
 			if !a.pl.Shuffle() {
 				a.pl.ToggleShuffle()
 			}
 			a.pl.PlayQueue(pl.Tracks, firstPlayable(pl.Tracks))
 		}
 		if mine := a.editable(pl.ID); mine != nil {
-			more := iconButton(c.Key("more"), iconMore, 18, p.muted, "更多")
+			more := iconButton(c.Key("more"), iconMore, 18, p.Muted, "更多")
 			more.Menu(func(m *ui.Menu) {
 				if m.Item("重命名…").Chosen() {
 					a.startRename(mine)
@@ -304,7 +304,7 @@ func (a *app) playlistHeader(c *ui.Context, pl *qqmusic.Playlist) {
 				}
 			})
 		} else if saved := a.savedPlaylist(pl.ID); saved != nil {
-			more := iconButton(c.Key("more"), iconMore, 18, p.muted, "更多")
+			more := iconButton(c.Key("more"), iconMore, 18, p.Muted, "更多")
 			more.Menu(func(m *ui.Menu) {
 				if m.Item("取消收藏…").Chosen() {
 					a.confirmUnfavorite(saved)
@@ -318,13 +318,13 @@ func (a *app) playlistHeader(c *ui.Context, pl *qqmusic.Playlist) {
 func (a *app) collectionHeader(c *ui.Context, pl *qqmusic.Playlist, kind, meta string, actions func()) {
 	p := a.pal
 	ui.Row(c).Gap(28).AlignItems(ui.End).Padding(0, 0, 26, 0).Children(func() {
-		ui.Box(c).Size(212, 212).Radius(14).Shadow(0, 18, 40, -10, p.cardShade).Children(func() {
+		ui.Box(c).Size(212, 212).Radius(14).Shadow(0, 18, 40, -10, p.CardShade).Children(func() {
 			a.coverFill(c, pl.Cover(), 600, 14)
 		})
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(8).Children(func() {
-			ui.Text(c, kind).FontSize(12).FontWeight(600).TextColor(p.accent)
+			ui.Text(c, kind).FontSize(12).FontWeight(600).TextColor(p.Accent)
 			ui.Text(c, pl.Name).FontSize(30).FontWeight(800).LetterSpacing(-0.6).MaxLines(2).LineHeight(1.2)
-			ui.Text(c, meta).FontSize(13).TextColor(p.muted).SingleLine()
+			ui.Text(c, meta).FontSize(13).TextColor(p.Muted).SingleLine()
 			a.collectionDescription(c, pl.Description)
 			ui.Row(c).Height(36).Gap(10).Margin(10, 0, 0, 0).Children(actions)
 		})
@@ -359,12 +359,12 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 	currentTop, measured := float32(0), false
 	// A song's menu can take it out of the playlist it is listed in.
 	var pid int64
-	if a.route.page == pagePlaylist {
-		pid = a.route.id
+	if a.route.Page == pagePlaylist {
+		pid = a.route.ID
 	}
 	w, _ := c.Size()
 	// An album's page has no column of the album its songs are on.
-	wide := w-sidebarWidth > 820 && a.route.page != pageAlbum
+	wide := w-sidebarWidth > 820 && a.route.Page != pageAlbum
 	top, bottom := a.insets(c)
 	// Rows out of view are not built, their marks with them: a list
 	// scrolled away from its start or end has content under the bars.
@@ -405,13 +405,13 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 			bg := ui.Transparent
 			switch {
 			case playing && row.Pressed():
-				bg = accent(p.dark, 5)
+				bg = accent(p.Dark, 5)
 			case playing && hovered:
-				bg = accent(p.dark, 4)
+				bg = accent(p.Dark, 4)
 			case playing:
-				bg = accent(p.dark, 3)
+				bg = accent(p.Dark, 3)
 			case hovered:
-				bg = p.hover
+				bg = p.Hover
 			}
 			row.Background(row.AnimateColor("bg", bg, ui.Animation{Duration: 100 * time.Millisecond}))
 			if !tr.Playable() {
@@ -421,53 +421,53 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 				ui.Box(c).Width(26).Center().Children(func() {
 					switch {
 					case playing:
-						a.nowPlayingBars(c, p.accent)
+						a.nowPlayingBars(c, p.Accent)
 					case hovered && tr.Playable():
-						ui.Icon(c, iconPlay).Size(13, 13).TextColor(p.text)
+						ui.Icon(c, iconPlay).Size(13, 13).TextColor(p.Text)
 					default:
-						ui.Textf(c, "%d", i+1).FontSize(13).FontFeatures("tnum").TextColor(p.faint)
+						ui.Textf(c, "%d", i+1).FontSize(13).FontFeatures("tnum").TextColor(p.Faint)
 					}
 				})
 				if covers {
 					a.cover(c, tr.Album.PicURL, 96, 38, 6)
 				}
 				ui.Column(c).Grow(3).Basis(0).MinWidth(0).Gap(3).Children(func() {
-					name := p.text
+					name := p.Text
 					if playing {
-						name = p.accent
+						name = p.Accent
 					}
 					spans := []ui.Span{{Text: tr.Name, Weight: 500, Color: name}}
 					if len(tr.Alias) > 0 {
-						spans = append(spans, ui.Span{Text: "（" + tr.Alias[0] + "）", Color: p.faint})
+						spans = append(spans, ui.Span{Text: "（" + tr.Alias[0] + "）", Color: p.Faint})
 					}
 					ui.RichText(c, spans...).FontSize(14).SingleLine()
 					ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
 						if !tr.Playable() {
-							ui.Text(c, "VIP").FontSize(9).FontWeight(800).TextColor(p.accent).Padding(0, 4).Radius(3).Border(1, p.accent.Alpha(0.6))
+							ui.Text(c, "VIP").FontSize(9).FontWeight(800).TextColor(p.Accent).Padding(0, 4).Radius(3).Border(1, p.Accent.Alpha(0.6))
 						}
-						a.artistLinks(c, tr, p.muted, p.text).FontSize(12.5).SingleLine().Shrink(1).MinWidth(0)
+						a.artistLinks(c, tr, p.Muted, p.Text).FontSize(12.5).SingleLine().Shrink(1).MinWidth(0)
 						if tr.Reason != "" {
-							ui.Text(c, tr.Reason).FontSize(10.5).FontWeight(600).TextColor(p.accent).Padding(1, 6).Radius(999).Background(p.accent.Alpha(0.1)).SingleLine()
+							ui.Text(c, tr.Reason).FontSize(10.5).FontWeight(600).TextColor(p.Accent).Padding(1, 6).Radius(999).Background(p.Accent.Alpha(0.1)).SingleLine()
 						}
 					})
 				})
 				if wide {
-					album := ui.RichText(c).Grow(2).Basis(0).MinWidth(0).FontSize(12.5).TextColor(p.muted).SingleLine()
+					album := ui.RichText(c).Grow(2).Basis(0).MinWidth(0).FontSize(12.5).TextColor(p.Muted).SingleLine()
 					album.Children(func() {
 						if tr.Album.ID == 0 {
 							ui.Text(c, tr.Album.Name)
 						} else {
-							a.link(c.Key("album"), tr.Album.Name, p.muted, p.text, route{page: pageAlbum, id: tr.Album.ID})
+							a.link(c.Key("album"), tr.Album.Name, p.Muted, p.Text, route{Page: pageAlbum, ID: tr.Album.ID})
 						}
 					})
 				}
 				// A liked song's heart shows; the others' as the pointer is on them.
 				ui.Box(c).Size(32, 32).Center().Children(func() {
 					if a.liked[tr.ID] || hovered {
-						a.likeButton(c.Key("like"), tr, 15, p.muted)
+						a.likeButton(c.Key("like"), tr, 15, p.Muted)
 					}
 				})
-				ui.Text(c, clock(tr.Length())).FontSize(12.5).FontFeatures("tnum").TextColor(p.faint).Width(44).TextAlign(ui.End)
+				ui.Text(c, clock(tr.Length())).FontSize(12.5).FontFeatures("tnum").TextColor(p.Faint).Width(44).TextAlign(ui.End)
 			})
 			if row.Clicked() && tr.Playable() {
 				if playing {
@@ -484,9 +484,9 @@ func (a *app) trackRowsWithKey(c *ui.Context, key any, state *listScrollState, t
 func (a *app) nowPlayingBars(c *ui.Context, color ui.Color) {
 	ui.Box(c).Size(16, 14).Draw(func(p *ui.Painter, r ui.Rect) {
 		lv, live := a.pl.Levels()
-		a.rowBars.step(p.Now(), lv, live)
+		a.rowBars.Step(p.Now(), lv, live)
 		drawBars(p, r, &a.rowBars, 4, color, 2.5)
-		if live || a.rowBars.group(0, player.Bands) > 0.01 {
+		if live || a.rowBars.Group(0, player.Bands) > 0.01 {
 			p.AnimationFrame()
 		}
 	})

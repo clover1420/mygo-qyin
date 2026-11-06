@@ -34,7 +34,7 @@ func TestDesktopLyricsFrameBudget(t *testing.T) {
 				a.settings.DesktopLyrics = false
 			}
 			builds := 0
-			tt := ui.NewTester(func(c *ui.Context) { builds++; d.view(c) }, 760, 180)
+			tt := ui.NewTester(func(c *ui.Context) { builds++; d.View(c) }, 760, 180)
 			tt.SetPreferences(ui.Preferences{ReduceMotion: true})
 			tt.Frame()
 			before := builds
@@ -48,30 +48,6 @@ func TestDesktopLyricsFrameBudget(t *testing.T) {
 				t.Fatalf("%s lyrics rebuilt %d times while unchanged", mode, got)
 			}
 		})
-	}
-}
-
-// A sentence change requests a bounded burst of frames and becomes idle after both layers settle.
-func TestDesktopLyricsTransitionFrameBudget(t *testing.T) {
-	var state desktopLyricViewState
-	started, builds := false, 0
-	tt := ui.NewTester(func(c *ui.Context) {
-		builds++
-		if !started {
-			state.changed, started = c.Now(), true
-		}
-		state.blend(c)
-	}, 100, 100)
-	tt.Frame()
-	before := builds
-	tt.Advance(desktopLyricsFade + 40*time.Millisecond)
-	if got := builds - before; got < 12 || got > 18 {
-		t.Fatalf("sentence transition rebuilt %d times, want a short 60 Hz burst", got)
-	}
-	before = builds
-	tt.Advance(time.Second)
-	if builds != before {
-		t.Fatalf("settled transition kept requesting frames: %d", builds-before)
 	}
 }
 
@@ -101,7 +77,7 @@ func TestDesktopLyricsDoubleLineFrameBudget(t *testing.T) {
 				a.pl.Hold(position)
 			}
 			builds := 0
-			tt := ui.NewTester(func(c *ui.Context) { builds++; d.view(c) }, 760, 240)
+			tt := ui.NewTester(func(c *ui.Context) { builds++; d.View(c) }, 760, 240)
 			tt.SetPreferences(ui.Preferences{ReduceMotion: true})
 			tt.Frame()
 			before := builds

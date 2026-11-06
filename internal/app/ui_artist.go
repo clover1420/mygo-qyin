@@ -16,7 +16,7 @@ import (
 // credited by name alone, is plain text. An episode's host and podcast,
 // in its artists' and album's place, link to the podcast's page.
 func (a *app) artistLinks(c *ui.Context, tr *qqmusic.Track, color, hover ui.Color, album ...bool) ui.Element {
-	podcast := route{page: pagePodcast, id: tr.PodcastID}
+	podcast := route{Page: pagePodcast, ID: tr.PodcastID}
 	return ui.RichText(c).TextColor(color).Children(func() {
 		for i, ar := range tr.Artists {
 			if i > 0 {
@@ -26,7 +26,7 @@ func (a *app) artistLinks(c *ui.Context, tr *qqmusic.Track, color, hover ui.Colo
 			case tr.PodcastID != 0:
 				a.link(c.Key(i), ar.Name, color, hover, podcast)
 			case ar.ID != 0:
-				a.link(c.Key(i), ar.Name, color, hover, route{page: pageArtist, id: ar.ID})
+				a.link(c.Key(i), ar.Name, color, hover, route{Page: pageArtist, ID: ar.ID})
 			default:
 				ui.Text(c, ar.Name)
 			}
@@ -37,7 +37,7 @@ func (a *app) artistLinks(c *ui.Context, tr *qqmusic.Track, color, hover ui.Colo
 			case tr.PodcastID != 0:
 				a.link(c.Key("album"), tr.Album.Name, color, hover, podcast)
 			case tr.Album.ID != 0:
-				a.link(c.Key("album"), tr.Album.Name, color, hover, route{page: pageAlbum, id: tr.Album.ID})
+				a.link(c.Key("album"), tr.Album.Name, color, hover, route{Page: pageAlbum, ID: tr.Album.ID})
 			default:
 				ui.Text(c, tr.Album.Name)
 			}
@@ -64,7 +64,7 @@ func (a *app) openPage(r route) {
 }
 
 // openArtist opens an artist's page in the main window.
-func (a *app) openArtist(id int64) { a.openPage(route{page: pageArtist, id: id}) }
+func (a *app) openArtist(id int64) { a.openPage(route{Page: pageArtist, ID: id}) }
 
 // These load an artist, their songs, albums and events from NetEase, and
 // follow them; tests replace them.
@@ -148,7 +148,7 @@ func (a *app) loadArtist(id int64) {
 			}
 			d.profile = ar
 			// Their events are their account's, which their profile names.
-			if a.artistTab == artistEvents && a.route == (route{page: pageArtist, id: id}) {
+			if a.artistTab == artistEvents && a.route == (route{Page: pageArtist, ID: id}) {
 				a.loadEvents(id)
 			}
 		})
@@ -259,7 +259,7 @@ func (a *app) toggleFollow(id int64) {
 // artistPage shows who an artist is over their songs, the most popular or
 // the newest, their albums or their events.
 func (a *app) artistPage(c *ui.Context) {
-	id := a.route.id
+	id := a.route.ID
 	d := a.artist(id)
 	if d.profile == nil {
 		if !d.loading {
@@ -302,7 +302,7 @@ func (a *app) artistPage(c *ui.Context) {
 			header = func(c *ui.Context) {
 				a.artistHeader(c, d)
 				ui.Column(c).Padding(40, 0).Gap(12).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, d.latestErr).TextColor(a.pal.muted).FontSize(13)
+					ui.Text(c, d.latestErr).TextColor(a.pal.Muted).FontSize(13)
 					if ui.Button(c.Key("retry"), "重试").Clicked() {
 						a.loadLatest(d.profile.ID)
 					}
@@ -348,7 +348,7 @@ func (a *app) listPageWithKey(c *ui.Context, key any, state *ui.ListState, conte
 
 // empty says a list has nothing in it.
 func (a *app) empty(c *ui.Context, msg string) {
-	ui.Text(c, msg).FontSize(13).TextColor(a.pal.muted).Padding(40, 0).AlignSelf(ui.Center)
+	ui.Text(c, msg).FontSize(13).TextColor(a.pal.Muted).Padding(40, 0).AlignSelf(ui.Center)
 }
 
 // artistPhotoSize is the width of an artist's round photo on their page.
@@ -367,11 +367,11 @@ func (a *app) artistHeader(c *ui.Context, d *artistData) {
 		if photo == "" {
 			photo = ar.PicURL
 		}
-		ui.Box(c).Size(artistPhotoSize, artistPhotoSize).Radius(artistPhotoSize/2).Shadow(0, 18, 40, -10, p.cardShade).Children(func() {
+		ui.Box(c).Size(artistPhotoSize, artistPhotoSize).Radius(artistPhotoSize/2).Shadow(0, 18, 40, -10, p.CardShade).Children(func() {
 			a.coverFill(c, photo, 600, artistPhotoSize/2)
 		})
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(8).Children(func() {
-			ui.Text(c, "歌手").FontSize(12).FontWeight(600).TextColor(p.accent)
+			ui.Text(c, "歌手").FontSize(12).FontWeight(600).TextColor(p.Accent)
 			ui.Text(c, ar.Name).FontSize(30).FontWeight(800).LetterSpacing(-0.6).MaxLines(2).LineHeight(1.2)
 			var meta []string
 			if aka := distinct(append([]string{ar.Trans}, ar.Alias...)); len(aka) > 0 {
@@ -383,18 +383,18 @@ func (a *app) artistHeader(c *ui.Context, d *artistData) {
 			if ar.AlbumSize > 0 {
 				meta = append(meta, fmt.Sprintf("%d 张专辑", ar.AlbumSize))
 			}
-			ui.Text(c, strings.Join(meta, " · ")).FontSize(13).TextColor(p.muted)
+			ui.Text(c, strings.Join(meta, " · ")).FontSize(13).TextColor(p.Muted)
 			if d := strings.TrimSpace(ar.BriefDesc); d != "" {
-				ui.Text(c, strings.ReplaceAll(d, "\n", " ")).FontSize(12.5).TextColor(p.muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0)
+				ui.Text(c, strings.ReplaceAll(d, "\n", " ")).FontSize(12.5).TextColor(p.Muted).MaxLines(2).LineHeight(1.45).Margin(2, 0, 0, 0)
 			}
 			ui.Row(c).Gap(10).Margin(10, 0, 0, 0).Children(func() {
-				if pillButton(c.Key("play"), iconPlay, "播放", p.accent, p.onAccent).Clicked() {
+				if pillButton(c.Key("play"), iconPlay, "播放", p.Accent, p.OnAccent).Clicked() {
 					if a.pl.Shuffle() {
 						a.pl.ToggleShuffle()
 					}
 					a.pl.PlayQueue(songs, firstPlayable(songs))
 				}
-				if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.hover.Over(p.bg), p.text).Clicked() {
+				if pillButton(c.Key("shuffle"), iconShuffle, "随机播放", p.Hover.Over(p.Bg), p.Text).Clicked() {
 					if !a.pl.Shuffle() {
 						a.pl.ToggleShuffle()
 					}

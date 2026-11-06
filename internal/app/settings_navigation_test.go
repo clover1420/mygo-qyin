@@ -105,7 +105,7 @@ func TestSettingsOverlayKeepsPageScroll(t *testing.T) {
 		cards = append(cards, name)
 		a.charts = append(a.charts, qqmusic.Playlist{ID: int64(i + 1), Name: name})
 	}
-	a.open(route{page: pageCharts})
+	a.open(route{Page: pageCharts})
 	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	tt.Scroll(1000, 550, 0, 600)
@@ -113,7 +113,7 @@ func TestSettingsOverlayKeepsPageScroll(t *testing.T) {
 	card, cardAt := visibleNavigationItem(t, tt, cards)
 	a.openSettings()
 	tt.Frame()
-	if !a.settingsOpen || a.route.page != pageCharts {
+	if !a.settingsOpen || a.route.Page != pageCharts {
 		t.Fatalf("settings did not open over the page: open %v, route %+v", a.settingsOpen, a.route)
 	}
 	// The pane takes the keys: Back is not a way out of it.
@@ -129,8 +129,8 @@ func TestSettingsOverlayKeepsPageScroll(t *testing.T) {
 func TestSettingsPageSpaceTogglesControl(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
-	a.route = route{page: pageSettings}
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
+	a.route = route{Page: pageSettings}
 	a.pl.Cue([]qqmusic.Track{{ID: 1, Name: "宝船"}})
 	out := audio.NewPlayer(&silence{})
 	out.SetVolume(0)
@@ -148,7 +148,7 @@ func TestSettingsPageSpaceTogglesControl(t *testing.T) {
 	if a.settings.HotComments == before || !a.pl.Playing() {
 		t.Fatal("Space was taken from the focused setting by the playback shortcut")
 	}
-	b, err := os.ReadFile(a.settings.path)
+	b, err := os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -173,7 +173,7 @@ func TestSettingsPageFrames(t *testing.T) {
 			a.tray = &mygo.Tray{}
 			a.updates = true
 			a.pl.Cue([]qqmusic.Track{{ID: 1, Name: "宝船", Artists: []qqmusic.Artist{{Name: "DOUDOU"}}, Duration: 200000}})
-			a.open(route{page: pageSettings})
+			a.open(route{Page: pageSettings})
 			tt := ui.NewTester(a.view, width, 780)
 			tt.SetDark(dark)
 			tt.Frame()

@@ -82,12 +82,12 @@ func TestPurchasedNavigation(t *testing.T) {
 	if err := tt.Click("迷跡波"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route != (route{page: pageAlbum, id: 8}) {
+	if a.route != (route{Page: pageAlbum, ID: 8}) {
 		t.Fatalf("album route %+v", a.route)
 	}
 	a.back()
 	tt.Frame()
-	if a.route != (route{page: pagePurchased, tab: purchasedAlbums}) || len(asked) != 0 {
+	if a.route != (route{Page: pagePurchased, Tab: purchasedAlbums}) || len(asked) != 0 {
 		t.Fatalf("back route %+v; repeated requests %d", a.route, len(asked))
 	}
 }
@@ -98,7 +98,7 @@ func TestPurchasedPaginationAndRefresh(t *testing.T) {
 	a := purchasedApp()
 	d := a.purchased[purchasedSongs]
 	d.page.more = true
-	a.open(route{page: pagePurchased, tab: purchasedSongs})
+	a.open(route{Page: pagePurchased, Tab: purchasedSongs})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	tt.Frame()
@@ -128,7 +128,7 @@ func TestPurchasedRequiresLogin(t *testing.T) {
 	asked := fakePurchases(t)
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.open(route{page: pagePurchased})
+	a.open(route{Page: pagePurchased})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if a.purchased[purchasedSongs] != nil || len(asked) != 0 {
@@ -156,7 +156,7 @@ func TestPurchasedFrames(t *testing.T) {
 	for _, tab := range []int{purchasedSongs, purchasedAlbums} {
 		for _, dark := range []bool{false, true} {
 			a := purchasedApp()
-			a.open(route{page: pagePurchased, tab: tab})
+			a.open(route{Page: pagePurchased, Tab: tab})
 			tt := ui.NewTester(a.view, 1200, 800)
 			tt.SetDark(dark)
 			tt.Advance(time.Second)

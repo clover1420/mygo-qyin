@@ -97,17 +97,17 @@ func (a *app) acceptMembership(id int64, d *userData, level qqmusic.Membership, 
 
 func (a *app) membershipBadge(c *ui.Context, id int64, d *userData) {
 	p := a.pal
-	label, ink, background := "会员状态未知", p.muted, neutral(p.dark, 3)
+	label, ink, background := "会员状态未知", p.Muted, neutral(p.Dark, 3)
 	switch d.membership {
 	case qqmusic.MembershipSuper:
-		label, ink, background = "超级会员", warm(p.dark, 11), warm(p.dark, 3)
+		label, ink, background = "超级会员", warm(p.Dark, 11), warm(p.Dark, 3)
 	case qqmusic.MembershipGreen:
-		label, ink, background = "绿钻会员", accent(p.dark, 11), accent(p.dark, 3)
+		label, ink, background = "绿钻会员", accent(p.Dark, 11), accent(p.Dark, 3)
 	case qqmusic.MembershipFree:
 		label = "免费账号"
 	}
 	if d.memberErr {
-		label, ink, background = "会员状态暂不可用", p.muted, neutral(p.dark, 3)
+		label, ink, background = "会员状态暂不可用", p.Muted, neutral(p.Dark, 3)
 	} else if d.memberLoading && d.membership == "" {
 		label = "正在查询会员状态"
 	}
@@ -116,7 +116,7 @@ func (a *app) membershipBadge(c *ui.Context, id int64, d *userData) {
 			ui.Text(c, label).FontSize(11).FontWeight(500).TextColor(ink).SingleLine()
 		})
 		if d.memberErr && ui.ButtonBase(c).Label("重试会员状态").Padding(4, 6).Children(func() {
-			ui.Text(c, "重试").FontSize(12).TextColor(p.accent)
+			ui.Text(c, "重试").FontSize(12).TextColor(p.Accent)
 		}).Clicked() {
 			a.loadMembership(id, d)
 		}
@@ -167,7 +167,7 @@ func publicPlaylists(lists []qqmusic.Playlist, uid int64) []qqmusic.Playlist {
 
 func (a *app) userPage(c *ui.Context) {
 	p := a.pal
-	id := a.route.id
+	id := a.route.ID
 	d := a.users[id]
 	if d.user == nil {
 		if d.loading == 0 {
@@ -185,7 +185,7 @@ func (a *app) userPage(c *ui.Context) {
 	own := a.profile != nil && a.profile.UserID == id
 	a.scrollPage(c, func() {
 		ui.Row(c).Gap(28).AlignItems(ui.Center).Children(func() {
-			ui.Box(c).Size(artistPhotoSize, artistPhotoSize).Radius(artistPhotoSize/2).Shadow(0, 18, 40, -10, p.cardShade).Children(func() {
+			ui.Box(c).Size(artistPhotoSize, artistPhotoSize).Radius(artistPhotoSize/2).Shadow(0, 18, 40, -10, p.CardShade).Children(func() {
 				a.coverFill(c, u.AvatarURL, 600, artistPhotoSize/2)
 			})
 			ui.Column(c).Grow(1).Shrink(1).MinWidth(0).AlignItems(ui.Start).Gap(8).Children(func() {
@@ -194,7 +194,7 @@ func (a *app) userPage(c *ui.Context) {
 					a.membershipBadge(c, id, d)
 				}
 				if u.Signature != "" {
-					ui.Text(c, u.Signature).FontSize(12.5).TextColor(p.muted).MaxLines(2).LineHeight(1.45)
+					ui.Text(c, u.Signature).FontSize(12.5).TextColor(p.Muted).MaxLines(2).LineHeight(1.45)
 				}
 			})
 		})
@@ -241,18 +241,18 @@ func (a *app) userRow(c *ui.Context, u *qqmusic.User) {
 	p := a.pal
 	row := ui.ButtonBase(c).Padding(10, 12).Gap(14).Radius(14).AlignItems(ui.Center).FocusRing(false).Label(u.Nickname)
 	if row.Hovered() {
-		row.Background(p.hover)
+		row.Background(p.Hover)
 	}
 	row.Children(func() {
 		a.cover(c, u.AvatarURL, 120, 48, 24)
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(4).Children(func() {
 			ui.Text(c, u.Nickname).FontSize(14).FontWeight(600).SingleLine()
 			if u.Signature != "" {
-				ui.Text(c, u.Signature).FontSize(12.5).TextColor(p.muted).SingleLine()
+				ui.Text(c, u.Signature).FontSize(12.5).TextColor(p.Muted).SingleLine()
 			}
 		})
 	})
 	if row.Clicked() {
-		a.open(route{page: pageUser, id: u.UserID})
+		a.open(route{Page: pageUser, ID: u.UserID})
 	}
 }

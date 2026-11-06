@@ -30,7 +30,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 	mygo.App.SetPath(mygo.PathUserData, filepath.Join(dir, "data"))
 	mygo.App.SetPath(mygo.PathCache, filepath.Join(dir, "cache"))
 	a := &app{settings: defaultSettings()}
-	a.settings.path = filepath.Join(dir, "settings.json")
+	a.settings.Path = filepath.Join(dir, "settings.json")
 	a.art = newArtCache(a.post)
 	coverURL := ""
 	if coverPath != "" {
@@ -43,7 +43,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 			return err
 		}
 		coverURL = "taskbar-cover-fixture"
-		a.art.add(qqmusic.Sized(coverURL, 96), &artwork{bmp: bmp, size: len(data), used: a.art.now()})
+		a.art.Add(qqmusic.Sized(coverURL, 96), &artwork{BMP: bmp, Size: len(data), Used: a.art.Clock()})
 	}
 	a.pl = player.New(a.post)
 	a.pl.Changed = a.redraw
@@ -51,29 +51,29 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 	write := func(stage string) {
 		sample := taskbarLyricsNativeSnapshot(a)
 		sample["coverFixture"] = coverPath != ""
-		if d := a.taskbarLyrics; d != nil && d.win != nil && !d.win.IsDestroyed() {
-			if data, err := d.win.CapturePage(); err == nil {
+		if d := a.taskbarLyrics; d != nil && d.Win != nil && !d.Win.IsDestroyed() {
+			if data, err := d.Win.CapturePage(); err == nil {
 				os.WriteFile(filepath.Join(dir, stage+".png"), data, 0600)
 			}
-			if err := captureTaskbarLyricsScreen(d.win, filepath.Join(dir, stage+"-screen.png")); err != nil {
+			if err := captureTaskbarLyricsScreen(d.Win, filepath.Join(dir, stage+"-screen.png")); err != nil {
 				sample["screenCaptureError"] = err.Error()
 			}
-			if err := captureTaskbarLyricsBar(d.placement.taskbar, filepath.Join(dir, stage+"-taskbar.png")); err != nil {
+			if err := captureTaskbarLyricsBar(d.Placement.Taskbar, filepath.Join(dir, stage+"-taskbar.png")); err != nil {
 				sample["taskbarCaptureError"] = err.Error()
 			}
-			if d.controls != nil && !d.controls.IsDestroyed() {
-				if data, err := d.controls.CapturePage(); err == nil {
+			if d.Controls != nil && !d.Controls.IsDestroyed() {
+				if data, err := d.Controls.CapturePage(); err == nil {
 					os.WriteFile(filepath.Join(dir, stage+"-controls.png"), data, 0600)
 				}
-				if err := captureTaskbarLyricsScreen(d.controls, filepath.Join(dir, stage+"-controls-screen.png")); err != nil {
+				if err := captureTaskbarLyricsScreen(d.Controls, filepath.Join(dir, stage+"-controls-screen.png")); err != nil {
 					sample["controlsCaptureError"] = err.Error()
 				}
 			}
-			if d.coverWin != nil && !d.coverWin.IsDestroyed() {
-				if data, err := d.coverWin.CapturePage(); err == nil {
+			if d.CoverWin != nil && !d.CoverWin.IsDestroyed() {
+				if data, err := d.CoverWin.CapturePage(); err == nil {
 					os.WriteFile(filepath.Join(dir, stage+"-cover.png"), data, 0600)
 				}
-				if err := captureTaskbarLyricsScreen(d.coverWin, filepath.Join(dir, stage+"-cover-screen.png")); err != nil {
+				if err := captureTaskbarLyricsScreen(d.CoverWin, filepath.Join(dir, stage+"-cover-screen.png")); err != nil {
 					sample["coverCaptureError"] = err.Error()
 				}
 			}
@@ -105,14 +105,14 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 			{"controls-open", func() {
 				if coverPath != "" && a.taskbarLyrics != nil {
 					if err := clickTaskbarLyricsCover(a.taskbarLyrics); err != nil {
-						a.taskbarLyrics.reportError(err)
+						a.taskbarLyrics.ReportError(err)
 					}
 				}
 			}},
 			{"z-order-repair", func() {
 				if coverPath != "" && a.taskbarLyrics != nil {
 					if err := raiseTaskbarLyricsHost(a.taskbarLyrics); err != nil {
-						a.taskbarLyrics.reportError(err)
+						a.taskbarLyrics.ReportError(err)
 					}
 				}
 			}},
@@ -124,7 +124,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 			{"controls-close", func() {
 				if coverPath != "" && a.taskbarLyrics != nil {
 					if err := escapeTaskbarLyricsControls(a.taskbarLyrics); err != nil {
-						a.taskbarLyrics.reportError(err)
+						a.taskbarLyrics.ReportError(err)
 					}
 				}
 			}},
@@ -159,7 +159,7 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) {
 		a.quitting = true
 		if a.taskbarLyrics != nil {
-			a.taskbarLyrics.destroy()
+			a.taskbarLyrics.Destroy()
 		}
 		write("cleanup")
 	})

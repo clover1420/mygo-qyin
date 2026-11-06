@@ -7,41 +7,30 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/navigation"
 	"lilt/internal/player"
 	"lilt/internal/qqmusic"
 )
 
-type pageKind int
+type pageKind = navigation.Page
+type route = navigation.Route
 
 const (
-	pageHome pageKind = iota
-	pageDaily
-	pageCharts
-	pagePlaylist
-	pageSearch
-	pageFM
-	pageArtist
-	pageAlbum
-	pageUser
-	pagePodcast
-	pagePodcasts
-	pagePurchased
-	pageSettings
-	pageSongShelf
+	pageHome      pageKind = navigation.Home
+	pageDaily              = navigation.Daily
+	pageCharts             = navigation.Charts
+	pagePlaylist           = navigation.Playlist
+	pageSearch             = navigation.Search
+	pageFM                 = navigation.FM
+	pageArtist             = navigation.Artist
+	pageAlbum              = navigation.Album
+	pageUser               = navigation.User
+	pagePodcast            = navigation.Podcast
+	pagePodcasts           = navigation.Podcasts
+	pagePurchased          = navigation.Purchased
+	pageSettings           = navigation.Settings
+	pageSongShelf          = navigation.SongShelf
 )
-
-type route struct {
-	page pageKind
-	// id is the playlist, artist, album, user or podcast the page shows.
-	id int64
-	// query and kind are what a search page searched for.
-	query string
-	kind  qqmusic.SearchType
-	// tab selects singles or albums on the purchased music page.
-	tab int
-	// A recommendation detail keeps the snapshot it opened, even after a refresh.
-	shelf *qqmusic.SongShelf
-}
 
 // pageScrollState belongs to one route; MyGo's list and scroll state keep stable identities.
 type pageScrollState struct {
@@ -73,11 +62,11 @@ type app struct {
 	pl            *player.Player
 	pal           palette
 
-	route   route
-	history []route
-	forward []route // the pages gone back from, the last first to go to
-	pageDir int     // the way the page last changed: 1 in, -1 back, 0 across
-	pageIn  bool    // whether the page changed at all, rather than a tab of it
+	route    route
+	history  []route
+	forward  []route   // the pages gone back from, the last first to go to
+	pageDir  int       // the way the page last changed: 1 in, -1 back, 0 across
+	pageIn   bool      // whether the page changed at all, rather than a tab of it
 	splashed bool      // the record has come in, as the app started
 	splashAt time.Time // when it started to
 
@@ -166,7 +155,7 @@ type app struct {
 	underTop, underBottom bool
 	barScrub              scrubState
 	npScrub               scrubState
-	glowColor             ui.Color         // the color of Now Playing's glow, from the cover's
+	glowColor             ui.Color      // the color of Now Playing's glow, from the cover's
 	backdropCache         backdropCache // the backdrop of Now Playing, as last painted
 	npArt                 *artwork      // the cover whose colors Now Playing shows
 	coverArt              *artwork      // the cover whose color accents the whole app
@@ -179,15 +168,15 @@ type app struct {
 
 	settings                      settings
 	settingsPane                  ui.Handle
-	settingsDirty                 bool   // a slider of the settings is held, its value not yet kept
-	settingsOpen                  bool   // the settings show over the window
-	settingsTab                   int    // the destination of the settings showing
+	settingsDirty                 bool // a slider of the settings is held, its value not yet kept
+	settingsOpen                  bool // the settings show over the window
+	settingsTab                   int  // the destination of the settings showing
 	settingsScroll                [4]ui.ScrollState
 	fontsLoaded                   map[string]bool // the font files registered, by id
 	fontList                      []uiFont        // the fonts this computer can show
-	cacheUsed                     int64  // the bytes the song cache takes, -1 until measured
-	cacheDirError                 string // a directory selection that could not be applied
-	cacheMoving                   bool   // startup migration finishes before playback is restored
+	cacheUsed                     int64           // the bytes the song cache takes, -1 until measured
+	cacheDirError                 string          // a directory selection that could not be applied
+	cacheMoving                   bool            // startup migration finishes before playback is restored
 	cacheMoveDone, cacheMoveTotal int64
 	updates                       bool // the update plugin is used (useUpdater)
 
@@ -215,17 +204,17 @@ func (a *app) redraw() {
 	if a.notch != nil && a.notch.win != nil {
 		invalidateWindow(a.notch.win)
 	}
-	if d := a.desktopLyrics; d != nil && d.win != nil && a.settings.DesktopLyrics {
-		invalidateWindow(d.win)
+	if d := a.desktopLyrics; d != nil && d.Win != nil && a.settings.DesktopLyrics {
+		invalidateWindow(d.Win)
 	}
-	if d := a.taskbarLyrics; d != nil && d.win != nil && d.visible && a.settings.TaskbarLyrics {
-		invalidateWindow(d.win)
-		if d.coverWin != nil {
-			invalidateWindow(d.coverWin)
+	if d := a.taskbarLyrics; d != nil && d.Win != nil && d.Visible && a.settings.TaskbarLyrics {
+		invalidateWindow(d.Win)
+		if d.CoverWin != nil {
+			invalidateWindow(d.CoverWin)
 		}
 	}
-	if d := a.taskbarLyrics; d != nil && d.controls != nil && d.controlsOpen {
-		invalidateWindow(d.controls)
+	if d := a.taskbarLyrics; d != nil && d.Controls != nil && d.ControlsOpen {
+		invalidateWindow(d.Controls)
 	}
 }
 
@@ -234,11 +223,11 @@ var invalidateWindow = (*mygo.Window).Invalidate
 // playerChanged keeps every window in sync, including seeks while paused.
 func (a *app) playerChanged() {
 	if a.desktopLyrics != nil {
-		a.desktopLyrics.revision++
+		a.desktopLyrics.Revision++
 	}
 	if a.taskbarLyrics != nil {
-		a.taskbarLyrics.revision++
-		a.taskbarLyrics.syncCoverWindow()
+		a.taskbarLyrics.Revision++
+		a.taskbarLyrics.SyncCoverWindow()
 	}
 	a.keepSession()
 	a.syncCaptions()
@@ -292,7 +281,7 @@ func Run() error {
 	mygo.App.SetLanguages(appLanguage)
 	mygo.App.WhenReady(func() {
 		a.settings = loadSettings()
-		a.settings.applyAppearance()
+		a.settings.ApplyAppearance()
 		a.loadFont()
 		a.npPane = a.lyricsPaneChosen()
 		// Before the window: on Windows it lays out its content as it is
@@ -300,11 +289,12 @@ func Run() error {
 		a.art = newArtCache(a.post)
 		a.pl = player.New(a.post)
 		a.pl.Quality = func() string { return a.settings.Quality }
-		a.pl.Normalize = func() string { return a.settings.volumeBalance() }
+		a.pl.Normalize = func() string { return a.settings.VolumeBalanceMode() }
 		a.pl.PlaybackFade = func() bool { return a.settings.PlaybackFade }
 		a.pl.Cache = newSongCache(a.settings)
 		a.cacheMoving = a.settings.PendingCacheDir != nil
 		a.pl.Changed = a.playerChanged
+		a.initCaptions()
 		a.volume = a.settings.Volume
 		a.pl.SetVolume(a.volume)
 		a.win = mygo.NewWindow(mygo.WindowOptions{
@@ -320,7 +310,7 @@ func Run() error {
 			// Inset from the corner, within the sidebar, as macOS 26's
 			// apps with a sidebar place them.
 			TrafficLightPosition: &mygo.Point{X: 20, Y: 20},
-			Vibrancy:             a.settings.sidebarVibrancy(),
+			Vibrancy:             a.settings.SidebarVibrancy(),
 			BackgroundColor:      "light-dark(#ffffff, #141416)",
 			Content:              ui.View(a.view),
 		})
@@ -365,13 +355,13 @@ func Run() error {
 	mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) {
 		a.quitting = true
 		if a.desktopLyrics != nil {
-			a.desktopLyrics.destroy()
+			a.desktopLyrics.Destroy()
 		}
 		if a.taskbarLyrics != nil {
-			a.taskbarLyrics.destroy()
+			a.taskbarLyrics.Destroy()
 		}
 		a.settings.Volume = a.volume
-		a.settings.save()
+		a.settings.Save()
 		a.saveSession()
 		if write := a.transcriptWrite(); write != nil {
 			write()

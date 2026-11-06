@@ -17,7 +17,7 @@ func (a *app) followCover() {
 		a.coverArt = nil
 		return
 	}
-	if art := a.art.get(qqmusic.Sized(tr.Album.PicURL, 600), false); art != nil && !art.failed {
+	if art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 600), false); art != nil && !art.Failed {
 		a.coverArt = art
 	}
 }
@@ -27,10 +27,10 @@ func (a *app) followCover() {
 // constrained, as Cloudy does. A gray cover does not follow.
 func (a *app) coverAccent() (ui.Color, bool) {
 	art := a.coverArt
-	if art == nil || art.failed {
+	if art == nil || art.Failed {
 		return ui.Color{}, false
 	}
-	h, s, _ := hsv(float64(art.tint.R)/255, float64(art.tint.G)/255, float64(art.tint.B)/255)
+	h, s, _ := hsv(float64(art.Tint.R)/255, float64(art.Tint.G)/255, float64(art.Tint.B)/255)
 	if s < 0.12 {
 		return ui.Color{}, false
 	}
@@ -56,11 +56,11 @@ func (a *app) applyTheme(c *ui.Context) palette {
 			base = accent
 		}
 	}
-	p.accent = base
+	p.Accent = base
 	a.pal = p
 	hover, pressed := accentVariants(base)
 	t.Accent, t.AccentHover, t.AccentPressed = base, hover, pressed
-	t.AccentText = p.onAccent
+	t.AccentText = p.OnAccent
 	t.Selection = base.Alpha(0.3)
 	t.Focus = base.Alpha(0.55)
 	t.Font = a.fontFamily()
@@ -77,5 +77,5 @@ func (a *app) progressFill(p palette) ui.Color {
 			return accent
 		}
 	}
-	return p.text.Alpha(0.75)
+	return p.Text.Alpha(0.75)
 }

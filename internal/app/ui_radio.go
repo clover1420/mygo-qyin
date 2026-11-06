@@ -250,10 +250,10 @@ func (a *app) fmCard(c *ui.Context) {
 	}
 	var art *artwork
 	if tr != nil {
-		art = a.art.get(qqmusic.Sized(tr.Album.PicURL, 600), true)
+		art = a.art.Get(qqmusic.Sized(tr.Album.PicURL, 600), true)
 	}
 	card := ui.Box(c.Key("fm-card")).Height(320).Radius(26).Background(neutral(true, 3)).TextColor(white).
-		Shadow(0, 18, 44, -16, a.pal.cardShade)
+		Shadow(0, 18, 44, -16, a.pal.CardShade)
 	in := artIn(card, backdrop(art))
 	card.Children(func() {
 		if in < 1 {
@@ -363,16 +363,16 @@ func (a *app) fmCovers(c *ui.Context, tr *qqmusic.Track) {
 // heartCard starts heart mode: songs like those the listener likes.
 func (a *app) heartCard(c *ui.Context, p palette) {
 	on := a.pl.Radio() == heartRadio
-	ui.Row(c).Padding(22, 26).Gap(20).Radius(20).AlignItems(ui.Center).Background(p.hover).Children(func() {
+	ui.Row(c).Padding(22, 26).Gap(20).Radius(20).AlignItems(ui.Center).Background(p.Hover).Children(func() {
 		ui.Box(c).Size(56, 56).Radius(14).Center().Shrink(0).
 			LinearGradient(ui.LinearGradient{Angle: 135, Oklab: true, From: accent(false, 9), To: accent(false, 10)}).
 			TextColor(white).Children(func() { ui.Icon(c, iconHeartFill).Size(26, 26) })
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(4).Children(func() {
 			ui.Text(c, "从你喜欢的音乐出发").FontSize(15).FontWeight(700)
-			ui.Text(c, "根据你红心过的歌曲，智能推荐风格相似的音乐，与你的喜欢穿插播放").FontSize(12.5).TextColor(p.muted)
+			ui.Text(c, "根据你红心过的歌曲，智能推荐风格相似的音乐，与你的喜欢穿插播放").FontSize(12.5).TextColor(p.Muted)
 		})
 		if on {
-			if pillButton(c.Key("exit-heart"), iconX, "退出心动模式", p.press.Over(p.bg), p.text).Clicked() {
+			if pillButton(c.Key("exit-heart"), iconX, "退出心动模式", p.Press.Over(p.Bg), p.Text).Clicked() {
 				a.exitRadio()
 			}
 		}
@@ -385,7 +385,7 @@ func (a *app) heartCard(c *ui.Context, p palette) {
 		case a.radioStarting == heartRadio:
 			label = "正在开启…"
 		}
-		if pillButton(c.Key("heart"), iconHeartFill, label, p.accent, p.onAccent).Clicked() {
+		if pillButton(c.Key("heart"), iconHeartFill, label, p.Accent, p.OnAccent).Clicked() {
 			a.startHeartMode()
 		}
 	})

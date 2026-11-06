@@ -30,9 +30,9 @@ func (a *app) cacheDirectoryRow(c *ui.Context) {
 	ui.Row(c).Padding(12, 16).Gap(16).AlignItems(ui.Center).MinHeight(48).Children(func() {
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(3).Children(func() {
 			ui.Text(c, "缓存目录").FontSize(13.5).FontWeight(500)
-			ui.Text(c, path).FontSize(12).TextColor(p.muted).SingleLine().Tooltip(path)
+			ui.Text(c, path).FontSize(12).TextColor(p.Muted).SingleLine().Tooltip(path)
 			if a.settings.PendingCacheDir != nil {
-				ui.Text(c, "重启后迁移并生效").FontSize(12).TextColor(p.muted)
+				ui.Text(c, "重启后迁移并生效").FontSize(12).TextColor(p.Muted)
 			}
 			if a.cacheDirError != "" {
 				ui.Text(c, a.cacheDirError).FontSize(12).TextColor(accent(c.Theme().Dark, 11)).LineHeight(1.4)
@@ -108,7 +108,7 @@ func (a *app) setCacheDirectory(dir string) error {
 		}
 		next.PendingCacheDir = &dir
 	}
-	if err := next.save(); err != nil {
+	if err := next.Save(); err != nil {
 		return fmt.Errorf("无法保存缓存目录：%w", err)
 	}
 	a.settings = next

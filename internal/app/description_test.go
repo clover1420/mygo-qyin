@@ -17,7 +17,7 @@ func descriptionApp(kind pageKind, description string) *app {
 	a := catalogApp()
 	a.albums[8].album.Description = description
 	a.playlists[8] = &qqmusic.Playlist{ID: 8, Name: "夜间漫游", Description: description, Tracks: a.albums[8].album.Songs}
-	a.open(route{page: kind, id: 8})
+	a.open(route{Page: kind, ID: 8})
 	return a
 }
 

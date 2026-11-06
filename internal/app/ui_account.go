@@ -228,9 +228,9 @@ func (a *app) loginDialog(c *ui.Context) {
 				a.openLoginChannel(kind == 1)
 			}
 		}
-		ui.Text(c, sub).Width(284).MaxLines(3).FontSize(13).TextColor(p.muted).TextAlign(ui.Center).Margin(0, 0, 14, 0)
+		ui.Text(c, sub).Width(284).MaxLines(3).FontSize(13).TextColor(p.Muted).TextAlign(ui.Center).Margin(0, 0, 14, 0)
 
-		ui.Box(c).Size(212, 212).Radius(14).Background(paper).Border(1, p.hairline).Children(func() {
+		ui.Box(c).Size(212, 212).Radius(14).Background(paper).Border(1, p.Hairline).Children(func() {
 			if l.code != nil {
 				code := l.code
 				opacity := float32(1)
@@ -247,11 +247,11 @@ func (a *app) loginDialog(c *ui.Context) {
 			ui.Column(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Center().Gap(10).Children(func() {
 				switch {
 				case l.status == qqmusic.QRExpired || l.err != "":
-					if pillButton(c.Key("refresh"), iconRepeat, "刷新二维码", p.accent, p.onAccent).Clicked() {
+					if pillButton(c.Key("refresh"), iconRepeat, "刷新二维码", p.Accent, p.OnAccent).Clicked() {
 						a.openLoginChannel(l.wechat)
 					}
 				case l.finished || l.status == qqmusic.QRScanned:
-					if bmp := bitmap(a.art.get(qqmusic.Sized(l.avatar, 160), false)); bmp != nil {
+					if bmp := bitmap(a.art.Get(qqmusic.Sized(l.avatar, 160), false)); bmp != nil {
 						pic := ui.Box(c).Size(72, 72).Radius(36).Shadow(0, 6, 16, -4, ink.Alpha(0.3))
 						in := artIn(pic, bmp)
 						pic.Children(func() { artImage(c, bmp, 36, in) })
@@ -281,15 +281,15 @@ func (a *app) accountRow(c *ui.Context) {
 	p := a.pal
 	b := ui.ButtonBase(c.Key("account")).Height(40).PaddingX(8).Gap(10).Radius(10).AlignItems(ui.Center).Justify(ui.Start).FocusRing(false)
 	if b.Hovered() || a.accountOpen {
-		b.Background(a.sidebarSurface(c, p.hover, 0.035))
+		b.Background(a.sidebarSurface(c, p.Hover, 0.035))
 	}
 	if a.profile == nil {
 		b.Label("账户").Expanded(a.accountOpen).Children(func() {
-			ui.Box(c).Size(26, 26).Radius(13).Background(p.press).Center().Children(func() {
-				ui.Icon(c, iconUser).Size(14, 14).TextColor(p.muted)
+			ui.Box(c).Size(26, 26).Radius(13).Background(p.Press).Center().Children(func() {
+				ui.Icon(c, iconUser).Size(14, 14).TextColor(p.Muted)
 			})
-			ui.Text(c, "未登录").FontSize(13).FontWeight(500).TextColor(p.muted).Grow(1)
-			ui.Icon(c, iconUpDown).Size(13, 13).TextColor(p.faint)
+			ui.Text(c, "未登录").FontSize(13).FontWeight(500).TextColor(p.Muted).Grow(1)
+			ui.Icon(c, iconUpDown).Size(13, 13).TextColor(p.Faint)
 		})
 		if b.Clicked() {
 			a.accountOpen = !a.accountOpen
@@ -299,9 +299,9 @@ func (a *app) accountRow(c *ui.Context) {
 	}
 	prof := a.profile
 	b.Label(prof.Nickname).Expanded(a.accountOpen).Children(func() {
-		a.avatar(c, prof.AvatarURL, 26, p.press)
+		a.avatar(c, prof.AvatarURL, 26, p.Press)
 		ui.Text(c, prof.Nickname).FontSize(13).FontWeight(600).SingleLine().Grow(1).Shrink(1).MinWidth(0)
-		ui.Icon(c, iconUpDown).Size(13, 13).TextColor(p.faint)
+		ui.Icon(c, iconUpDown).Size(13, 13).TextColor(p.Faint)
 	})
 	if b.Clicked() {
 		a.accountOpen = !a.accountOpen
@@ -328,7 +328,7 @@ func (a *app) accountMenu(c *ui.Context, row ui.Element) {
 		} else {
 			if a.menuItem(c, iconUser, "我的主页", "").AutoFocus().Clicked() {
 				a.accountOpen = false
-				a.open(route{page: pageUser, id: a.profile.UserID})
+				a.open(route{Page: pageUser, ID: a.profile.UserID})
 			}
 		}
 		if a.profile != nil {
@@ -348,13 +348,13 @@ func (a *app) menuItem(c *ui.Context, icon *ui.SVG, label, shortcut string) ui.E
 	b := ui.ButtonBase(c.Key(label)).Role(ui.RoleMenuItem).Label(label).Height(30).PaddingX(8).Gap(9).Radius(8).
 		AlignItems(ui.Center).Justify(ui.Start).FocusRing(false)
 	if b.Hovered() || b.FocusVisible() {
-		b.Background(p.press)
+		b.Background(p.Press)
 	}
 	b.Children(func() {
-		ui.Icon(c, icon).Size(15, 15).TextColor(p.muted)
+		ui.Icon(c, icon).Size(15, 15).TextColor(p.Muted)
 		ui.Text(c, label).FontSize(13).Grow(1)
 		if shortcut != "" {
-			ui.Text(c, shortcut).FontSize(12).TextColor(p.faint)
+			ui.Text(c, shortcut).FontSize(12).TextColor(p.Faint)
 		}
 	})
 	return b
@@ -376,17 +376,17 @@ func (a *app) myPlaylists(c *ui.Context, title string, lists []qqmusic.Playlist,
 		}
 		b.Expanded(!*collapsed)
 		if b.Hovered() {
-			b.Background(a.sidebarSurface(c, p.hover, 0.035))
+			b.Background(a.sidebarSurface(c, p.Hover, 0.035))
 		}
 		b.Children(func() {
-			ui.Text(c, title).FontSize(11.5).FontWeight(600).TextColor(p.faint).Grow(1)
+			ui.Text(c, title).FontSize(11.5).FontWeight(600).TextColor(p.Faint).Grow(1)
 			arrow := iconDown
 			if *collapsed {
 				arrow = iconForward
 			}
-			ui.Icon(c, arrow).Size(12, 12).TextColor(p.faint)
+			ui.Icon(c, arrow).Size(12, 12).TextColor(p.Faint)
 		})
-		if mine && iconButton(c.Key("new"), iconPlus, 13, p.faint, "新建歌单").Size(26, 26).Radius(8).Clicked() {
+		if mine && iconButton(c.Key("new"), iconPlus, 13, p.Faint, "新建歌单").Size(26, 26).Radius(8).Clicked() {
 			a.newPlaylist(nil)
 		}
 	})
@@ -395,12 +395,12 @@ func (a *app) myPlaylists(c *ui.Context, title string, lists []qqmusic.Playlist,
 	}
 	for i := range lists {
 		pl := &lists[i]
-		selected := a.route.page == pagePlaylist && a.route.id == pl.ID && !a.nowPlaying
+		selected := a.route.Page == pagePlaylist && a.route.ID == pl.ID && !a.nowPlaying
 		b := ui.ButtonBase(c.Key(pl.ID)).Height(34).PaddingX(7).Gap(10).Radius(8).AlignItems(ui.Center).Justify(ui.Start).FocusRing(false).Label(pl.Name)
 		a.styleSidebarItem(c, b, selected)
 		b.Children(func() {
 			a.cover(c, pl.Cover(), 80, 22, 5)
-			ui.Text(c, pl.Name).FontSize(13).TextColor(p.text).SingleLine().Shrink(1).MinWidth(0)
+			ui.Text(c, pl.Name).FontSize(13).TextColor(p.Text).SingleLine().Shrink(1).MinWidth(0)
 		})
 		if mine && pl.SpecialType != 5 {
 			b.ContextMenu(func(m *ui.Menu) {
@@ -420,7 +420,7 @@ func (a *app) myPlaylists(c *ui.Context, title string, lists []qqmusic.Playlist,
 			})
 		}
 		if b.Clicked() {
-			a.open(route{page: pagePlaylist, id: pl.ID})
+			a.open(route{Page: pagePlaylist, ID: pl.ID})
 		}
 	}
 }

@@ -20,7 +20,7 @@ func TestSearchRetriesFailedFirstPage(t *testing.T) {
 			a := newTestApp()
 			a.settings = defaultSettings()
 			a.settings.SearchHistory = []string{"春日影"}
-			r := route{page: pageSearch, query: "春日影", kind: qqmusic.SearchSongs}
+			r := route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchSongs}
 			failed := &searchData{page: paged{err: "搜索失败，请稍后再试"}}
 			a.searches[r] = failed
 			tt := ui.NewTester(a.view, 1200, 800)
@@ -53,13 +53,13 @@ func TestSearchKindRetriesFailedFirstPage(t *testing.T) {
 	asked := fakeSearch(t)
 	a := newTestApp()
 	a.settings = defaultSettings()
-	songs := route{page: pageSearch, query: "春日影", kind: qqmusic.SearchSongs}
+	songs := route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchSongs}
 	artists := songs
-	artists.kind = qqmusic.SearchArtists
+	artists.Kind = qqmusic.SearchArtists
 	failed := &searchData{page: paged{err: "搜索失败，请稍后再试"}}
 	loaded := &searchData{page: paged{loaded: true}}
 	a.searches[songs], a.searches[artists] = failed, loaded
-	a.route, a.searched, a.query = songs, songs, songs.query
+	a.route, a.searched, a.query = songs, songs, songs.Query
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if err := tt.Click("歌手"); err != nil {
@@ -86,7 +86,7 @@ func TestSearchReusesLoadedAndLoadingPages(t *testing.T) {
 	fakeSearch(t)
 	for _, pg := range []paged{{loaded: true}, {loading: true}} {
 		a := newTestApp()
-		r := route{page: pageSearch, query: "春日影", kind: qqmusic.SearchSongs}
+		r := route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchSongs}
 		d := &searchData{page: pg}
 		a.searches[r] = d
 		a.show(r)
@@ -101,7 +101,7 @@ func TestSearchPageRetryKeepsResults(t *testing.T) {
 	asked := fakeSearch(t)
 	a := newTestApp()
 	a.settings = defaultSettings()
-	r := route{page: pageSearch, query: "春日影", kind: qqmusic.SearchSongs}
+	r := route{Page: pageSearch, Query: "春日影", Kind: qqmusic.SearchSongs}
 	d := &searchData{
 		res:  qqmusic.SearchResult{Songs: []qqmusic.Track{{ID: 1, Name: "春日影"}, {ID: 2, Name: "迷星叫"}}, Total: 40},
 		page: paged{loaded: true, more: true, err: "搜索失败，请稍后再试"},

@@ -19,7 +19,7 @@ func TestQuitOnCloseSettings(t *testing.T) {
 	a.tray = &mygo.Tray{} // A successfully created tray makes hiding available.
 	a.settings = defaultSettings()
 	a.settings.QuitOnClose = false
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	keepRunning := "最小化到托盘"
@@ -44,7 +44,7 @@ func TestQuitOnCloseSettings(t *testing.T) {
 		if a.settings.QuitOnClose != choice.quitOnClose {
 			t.Fatalf("after choosing %q, QuitOnClose = %t, want %t", choice.label, a.settings.QuitOnClose, choice.quitOnClose)
 		}
-		b, err := os.ReadFile(a.settings.path)
+		b, err := os.ReadFile(a.settings.Path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -63,7 +63,7 @@ func TestQuitOnCloseSettings(t *testing.T) {
 func TestPlaybackFadeSettings(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	for _, want := range []bool{false, true, false} {
@@ -71,7 +71,7 @@ func TestPlaybackFadeSettings(t *testing.T) {
 			t.Fatal(err)
 		}
 		tt.Frame()
-		b, err := os.ReadFile(a.settings.path)
+		b, err := os.ReadFile(a.settings.Path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -89,11 +89,11 @@ func TestPlaybackFadeSettings(t *testing.T) {
 func TestVolumeBalanceSettings(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.setProgressEffect(progressSquiggly)
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.SetProgressEffect(progressSquiggly)
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	var applied []string
 	a.pl.Normalize = func() string {
-		mode := a.settings.volumeBalance()
+		mode := a.settings.VolumeBalanceMode()
 		applied = append(applied, mode)
 		return mode
 	}
@@ -113,13 +113,13 @@ func TestVolumeBalanceSettings(t *testing.T) {
 			t.Fatal(err)
 		}
 		tt.Frame()
-		if got := a.settings.volumeBalance(); got != choice.mode {
+		if got := a.settings.VolumeBalanceMode(); got != choice.mode {
 			t.Fatalf("volume balance = %q, want %q", got, choice.mode)
 		}
 		if len(applied) <= before || applied[len(applied)-1] != choice.mode {
 			t.Fatalf("current player did not apply volume balance %q: %v", choice.mode, applied)
 		}
-		b, err := os.ReadFile(a.settings.path)
+		b, err := os.ReadFile(a.settings.Path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -128,7 +128,7 @@ func TestVolumeBalanceSettings(t *testing.T) {
 		if err := json.Unmarshal(b, &restored); err != nil {
 			t.Fatal(err)
 		}
-		if got := restored.volumeBalance(); got != choice.mode {
+		if got := restored.VolumeBalanceMode(); got != choice.mode {
 			t.Fatalf("restored volume balance = %q, want %q", got, choice.mode)
 		}
 	}
@@ -148,7 +148,7 @@ func TestVolumeBalanceMigration(t *testing.T) {
 		if err := json.Unmarshal([]byte(fmt.Sprintf(`{"volumeBalance":%t}`, tc.legacy)), &s); err != nil {
 			t.Fatal(err)
 		}
-		if got := s.volumeBalance(); got != tc.want {
+		if got := s.VolumeBalanceMode(); got != tc.want {
 			t.Fatalf("legacy switch %t selects %q, want %q", tc.legacy, got, tc.want)
 		}
 	}
@@ -220,7 +220,7 @@ func TestSidebarMaterialSettings(t *testing.T) {
 	a.settings = defaultSettings()
 	// The appearance rows now live in the appearance category.
 	a.settingsTab = int(settingsAppearance)
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	for _, choice := range []struct {
@@ -239,7 +239,7 @@ func TestSidebarMaterialSettings(t *testing.T) {
 		if a.settings.SidebarMaterial != choice.material {
 			t.Fatalf("selected %q, want %q", a.settings.SidebarMaterial, choice.material)
 		}
-		b, err := os.ReadFile(a.settings.path)
+		b, err := os.ReadFile(a.settings.Path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -247,8 +247,8 @@ func TestSidebarMaterialSettings(t *testing.T) {
 		if err := json.Unmarshal(b, &restored); err != nil {
 			t.Fatal(err)
 		}
-		if restored.SidebarMaterial != choice.material || restored.sidebarVibrancy() != choice.vibrancy {
-			t.Fatalf("restored material %q (%q), want %q (%q)", restored.SidebarMaterial, restored.sidebarVibrancy(), choice.material, choice.vibrancy)
+		if restored.SidebarMaterial != choice.material || restored.SidebarVibrancy() != choice.vibrancy {
+			t.Fatalf("restored material %q (%q), want %q (%q)", restored.SidebarMaterial, restored.SidebarVibrancy(), choice.material, choice.vibrancy)
 		}
 	}
 }
@@ -259,14 +259,14 @@ func TestProgressEffectSettings(t *testing.T) {
 	a.settings = defaultSettings()
 	// The rows of the category they are on.
 	a.settingsTab = int(settingsPlayback)
-	a.settings.setVolumeBalance(volumeBalanceHigh)
+	a.settings.SetVolumeBalance(volumeBalanceHigh)
 	if err := json.Unmarshal([]byte("{\"smoke\":true}"), &a.settings); err != nil {
 		t.Fatal(err)
 	}
-	if got := a.settings.progressEffect(); got != progressSmoke {
+	if got := a.settings.ProgressEffectMode(); got != progressSmoke {
 		t.Fatalf("old smoke setting selects %q, want %q", got, progressSmoke)
 	}
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
 	for _, choice := range []struct{ label, effect string }{
@@ -282,10 +282,10 @@ func TestProgressEffectSettings(t *testing.T) {
 			t.Fatal(err)
 		}
 		tt.Frame()
-		if got := a.settings.progressEffect(); got != choice.effect {
+		if got := a.settings.ProgressEffectMode(); got != choice.effect {
 			t.Fatalf("after choosing %q, progress effect = %q, want %q", choice.label, got, choice.effect)
 		}
-		b, err := os.ReadFile(a.settings.path)
+		b, err := os.ReadFile(a.settings.Path)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -293,7 +293,7 @@ func TestProgressEffectSettings(t *testing.T) {
 		if err := json.Unmarshal(b, &restored); err != nil {
 			t.Fatal(err)
 		}
-		if got := restored.progressEffect(); got != choice.effect {
+		if got := restored.ProgressEffectMode(); got != choice.effect {
 			t.Fatalf("after choosing %q, restored effect = %q, want %q", choice.label, got, choice.effect)
 		}
 		if restored.Smoke != (choice.effect == progressSmoke) {

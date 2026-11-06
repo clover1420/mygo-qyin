@@ -26,9 +26,9 @@ func playerHoverApp() *app {
 	a.pl.Seek(24 * time.Second)
 	a.volume = 0.63
 	a.pl.SetVolume(a.volume)
-	art := &artwork{bmp: solidBitmap(burstCyan), tint: burstCyan}
+	art := &artwork{BMP: solidBitmap(burstCyan), Tint: burstCyan}
 	for _, size := range []int{96, 120, 240, 600} {
-		a.art.art[qqmusic.Sized(tr.Album.PicURL, size)] = art
+		a.art.Add(qqmusic.Sized(tr.Album.PicURL, size), art)
 	}
 	return a
 }
@@ -82,7 +82,7 @@ func TestPlayerVolumeSliderInput(t *testing.T) {
 	a := playerHoverApp()
 	tt := ui.NewTester(func(c *ui.Context) {
 		a.pal = paletteFor(c.Theme())
-		ui.Column(c).Fill().Center().Children(func() { a.nativeVolumeSlider(c, popoverColors(a.pal.dark)) })
+		ui.Column(c).Fill().Center().Children(func() { a.nativeVolumeSlider(c, popoverColors(a.pal.Dark)) })
 	}, 100, 180)
 	tt.Frame()
 	r, ok := tt.Find("音量")
@@ -118,9 +118,9 @@ func TestPlayerVolumeScroll(t *testing.T) {
 				a.pal = paletteFor(c.Theme())
 				ui.Column(c).Fill().Center().Children(func() {
 					if control == "speaker" {
-						a.volumeButton(c, a.pal.muted)
+						a.volumeButton(c, a.pal.Muted)
 					} else {
-						a.nativeVolumeSlider(c, popoverColors(a.pal.dark))
+						a.nativeVolumeSlider(c, popoverColors(a.pal.Dark))
 					}
 				})
 			}, 100, 180)

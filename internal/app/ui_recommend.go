@@ -53,10 +53,10 @@ func (a *app) songShelvesAnswered(d *songShelfData, shelves []qqmusic.SongShelf,
 func (a *app) clearSongShelves() {
 	a.songShelves = nil
 	a.shelfPagers = nil
-	if a.route.page == pageSongShelf {
-		a.route = route{page: pageHome}
+	if a.route.Page == pageSongShelf {
+		a.route = route{Page: pageHome}
 	}
-	isShelf := func(r route) bool { return r.page == pageSongShelf }
+	isShelf := func(r route) bool { return r.Page == pageSongShelf }
 	a.history = slices.DeleteFunc(a.history, isShelf)
 	a.forward = slices.DeleteFunc(a.forward, isShelf)
 	for r := range a.pageStates {
@@ -73,10 +73,10 @@ func (a *app) songShelfColumns(c *ui.Context) int {
 
 func (a *app) shelfAction(c *ui.Context, icon *ui.SVG, label string) ui.Element {
 	b := ui.ButtonBase(c).Height(32).PaddingX(8).Gap(5).Radius(8).AlignItems(ui.Center).Label(label)
-	color := a.pal.muted
+	color := a.pal.Muted
 	if b.Hovered() || b.FocusVisible() {
-		b.Background(a.pal.hover)
-		color = a.pal.text
+		b.Background(a.pal.Hover)
+		color = a.pal.Text
 	}
 	b.TextColor(color).Children(func() {
 		if icon != nil {
@@ -121,7 +121,7 @@ func (a *app) songShelfSection(c *ui.Context, start, end int) {
 			if message == "" {
 				message = "暂无歌曲推荐"
 			}
-			ui.Text(c, message).FontSize(12).TextColor(a.pal.muted)
+			ui.Text(c, message).FontSize(12).TextColor(a.pal.Muted)
 			a.shelfAction(c, iconReload, "重试").Label("重试歌曲推荐").Disabled(d.loading).OnClick(a.loadSongShelves)
 		})
 	}
@@ -189,14 +189,14 @@ func (a *app) songShelf(c *ui.Context, shelf *qqmusic.SongShelf) {
 }
 
 func (a *app) shelfPageButton(c *ui.Context, icon *ui.SVG, label, tooltip string, disabled bool) ui.Element {
-	color := a.pal.muted
+	color := a.pal.Muted
 	if disabled {
-		color = neutral(a.pal.dark, 8)
+		color = neutral(a.pal.Dark, 8)
 	}
 	b := ui.ButtonBase(c).Size(32, 32).Center().Radius(999).Label(label).Tooltip(tooltip).Disabled(disabled).TextColor(color)
 	bg := ui.Transparent
 	if !disabled && (b.Hovered() || b.FocusVisible()) {
-		bg = a.pal.hover
+		bg = a.pal.Hover
 	}
 	b.Background(b.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond}))
 	pose := ui.Pose{}
@@ -255,9 +255,9 @@ func (a *app) songShelfRow(c *ui.Context, shelf *qqmusic.SongShelf, i int) {
 		hovered := row.Hovered() || b.FocusVisible()
 		bg := ui.Transparent
 		if current {
-			bg = accent(p.dark, 3)
+			bg = accent(p.Dark, 3)
 		} else if hovered {
-			bg = p.hover
+			bg = p.Hover
 		}
 		row.Background(row.AnimateColor("bg", bg, ui.Animation{Duration: 100 * time.Millisecond}))
 		if !tr.Playable() {
@@ -277,20 +277,20 @@ func (a *app) songShelfRow(c *ui.Context, shelf *qqmusic.SongShelf, i int) {
 				}
 			})
 			ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(3).Children(func() {
-				name := p.text
+				name := p.Text
 				if current {
-					name = accent(p.dark, 11)
+					name = accent(p.Dark, 11)
 				}
 				ui.Text(c, tr.Name).FontSize(13.5).FontWeight(500).TextColor(name).SingleLine()
-				ui.Text(c, tr.ArtistNames()).FontSize(12).TextColor(p.muted).SingleLine()
+				ui.Text(c, tr.ArtistNames()).FontSize(12).TextColor(p.Muted).SingleLine()
 			})
 		})
-		a.likeButton(c.Key("like"), tr, 14, p.muted)
+		a.likeButton(c.Key("like"), tr, 14, p.Muted)
 	})
 }
 
 func (a *app) songShelfPage(c *ui.Context) {
-	shelf := a.route.shelf
+	shelf := a.route.Shelf
 	if shelf == nil || a.profile == nil {
 		a.centered(c, "暂无歌曲推荐", nil)
 		return
@@ -298,8 +298,8 @@ func (a *app) songShelfPage(c *ui.Context) {
 	a.trackRows(c, shelf.Tracks, true, func(c *ui.Context) {
 		ui.Column(c).Padding(0, 12, 26, 12).Gap(8).Children(func() {
 			songShelfTitle(c, shelf.Title).FontSize(28).FontWeight(700).LetterSpacing(-0.6).MaxLines(3).LineHeight(1.25)
-			ui.Text(c, fmt.Sprintf("%d 首歌曲", len(shelf.Tracks))).FontSize(13).TextColor(a.pal.muted)
-			pillButton(c.Key("play-all"), iconPlay, "播放全部", a.pal.accent, a.pal.onAccent).
+			ui.Text(c, fmt.Sprintf("%d 首歌曲", len(shelf.Tracks))).FontSize(13).TextColor(a.pal.Muted)
+			pillButton(c.Key("play-all"), iconPlay, "播放全部", a.pal.Accent, a.pal.OnAccent).
 				AlignSelf(ui.Start).Margin(8, 0, 0, 0).Label("播放全部：" + shelf.Title).Disabled(!shelfHasPlayable(shelf)).
 				OnClick(func() { a.playSongShelf(shelf) })
 		})

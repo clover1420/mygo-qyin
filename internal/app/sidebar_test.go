@@ -27,9 +27,9 @@ func TestAcrylicSidebarFrames(t *testing.T) {
 			p := paletteFor(c.Theme())
 			ui.Box(c).Fill().Draw(func(painter *ui.Painter, r ui.Rect) {
 				painter.FillGradient(r, ui.LinearGradient{Angle: 160, Stops: []ui.GradientStop{
-					{Color: accent(dark, 4).Mix(p.sidebar, 0.7), At: 0},
-					{Color: warm(dark, 4).Mix(p.sidebar, 0.7), At: 0.5},
-					{Color: accent(dark, 4).Mix(p.sidebar, 0.7), At: 1},
+					{Color: accent(dark, 4).Mix(p.Sidebar, 0.7), At: 0},
+					{Color: warm(dark, 4).Mix(p.Sidebar, 0.7), At: 0.5},
+					{Color: accent(dark, 4).Mix(p.Sidebar, 0.7), At: 1},
 				}}, 0)
 			}).Children(func() { a.view(c) })
 		}, 1180, 780)
@@ -94,7 +94,7 @@ func TestSidebarPlaylistCollapse(t *testing.T) {
 				t.Fatalf("the restored playlist cannot be opened: %v", err)
 			}
 			tt.Frame()
-			if a.route != (route{page: pagePlaylist, id: tc.playlist}) {
+			if a.route != (route{Page: pagePlaylist, ID: tc.playlist}) {
 				t.Errorf("opened %+v, want playlist %d", a.route, tc.playlist)
 			}
 		})

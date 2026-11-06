@@ -56,7 +56,7 @@ func TestSongMenuOnRightClick(t *testing.T) {
 		{ID: 1, Name: "一张相片", Artists: []qqmusic.Artist{{Name: "林宥嘉"}}, Duration: 200000},
 		{ID: 2, Name: "宝船", Artists: []qqmusic.Artist{{Name: "DOUDOU"}}, Duration: 200000},
 	}}
-	a.route = route{page: pagePlaylist, id: 42}
+	a.route = route{Page: pagePlaylist, ID: 42}
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 
@@ -112,7 +112,7 @@ func TestSongMenuPlayNext(t *testing.T) {
 						case "queue":
 							a.queuePane(c)
 						case "more":
-							a.songMenu(c, &tracks[2], 20, a.pal.text)
+							a.songMenu(c, &tracks[2], 20, a.pal.Text)
 						}
 					})
 				}

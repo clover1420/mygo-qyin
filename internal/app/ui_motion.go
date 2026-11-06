@@ -21,12 +21,12 @@ type pageKey struct {
 	query string
 }
 
-func keyOf(r route) pageKey { return pageKey{page: r.page, id: r.id, query: r.query} }
+func keyOf(r route) pageKey { return pageKey{page: r.Page, id: r.ID, query: r.Query} }
 
 // pageLevel is how deep a page is: those of the sidebar, and what opens from
 // them.
 func pageLevel(r route) int {
-	switch r.page {
+	switch r.Page {
 	case pagePlaylist, pageArtist, pageAlbum, pageUser, pagePodcast, pageSongShelf:
 		return 1
 	}

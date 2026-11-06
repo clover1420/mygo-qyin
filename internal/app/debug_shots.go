@@ -21,7 +21,7 @@ func init() {
 	shotHook = func(a *app) {
 		// The scenes change settings to measure them: keep the
 		// listener's own as they were.
-		a.settings.path = ""
+		a.settings.Path = ""
 		go func() {
 			shot := func(name string, w *mygo.Window) {
 				png, err := w.CapturePage()
@@ -46,9 +46,9 @@ func init() {
 					a.win.SetAlwaysOnTop(true)
 					a.win.Show()
 					// NM_SMOKE=0 and NM_NOTCH=0 turn them off, to measure them.
-					a.settings.setProgressEffect(progressStandard)
+					a.settings.SetProgressEffect(progressStandard)
 					if os.Getenv("NM_SMOKE") != "0" {
-						a.settings.setProgressEffect(progressSmoke)
+						a.settings.SetProgressEffect(progressSmoke)
 					}
 					a.settings.Notch = os.Getenv("NM_NOTCH") != "0"
 					a.notch.setEnabled(a.settings.Notch)
@@ -66,9 +66,9 @@ func init() {
 				if os.Getenv("NM_DAILY") != "" {
 					// The home page, its daily card's record turning, for a
 					// while; then another page, without it, loaded first.
-					step(0, func() { a.open(route{page: pageCharts}) })
+					step(0, func() { a.open(route{Page: pageCharts}) })
 					time.Sleep(6 * time.Second)
-					step(0, func() { a.open(route{page: pageHome}) })
+					step(0, func() { a.open(route{Page: pageHome}) })
 					time.Sleep(2 * time.Second)
 					if f, err := os.Create(filepath.Join(dir, "daily.pprof")); err == nil {
 						pprof.StartCPUProfile(f)
@@ -81,7 +81,7 @@ func init() {
 					mark("home")
 					time.Sleep(10 * time.Second)
 					mark("charts")
-					step(0, func() { a.open(route{page: pageCharts}) })
+					step(0, func() { a.open(route{Page: pageCharts}) })
 					time.Sleep(10 * time.Second)
 					mark("end")
 					mygo.RunOnMain(mygo.App.Quit)
@@ -150,7 +150,7 @@ func init() {
 			if os.Getenv("NM_SCENE") == "np" {
 				time.Sleep(5 * time.Second)
 				shot("q-home", a.win)
-				step(0, func() { a.open(route{page: pageDaily}) })
+				step(0, func() { a.open(route{Page: pageDaily}) })
 				time.Sleep(2 * time.Second)
 				shot("q-daily", a.win)
 				step(0, func() { a.pl.PlayQueue(a.daily, 0); a.volume = 0.15; a.pl.SetVolume(0.15) })
@@ -166,7 +166,7 @@ func init() {
 				// first podcast's newest episode, as its card's button plays
 				// it, muted.
 				time.Sleep(3 * time.Second)
-				step(0, func() { a.open(route{page: pagePodcasts}) })
+				step(0, func() { a.open(route{Page: pagePodcasts}) })
 				time.Sleep(150 * time.Millisecond)
 				shot("p-loading", a.win)
 				time.Sleep(4 * time.Second)
@@ -198,7 +198,7 @@ func init() {
 				shot("a-loading", a.win)
 				time.Sleep(4 * time.Second)
 				shot("a-artist", a.win)
-				step(0, func() { a.artistTab = artistLatest; a.loadLatest(a.route.id) })
+				step(0, func() { a.artistTab = artistLatest; a.loadLatest(a.route.ID) })
 				time.Sleep(3 * time.Second)
 				shot("a-latest", a.win)
 				mygo.RunOnMain(mygo.App.Quit)
@@ -208,7 +208,7 @@ func init() {
 				// The listener's own page, and at its foot the podcasts they
 				// subscribe to and the artists they follow.
 				time.Sleep(4 * time.Second)
-				step(0, func() { a.open(route{page: pageUser, id: a.profile.UserID}) })
+				step(0, func() { a.open(route{Page: pageUser, ID: a.profile.UserID}) })
 				time.Sleep(4 * time.Second)
 				shot("p-profile", a.win)
 				step(0, func() { a.pageState().scroll.ScrollTo(0, 100000, ui.Smooth) })
@@ -224,10 +224,10 @@ func init() {
 			})
 			shot("1-home", a.win)
 			shot("1-notch-idle", a.notch.win)
-			step(0, func() { a.open(route{page: pageCharts}) })
+			step(0, func() { a.open(route{Page: pageCharts}) })
 			time.Sleep(time.Second)
 			shot("2-charts", a.win)
-			step(0, func() { a.open(route{page: pagePlaylist, id: a.charts[1].ID}) })
+			step(0, func() { a.open(route{Page: pagePlaylist, ID: a.charts[1].ID}) })
 			time.Sleep(4 * time.Second)
 			shot("3-playlist", a.win)
 			step(0, func() {

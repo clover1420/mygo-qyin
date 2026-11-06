@@ -29,7 +29,7 @@ func editTestApp() *app {
 		{ID: 1, Name: "一张相片", Artists: []qqmusic.Artist{{Name: "林宥嘉"}}, Duration: 200000},
 		{ID: 2, Name: "宝船", Artists: []qqmusic.Artist{{Name: "DOUDOU"}}, Duration: 200000},
 	}}
-	a.route = route{page: pagePlaylist, id: 10}
+	a.route = route{Page: pagePlaylist, ID: 10}
 	return a
 }
 
@@ -98,7 +98,7 @@ func TestRemoveSongFromPlaylist(t *testing.T) {
 func TestNoRemovingFromSavedPlaylist(t *testing.T) {
 	a := editTestApp()
 	a.playlists[20] = &qqmusic.Playlist{ID: 20, Name: "飙升榜", Tracks: a.playlists[10].Tracks}
-	a.route = route{page: pagePlaylist, id: 20}
+	a.route = route{Page: pagePlaylist, ID: 20}
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if err := tt.RightClick("宝船"); err != nil {
@@ -165,7 +165,7 @@ func TestRenamePlaylist(t *testing.T) {
 	defer func() { renamePlaylist = qqmusic.RenamePlaylist }()
 
 	a := editTestApp()
-	a.route = route{page: pageHome}
+	a.route = route{Page: pageHome}
 	a.homeLoading = true
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
@@ -197,7 +197,7 @@ func TestRenamePlaylist(t *testing.T) {
 // The liked songs can't be renamed: they offer no menu.
 func TestNoRenamingLikedSongs(t *testing.T) {
 	a := editTestApp()
-	a.route = route{page: pageHome}
+	a.route = route{Page: pageHome}
 	a.homeLoading = true
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
@@ -216,8 +216,8 @@ func TestDeletePlaylist(t *testing.T) {
 
 	a := editTestApp()
 	a.homeLoading = true
-	a.route = route{page: pageCharts}
-	a.open(route{page: pagePlaylist, id: 10})
+	a.route = route{Page: pageCharts}
+	a.open(route{Page: pagePlaylist, ID: 10})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if err := tt.Click("更多"); err != nil {
@@ -243,7 +243,7 @@ func TestDeletePlaylist(t *testing.T) {
 	if a.editable(10) != nil {
 		t.Error("the sidebar still lists it")
 	}
-	if a.route.page != pageCharts || len(a.history) != 0 || len(a.forward) != 0 {
+	if a.route.Page != pageCharts || len(a.history) != 0 || len(a.forward) != 0 {
 		t.Errorf("on %+v, history %v, forward %v; want the charts with nowhere to go", a.route, a.history, a.forward)
 	}
 }
@@ -254,7 +254,7 @@ func TestCancelDeletingPlaylist(t *testing.T) {
 	defer func() { deletePlaylist = qqmusic.DeletePlaylist }()
 
 	a := editTestApp()
-	a.route = route{page: pageHome}
+	a.route = route{Page: pageHome}
 	a.homeLoading = true
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
@@ -292,8 +292,8 @@ func TestUnfavoritePlaylist(t *testing.T) {
 			a := editTestApp()
 			a.playlists[20] = &qqmusic.Playlist{ID: 20, Name: "飙升榜", Tracks: a.playlists[10].Tracks}
 			a.pl.Cue(a.playlists[20].Tracks)
-			a.route = route{page: pagePlaylist, id: 20}
-			a.history = []route{{page: pageCharts}, a.route}
+			a.route = route{Page: pagePlaylist, ID: 20}
+			a.history = []route{{Page: pageCharts}, a.route}
 			a.forward = []route{a.route}
 			tt := ui.NewTester(a.view, 1200, 800)
 			tt.Frame()
@@ -324,7 +324,7 @@ func TestUnfavoritePlaylist(t *testing.T) {
 			if got := <-calls; got != (call{id: 20}) {
 				t.Errorf("wrong operation: %+v", got)
 			}
-			if a.route.page != pageCharts || len(a.history) != 0 || len(a.forward) != 0 {
+			if a.route.Page != pageCharts || len(a.history) != 0 || len(a.forward) != 0 {
 				t.Errorf("removed playlist still in navigation: route=%+v, history=%v, forward=%v", a.route, a.history, a.forward)
 			}
 			if q := a.pl.Queue(); len(q) != 2 || q[0].ID != 1 || q[1].ID != 2 {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/captions"
 	"lilt/internal/qqmusic"
 	"lilt/internal/speech"
 )
@@ -80,10 +81,10 @@ func TestAddSegmentOnce(t *testing.T) {
 // captionsTestApp plays an episode in Now Playing, with the libraries in
 // the app and the model installed or not.
 func captionsTestApp(t *testing.T, installed bool) *app {
-	oldAvail, oldInstalled := captionsAvailable, modelInstalled
-	t.Cleanup(func() { captionsAvailable, modelInstalled = oldAvail, oldInstalled })
-	captionsAvailable = func() bool { return true }
-	modelInstalled = func(string) bool { return installed }
+	oldAvail, oldInstalled := captions.Available, captions.Installed
+	t.Cleanup(func() { captions.Available, captions.Installed = oldAvail, oldInstalled })
+	captions.Available = func() bool { return true }
+	captions.Installed = func(string) bool { return installed }
 	a := newTestApp()
 	a.settings = defaultSettings()
 	a.pl.Cue([]qqmusic.Track{{ID: 7, Name: "510 泰国侨批沉浮录", ProgramID: 42, Duration: 600000, Description: "下南洋"}})
@@ -96,9 +97,9 @@ func captionsTestApp(t *testing.T, installed bool) *app {
 func TestDownloadModelFromCaptions(t *testing.T) {
 	a := captionsTestApp(t, false)
 	started := make(chan struct{}, 1)
-	old := downloadModel
-	defer func() { downloadModel = old }()
-	downloadModel = func(ctx context.Context, dir string, progress func(int64, int64)) error {
+	old := captions.Download
+	defer func() { captions.Download = old }()
+	captions.Download = func(ctx context.Context, dir string, progress func(int64, int64)) error {
 		started <- struct{}{}
 		<-ctx.Done()
 		return ctx.Err()
@@ -122,7 +123,7 @@ func TestDownloadModelFromCaptions(t *testing.T) {
 		t.Fatal("the download did not start")
 	}
 	tt.Frame()
-	if !a.captions.model.downloading {
+	if !a.captions.Model.Downloading {
 		t.Fatal("not downloading")
 	}
 	if err := tt.Click("取消"); err != nil {
@@ -138,9 +139,9 @@ func TestCaptionClickSeeks(t *testing.T) {
 		{Start: 12 * sec, End: 16 * sec, Text: "有些话题是绕不开的。"},
 		{Start: 17 * sec, End: 20 * sec, Text: "比如说，我的婚姻结束了。"},
 	}
-	a.captions.program = 42
-	a.captions.tr = &transcript{Model: speech.ModelName, Segments: segs, Spans: []span{{0, 20 * sec}}}
-	a.captions.lines = speech.Lines(segs)
+	a.captions.Program = 42
+	a.captions.Tr = &transcript{Model: speech.ModelName, Segments: segs, Spans: []span{{0, 20 * sec}}}
+	a.captions.Lines = speech.Lines(segs)
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	tt.Frame()
@@ -168,11 +169,11 @@ func TestCaptionsOnTheirWay(t *testing.T) {
 		state captionState
 	}{
 		{"after a song", captionState{}},
-		{"after another episode", captionState{program: 41, tr: &transcript{Spans: []span{{0, 600 * sec}}}, lines: speech.Lines([]speech.Segment{{Start: 0, End: sec, Text: "上一期"}})}},
-		{"loaded, the audio not yet", captionState{program: 42, tr: &transcript{Model: speech.ModelName}}},
+		{"after another episode", captionState{Program: 41, Tr: &transcript{Spans: []span{{0, 600 * sec}}}, Lines: speech.Lines([]speech.Segment{{Start: 0, End: sec, Text: "上一期"}})}},
+		{"loaded, the audio not yet", captionState{Program: 42, Tr: &transcript{Model: speech.ModelName}}},
 	} {
-		a.captions = c.state
-		a.captions.model = modelState{checked: true, installed: true}
+		a.setCaptionState(c.state)
+		a.captions.Model = ModelState{Checked: true, Installed: true}
 		tt.Frame()
 		tt.Frame()
 		if !tt.HasText("正在识别…") || tt.HasText("上一期") || tt.HasText("这期节目没有识别到语音") || tt.HasText("字幕生成失败") {
@@ -180,7 +181,7 @@ func TestCaptionsOnTheirWay(t *testing.T) {
 		}
 	}
 	// Written down whole, with nothing said, there is no speech.
-	a.captions = captionState{program: 42, tr: &transcript{Spans: []span{{0, 600 * sec}}}, model: modelState{checked: true, installed: true}}
+	a.setCaptionState(captionState{Program: 42, Tr: &transcript{Spans: []span{{0, 600 * sec}}}, Model: ModelState{Checked: true, Installed: true}})
 	tt.Frame()
 	if !tt.HasText("这期节目没有识别到语音") {
 		t.Errorf("written down whole: %q", tt.Texts())

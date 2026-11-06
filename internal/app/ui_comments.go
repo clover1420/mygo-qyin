@@ -279,7 +279,7 @@ func (a *app) commentRow(c *ui.Context, cm *qqmusic.Comment, now time.Time) {
 func (a *app) commentLike(c *ui.Context, cm *qqmusic.Comment) {
 	label, fg := "赞", white.Alpha(0.42)
 	if cm.Liked {
-		label, fg = "取消赞", a.pal.accent
+		label, fg = "取消赞", a.pal.Accent
 	}
 	b := ui.ButtonBase(c).Gap(4).Padding(3, 6).Margin(-3, -6).Radius(999).AlignItems(ui.Center).FocusRing(false).Label(label)
 	if b.Hovered() && !cm.Liked {
@@ -357,7 +357,7 @@ func (cs *commentState) setLiked(id int64, like bool) {
 
 // avatar shows a listener's picture, round, over empty while it loads.
 func (a *app) avatar(c *ui.Context, url string, size float32, empty ui.Color) {
-	bmp := bitmap(a.art.get(qqmusic.Sized(url, int(size*3)), false))
+	bmp := bitmap(a.art.Get(qqmusic.Sized(url, int(size*3)), false))
 	box := ui.Box(c).Size(size, size).Radius(size / 2).Shrink(0)
 	in := artIn(box, bmp)
 	if in < 1 {

@@ -34,7 +34,7 @@ func TestNavigationRestoresScroll(t *testing.T) {
 					a.charts = append(a.charts, pl)
 				}
 			}
-			a.open(route{page: page})
+			a.open(route{Page: page})
 			tt := newNavTester(a, 1200, 800)
 			tt.Frame()
 			tt.Scroll(1000, 550, 0, 600)
@@ -47,7 +47,7 @@ func TestNavigationRestoresScroll(t *testing.T) {
 				t.Fatal(err)
 			}
 			tt.Frame()
-			if a.route.page != pagePlaylist {
+			if a.route.Page != pagePlaylist {
 				t.Fatalf("card did not open a playlist: %+v", a.route)
 			}
 			playlistRoute := a.route
@@ -62,7 +62,7 @@ func TestNavigationRestoresScroll(t *testing.T) {
 					t.Fatal(err)
 				}
 				tt.Frame()
-				if a.route.page != page {
+				if a.route.Page != page {
 					t.Fatalf("returned to %+v", a.route)
 				}
 				assertNavigationPosition(t, tt, card, cardAt)
@@ -93,13 +93,13 @@ func TestPlaylistsKeepIndependentScroll(t *testing.T) {
 		}
 		a.playlists[pl.ID] = pl
 	}
-	a.open(route{page: pagePlaylist, id: 1})
+	a.open(route{Page: pagePlaylist, ID: 1})
 	tt := newNavTester(a, 1200, 800)
 	tt.Frame()
 	tt.Scroll(1000, 550, 0, 700)
 	tt.Frame()
 	first, firstAt := visibleNavigationItem(t, tt, names[0])
-	a.open(route{page: pagePlaylist, id: 2})
+	a.open(route{Page: pagePlaylist, ID: 2})
 	tt.Frame()
 	if a.underTop {
 		t.Fatal("a new playlist inherited the previous playlist's scroll")

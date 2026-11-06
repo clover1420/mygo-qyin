@@ -78,7 +78,7 @@ func (a *app) nowPlayingView(c *ui.Context) {
 	pl := a.pl
 	tr := pl.Current()
 	w, h := c.Size()
-	art := a.art.get(qqmusic.Sized(tr.Album.PicURL, 600), true)
+	art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 600), true)
 	// The colors stay the last song's while its cover loads, rather than
 	// going gray between the two.
 	shown := art
@@ -87,8 +87,8 @@ func (a *app) nowPlayingView(c *ui.Context) {
 	}
 	a.npArt = shown
 	tint := neutral(true, 9)
-	if shown != nil && !shown.failed {
-		tint = shown.tint
+	if shown != nil && !shown.Failed {
+		tint = shown.Tint
 	}
 	accent := tint.Mix(white, 0.45)
 	// The light of the line sung takes the cover's own color, lightened as
@@ -337,7 +337,7 @@ func (a *app) choosePane(i int) {
 	a.npPane = i
 	if (i == paneLyrics || i == paneStage) && a.settings.LyricsStage != (i == paneStage) {
 		a.settings.LyricsStage = i == paneStage
-		a.settings.save()
+		a.settings.Save()
 	}
 }
 
@@ -664,8 +664,8 @@ func (g *lyricGlide) step(c *ui.Context, s *ui.ScrollState) float32 {
 // among the others: a click plays one there, and the list stays as it is.
 func (a *app) queuePane(c *ui.Context) {
 	a.queueTracks(c, &a.queueList, &a.queueAt, palette{
-		text: white, muted: white.Alpha(0.55), faint: white.Alpha(0.4),
-		hover: white.Alpha(0.08), press: white.Alpha(0.12),
+		Text: white, Muted: white.Alpha(0.55), Faint: white.Alpha(0.4),
+		Hover: white.Alpha(0.08), Press: white.Alpha(0.12),
 	}).Padding(8, 0, 40, 0)
 }
 
@@ -692,9 +692,9 @@ func (a *app) queueTracks(c *ui.Context, list *ui.ListState, lastAt *int, p pale
 			ContextMenu(a.songItems(tr, 0))
 		switch {
 		case playing:
-			row.Background(p.press)
+			row.Background(p.Press)
 		case row.Hovered():
-			row.Background(p.hover)
+			row.Background(p.Hover)
 		}
 		if !tr.Playable() {
 			row.Opacity(0.4)
@@ -703,9 +703,9 @@ func (a *app) queueTracks(c *ui.Context, list *ui.ListState, lastAt *int, p pale
 			a.cover(c, tr.Album.PicURL, 96, 42, 7)
 			ui.Column(c).Grow(1).MinWidth(0).Gap(3).Children(func() {
 				ui.Text(c, tr.Name).FontSize(14).FontWeight(600).SingleLine()
-				a.artistLinks(c, tr, p.muted, p.text).FontSize(12.5).SingleLine()
+				a.artistLinks(c, tr, p.Muted, p.Text).FontSize(12.5).SingleLine()
 			})
-			ui.Text(c, clock(tr.Length())).FontSize(12).FontFeatures("tnum").TextColor(p.faint)
+			ui.Text(c, clock(tr.Length())).FontSize(12).FontFeatures("tnum").TextColor(p.Faint)
 		})
 		if row.Clicked() && tr.Playable() {
 			if playing {
@@ -714,5 +714,5 @@ func (a *app) queueTracks(c *ui.Context, list *ui.ListState, lastAt *int, p pale
 				pl.Jump(i)
 			}
 		}
-	}).Grow(1).MinHeight(0).TextColor(p.text).Gap(2)
+	}).Grow(1).MinHeight(0).TextColor(p.Text).Gap(2)
 }

@@ -9,6 +9,8 @@ import (
 	"unsafe"
 
 	"github.com/egoist/mygo"
+
+	"lilt/internal/lyricsui"
 )
 
 func taskbarLyricsNativeSnapshot(a *app) map[string]any {
@@ -18,12 +20,12 @@ func taskbarLyricsNativeSnapshot(a *app) map[string]any {
 		out["coverWindowExists"], out["controlsWindowExists"] = false, false
 		return out
 	}
-	out["controlsOpen"] = d.controlsOpen
-	out["coverWindowExists"] = d.coverWin != nil && !d.coverWin.IsDestroyed()
-	out["controlsWindowExists"] = d.controls != nil && !d.controls.IsDestroyed()
+	out["controlsOpen"] = d.ControlsOpen
+	out["coverWindowExists"] = d.CoverWin != nil && !d.CoverWin.IsDestroyed()
+	out["controlsWindowExists"] = d.Controls != nil && !d.Controls.IsDestroyed()
 	user := syscall.NewLazyDLL("user32.dll")
-	if d.coverWin != nil && !d.coverWin.IsDestroyed() {
-		h := d.coverWin.NativeHandle()
+	if d.CoverWin != nil && !d.CoverWin.IsDestroyed() {
+		h := d.CoverWin.NativeHandle()
 		var r struct{ Left, Top, Right, Bottom int32 }
 		user.NewProc("GetWindowRect").Call(h, uintptr(unsafe.Pointer(&r)))
 		exIndex := int32(-20)
@@ -34,23 +36,23 @@ func taskbarLyricsNativeSnapshot(a *app) map[string]any {
 		parent, _, _ := user.NewProc("GetAncestor").Call(h, 1)
 		previous, _, _ := user.NewProc("GetWindow").Call(h, 3)
 		out["coverHit"], out["coverHandle"], out["coverParent"], out["coverPrevious"] = fmt.Sprintf("0x%X", hit), fmt.Sprintf("0x%X", h), fmt.Sprintf("0x%X", parent), fmt.Sprintf("0x%X", previous)
-		out["coverBoundsPx"], out["coverVisible"], out["coverHitIsCover"] = r, d.coverWin.IsVisible(), hit == h || childHit != 0
+		out["coverBoundsPx"], out["coverVisible"], out["coverHitIsCover"] = r, d.CoverWin.IsVisible(), hit == h || childHit != 0
 		out["coverClickThrough"], out["coverNoActivate"] = ex&0x20 != 0, ex&0x08000000 != 0
 	}
-	if d.controls != nil && !d.controls.IsDestroyed() {
-		h := d.controls.NativeHandle()
+	if d.Controls != nil && !d.Controls.IsDestroyed() {
+		h := d.Controls.NativeHandle()
 		var r struct{ Left, Top, Right, Bottom int32 }
 		user.NewProc("GetWindowRect").Call(h, uintptr(unsafe.Pointer(&r)))
 		fg, _, _ := user.NewProc("GetForegroundWindow").Call()
-		out["controlsBoundsPx"], out["controlsVisible"], out["controlsForeground"] = r, d.controls.IsVisible(), fg == h
+		out["controlsBoundsPx"], out["controlsVisible"], out["controlsForeground"] = r, d.Controls.IsVisible(), fg == h
 	}
-	p := d.placement
-	out["placement"] = map[string]any{"parent": fmt.Sprintf("0x%X", p.parent), "x": p.x, "y": p.y, "width": p.width, "height": p.height, "dpi": p.dpi, "dark": p.dark}
-	out["error"] = d.lastError
-	if d.win == nil || d.win.IsDestroyed() {
+	p := d.Placement
+	out["placement"] = map[string]any{"parent": fmt.Sprintf("0x%X", p.Parent), "x": p.X, "y": p.Y, "width": p.Width, "height": p.Height, "dpi": p.DPI, "dark": p.Dark}
+	out["error"] = d.LastError
+	if d.Win == nil || d.Win.IsDestroyed() {
 		return out
 	}
-	hwnd := d.win.NativeHandle()
+	hwnd := d.Win.NativeHandle()
 	styleIndex, exIndex := int32(-16), int32(-20)
 	style, _, _ := user.NewProc("GetWindowLongPtrW").Call(hwnd, uintptr(styleIndex))
 	ex, _, _ := user.NewProc("GetWindowLongPtrW").Call(hwnd, uintptr(exIndex))
@@ -67,9 +69,9 @@ func taskbarLyricsNativeSnapshot(a *app) map[string]any {
 	user.NewProc("GetWindowRect").Call(hwnd, uintptr(unsafe.Pointer(&r)))
 	user.NewProc("GetClientRect").Call(hwnd, uintptr(unsafe.Pointer(&client)))
 	user.NewProc("ClientToScreen").Call(hwnd, uintptr(unsafe.Pointer(&origin)))
-	out["windowExists"], out["visible"] = true, d.win.IsVisible()
+	out["windowExists"], out["visible"] = true, d.Win.IsVisible()
 	out["handle"], out["parent"] = fmt.Sprintf("0x%X", hwnd), fmt.Sprintf("0x%X", parent)
-	out["parentMatches"], out["child"] = parent == p.parent, style&0x40000000 != 0
+	out["parentMatches"], out["child"] = parent == p.Parent, style&0x40000000 != 0
 	out["noActivate"], out["clickThrough"], out["topmost"] = ex&0x08000000 != 0, ex&0x20 != 0, ex&8 != 0
 	out["foregroundIsLyrics"] = foreground == hwnd
 	out["boundsPx"], out["dpi"] = r, dpi
@@ -83,10 +85,10 @@ func taskbarLyricsNativeSnapshot(a *app) map[string]any {
 }
 
 func raiseTaskbarLyricsHost(d *taskbarLyrics) error {
-	if d.win == nil || d.win.IsDestroyed() {
+	if d.Win == nil || d.Win.IsDestroyed() {
 		return fmt.Errorf("lyric window missing")
 	}
-	ok, _, err := taskbarUser32.NewProc("SetWindowPos").Call(d.win.NativeHandle(), 0, 0, 0, 0, 0, 0x1|0x2|0x10)
+	ok, _, err := syscall.NewLazyDLL("user32.dll").NewProc("SetWindowPos").Call(d.Win.NativeHandle(), 0, 0, 0, 0, 0, 0x1|0x2|0x10)
 	if ok == 0 {
 		return fmt.Errorf("raise test lyric child: %w", err)
 	}
@@ -95,11 +97,11 @@ func raiseTaskbarLyricsHost(d *taskbarLyrics) error {
 
 // Send input only to the isolated test's own cover, without moving the user's pointer.
 func clickTaskbarLyricsCover(d *taskbarLyrics) error {
-	if d.coverWin == nil || d.coverWin.IsDestroyed() {
+	if d.CoverWin == nil || d.CoverWin.IsDestroyed() {
 		return fmt.Errorf("interactive cover window missing")
 	}
 	user := syscall.NewLazyDLL("user32.dll")
-	h := taskbarFindChild(d.coverWin.NativeHandle(), "MyGoSurface")
+	h := lyricsui.FindChild(d.CoverWin.NativeHandle(), "MyGoSurface")
 	if h == 0 {
 		return fmt.Errorf("cover input surface missing")
 	}
@@ -117,10 +119,10 @@ func clickTaskbarLyricsCover(d *taskbarLyrics) error {
 }
 
 func escapeTaskbarLyricsControls(d *taskbarLyrics) error {
-	if d.controls == nil || d.controls.IsDestroyed() {
+	if d.Controls == nil || d.Controls.IsDestroyed() {
 		return fmt.Errorf("controls window missing before Escape")
 	}
-	h := taskbarFindChild(d.controls.NativeHandle(), "MyGoSurface")
+	h := lyricsui.FindChild(d.Controls.NativeHandle(), "MyGoSurface")
 	if h == 0 {
 		return fmt.Errorf("controls input surface missing")
 	}

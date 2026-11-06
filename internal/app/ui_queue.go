@@ -9,7 +9,7 @@ func (a *app) queueButton(c *ui.Context) {
 	if a.queueOpen {
 		surface = playerSelectedSurface
 	}
-	b := iconButton(c.Key("queue"), iconQueue, 16, p.muted, "待播清单", surface).
+	b := iconButton(c.Key("queue"), iconQueue, 16, p.Muted, "待播清单", surface).
 		Disabled(a.pl.Current() == nil)
 	if b.Clicked() {
 		a.queueOpen = !a.queueOpen

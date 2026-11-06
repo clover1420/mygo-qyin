@@ -26,11 +26,11 @@ func TestCoveredPageKeepsItsPlace(t *testing.T) {
 	a.pl.Cue([]qqmusic.Track{{ID: 9999, Name: "一张相片"}})
 	tt := ui.NewTester(a.view, 1200, 800)
 
-	for _, r := range []route{{page: pagePlaylist, id: 42}, {page: pageCharts}} {
+	for _, r := range []route{{Page: pagePlaylist, ID: 42}, {Page: pageCharts}} {
 		a.open(r)
 		tt.Frame()
 		var names []string
-		if r.page == pagePlaylist {
+		if r.Page == pagePlaylist {
 			for _, track := range tracks {
 				names = append(names, track.Name)
 			}

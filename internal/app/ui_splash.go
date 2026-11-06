@@ -42,7 +42,7 @@ func (a *app) splash(c *ui.Context) {
 	gone := easeRange(t, 0.68, 1)
 	s := lerp(0.72, 1, in) + 0.06*gone
 	ui.Box(c.Key("splash")).Absolute().Top(0).Left(0).Right(0).Bottom(0).PassThrough().Center().
-		Background(a.pal.bg).Opacity(1 - gone).Children(func() {
+		Background(a.pal.Bg).Opacity(1 - gone).Children(func() {
 		disc := ui.Box(c.Key("disc")).Size(splashDisc, splashDisc).Radius(999).Center().PassThrough().
 			Background(ui.Hex("#232327")).Border(1, white.Alpha(0.14)).
 			Shadow(0, 16, 44, -10, ui.RGBA(0, 0, 0, 0.5)).
@@ -57,8 +57,8 @@ func (a *app) splash(c *ui.Context) {
 		})
 		disc.Children(func() {
 			// The label at its middle, in the app's red.
-			ui.Box(c).Size(64, 64).Radius(999).Center().Background(a.pal.accent).Children(func() {
-				ui.Icon(c, iconNote).Size(26, 26).TextColor(a.pal.onAccent)
+			ui.Box(c).Size(64, 64).Radius(999).Center().Background(a.pal.Accent).Children(func() {
+				ui.Icon(c, iconNote).Size(26, 26).TextColor(a.pal.OnAccent)
 			})
 		})
 	})

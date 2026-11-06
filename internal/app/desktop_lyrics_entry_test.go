@@ -19,7 +19,7 @@ func desktopLyricsEntryTester(a *app) *ui.Tester {
 
 func readDesktopLyricsEntrySettings(t *testing.T, a *app) settings {
 	t.Helper()
-	b, err := os.ReadFile(a.settings.path)
+	b, err := os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +37,7 @@ func TestDesktopLyricsPlayerEntryToggle(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := desktopLyricsEntryTester(a)
 	tt.Frame()
 	for _, enabled := range []bool{true, false, true} {
@@ -58,7 +58,7 @@ func TestDesktopLyricsPlayerEntryLockAndUnlock(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := desktopLyricsEntryTester(a)
 	tt.Frame()
 	if err := tt.Click("桌面歌词"); err != nil {
@@ -88,9 +88,9 @@ func TestDesktopLyricsPlayerEntryDisabledRightClick(t *testing.T) {
 	for _, locked := range []bool{false, true} {
 		a := newTestApp()
 		a.settings = defaultSettings()
-		a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+		a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 		a.settings.DesktopLyricsLocked = locked
-		a.settings.save()
+		a.settings.Save()
 		tt := desktopLyricsEntryTester(a)
 		tt.Frame()
 		if err := tt.RightClick("桌面歌词"); err != nil {
@@ -116,7 +116,7 @@ func TestTaskbarLyricsPlayerEntryToggleAndRightClick(t *testing.T) {
 		t.Run(map[bool]string{false: "unlocked", true: "locked"}[locked], func(t *testing.T) {
 			a := newTestApp()
 			a.settings = defaultSettings()
-			a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+			a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 			a.settings.DesktopLyricsLocked = locked
 			a.settings.DesktopLyricsDoubleLine = true
 			a.settings.DesktopLyricsFontSize = 44
@@ -136,7 +136,7 @@ func TestTaskbarLyricsPlayerEntryToggleAndRightClick(t *testing.T) {
 				if a.settings.TaskbarLyrics != enabled || restored.TaskbarLyrics != enabled || a.settings.DesktopLyrics || restored.DesktopLyrics {
 					t.Fatalf("taskbar player switch did not exclusively persist enabled=%t", enabled)
 				}
-				if a.settings.lyricsMode() != "taskbar" || restored.lyricsMode() != "taskbar" {
+				if lyricsMode(a.settings) != "taskbar" || lyricsMode(restored) != "taskbar" {
 					t.Fatal("turning taskbar lyrics off lost the chosen mode")
 				}
 				if a.settings.DesktopLyricsLocked != locked || restored.DesktopLyricsLocked != locked {
@@ -169,7 +169,7 @@ func TestTaskbarLyricsTrayToggle(t *testing.T) {
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	a.settings.DesktopLyricsLocked = true
 	a.setLyricsMode("taskbar")
 	for _, enabled := range []bool{true, false, true} {
@@ -190,7 +190,7 @@ func TestTaskbarLyricsTrayToggle(t *testing.T) {
 			t.Fatal("tray has no taskbar lyric switch")
 		}
 		restored := readDesktopLyricsEntrySettings(t, a)
-		if a.settings.TaskbarLyrics != enabled || restored.TaskbarLyrics != enabled || a.settings.DesktopLyrics || restored.lyricsMode() != "taskbar" || !a.settings.DesktopLyricsLocked {
+		if a.settings.TaskbarLyrics != enabled || restored.TaskbarLyrics != enabled || a.settings.DesktopLyrics || lyricsMode(restored) != "taskbar" || !a.settings.DesktopLyricsLocked {
 			t.Fatalf("tray did not persist taskbar enabled=%t while preserving the desktop lock preference", enabled)
 		}
 	}

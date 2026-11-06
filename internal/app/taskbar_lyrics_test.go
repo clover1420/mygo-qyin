@@ -8,8 +8,18 @@ import (
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
+	"lilt/internal/lyricsui"
 	"lilt/internal/qqmusic"
 )
+
+// taskbarLyricsViewFixture is a taskbar lyric host for the current test app.
+func taskbarLyricsViewFixture() (*app, *taskbarLyrics) {
+	a, _ := desktopLyricsViewFixture()
+	a.settings.TaskbarLyrics = true
+	d := lyricsui.NewTaskbar(a.lyricsDeps())
+	d.Visible, d.Dark = true, true
+	return a, d
+}
 
 // Choosing a lyric position swaps the active owner, saves the mode, and stops the previous taskbar monitor.
 func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
@@ -20,7 +30,7 @@ func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
 	a.settings = defaultSettings()
 	// The rows of the category they are on.
 	a.settingsTab = int(settingsPlayback)
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	a.setDesktopLyricsEnabled(true)
 	tt := ui.NewTester(a.settingsView, 560, 2200)
 	tt.Frame()
@@ -39,8 +49,8 @@ func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
 		}
 		tt.Frame()
 		restored := readDesktopLyricsEntrySettings(t, a)
-		if a.settings.lyricsMode() != choice.mode || restored.lyricsMode() != choice.mode {
-			t.Fatalf("position %q was not applied and saved: live=%q saved=%q", choice.label, a.settings.lyricsMode(), restored.lyricsMode())
+		if lyricsMode(a.settings) != choice.mode || lyricsMode(restored) != choice.mode {
+			t.Fatalf("position %q was not applied and saved: live=%q saved=%q", choice.label, lyricsMode(a.settings), lyricsMode(restored))
 		}
 		if a.settings.TaskbarLyrics != choice.taskbar || restored.TaskbarLyrics != choice.taskbar || a.settings.DesktopLyrics == choice.taskbar || restored.DesktopLyrics == choice.taskbar {
 			t.Fatalf("position %q did not exclusively enable its lyrics: live=%+v saved=%+v", choice.label, a.settings, restored)
@@ -49,7 +59,7 @@ func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
 			t.Fatalf("taskbar owner lifecycle did not follow position %q", choice.label)
 		}
 		if choice.taskbar {
-			a.taskbarLyrics.stop = func() { stopped++ }
+			a.taskbarLyrics.Stop = func() { stopped++ }
 		}
 	}
 	if stopped != 2 {
@@ -58,7 +68,7 @@ func TestTaskbarLyricsSettingsModeSwitch(t *testing.T) {
 	a.setLyricsMode("taskbar")
 	b := newTestApp()
 	b.settings = readDesktopLyricsEntrySettings(t, a)
-	b.settings.normalizeLyrics()
+	normalizeLyrics(&b.settings)
 	b.syncTaskbarLyrics()
 	if b.taskbarLyrics == nil {
 		t.Fatal("restored preference did not recreate taskbar lyrics")
@@ -74,7 +84,7 @@ func TestTaskbarLyricsSettingsModeWhileDisabled(t *testing.T) {
 	a.settings = defaultSettings()
 	// The rows of the category they are on.
 	a.settingsTab = int(settingsPlayback)
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	tt := ui.NewTester(a.settingsView, 560, 2200)
 	tt.Frame()
 	for _, label := range []string{"任务栏歌词", "桌面歌词", "任务栏歌词"} {
@@ -82,12 +92,12 @@ func TestTaskbarLyricsSettingsModeWhileDisabled(t *testing.T) {
 			t.Fatal(err)
 		}
 		tt.Frame()
-		if a.settings.lyricsEnabled() || a.desktopLyrics != nil || a.taskbarLyrics != nil {
+		if lyricsEnabled(a.settings) || a.desktopLyrics != nil || a.taskbarLyrics != nil {
 			t.Fatalf("choosing %q opened disabled lyrics", label)
 		}
 	}
 	restored := readDesktopLyricsEntrySettings(t, a)
-	if restored.lyricsMode() != "taskbar" || restored.lyricsEnabled() {
+	if lyricsMode(restored) != "taskbar" || lyricsEnabled(restored) {
 		t.Fatal("disabled taskbar preference did not survive saving")
 	}
 	player := desktopLyricsEntryTester(a)
@@ -110,11 +120,13 @@ func TestTaskbarLyricsPausedSeekRedraw(t *testing.T) {
 	a.pl.Attach(out)
 	a.pl.TogglePlay()
 	a.settings.TaskbarLyrics = true
-	a.taskbarLyrics = &taskbarLyrics{a: a, win: &mygo.Window{}, visible: true}
+	a.taskbarLyrics = lyricsui.NewTaskbar(a.lyricsDeps())
+	a.taskbarLyrics.Win = &mygo.Window{}
+	a.taskbarLyrics.Visible = true
 	defer func(f func(*mygo.Window)) { invalidateWindow = f }(invalidateWindow)
 	seen := 0
 	invalidateWindow = func(w *mygo.Window) {
-		if w == a.taskbarLyrics.win {
+		if w == a.taskbarLyrics.Win {
 			seen++
 		}
 	}
@@ -122,10 +134,10 @@ func TestTaskbarLyricsPausedSeekRedraw(t *testing.T) {
 	sessionAfter = func(time.Duration, func()) {}
 	a.pl.Changed = a.playerChanged
 	a.pl.Seek(12 * time.Second)
-	if seen == 0 || a.taskbarLyrics.revision == 0 {
+	if seen == 0 || a.taskbarLyrics.Revision == 0 {
 		t.Fatal("paused seek did not refresh taskbar lyrics")
 	}
-	a.taskbarLyrics.visible = false
+	a.taskbarLyrics.Visible = false
 	seen = 0
 	a.pl.Seek(20 * time.Second)
 	if seen != 0 {

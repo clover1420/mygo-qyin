@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/egoist/mygo/ui"
+
+	"lilt/internal/lyricsui"
 )
 
 // Paused or dismissed taskbar controls must not ask for frames after their interaction animations settle.
@@ -12,15 +14,15 @@ func TestTaskbarLyricsControlsFrameBudget(t *testing.T) {
 	for _, mode := range []string{"paused", "closed", "hidden"} {
 		t.Run(mode, func(t *testing.T) {
 			_, d := taskbarControlsFixture()
-			d.controlsOpen = true
+			d.ControlsOpen = true
 			if mode == "closed" {
-				d.closeControls()
+				d.CloseControls()
 			}
 			if mode == "hidden" {
-				d.hide()
+				d.Hide()
 			}
 			builds := 0
-			tt := ui.NewTester(func(c *ui.Context) { builds++; d.controlsView(c) }, taskbarControlsWidth, taskbarControlsHeight)
+			tt := ui.NewTester(func(c *ui.Context) { builds++; d.ControlsView(c) }, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 			tt.Move(-10, -10)
 			tt.Frame()
 			tt.Advance(time.Second)

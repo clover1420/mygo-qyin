@@ -49,8 +49,8 @@ func (a *app) settingsPanel(c *ui.Context) {
 
 // changed applies the settings everywhere and keeps them.
 func (a *app) changed() {
-	a.settings.save()
-	a.settings.applyAppearance()
+	a.settings.Save()
+	a.settings.ApplyAppearance()
 	if a.notch != nil {
 		a.notch.setEnabled(a.settings.Notch)
 	}
@@ -80,7 +80,7 @@ var settingsCategories = [...]struct {
 
 func (a *app) settingsView(c *ui.Context) {
 	p := a.applyTheme(c)
-	c.Root().Background(p.sidebar)
+	c.Root().Background(p.Sidebar)
 	a.settingsInner(c)
 }
 
@@ -88,7 +88,7 @@ func (a *app) settingsView(c *ui.Context) {
 func (a *app) settingsInner(c *ui.Context) {
 	ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
 		a.settingsSidebar(c)
-		ui.Box(c).Width(0.5).Shrink(0).Background(paletteFor(c.Theme()).hairline)
+		ui.Box(c).Width(0.5).Shrink(0).Background(paletteFor(c.Theme()).Hairline)
 		a.settingsBody(c)
 	})
 }
@@ -96,12 +96,12 @@ func (a *app) settingsInner(c *ui.Context) {
 // settingsPage shares the settings controls with the macOS window.
 func (a *app) settingsPage(c *ui.Context) {
 	top, bottom := a.insets(c)
-	ui.Box(c.Key("settings-page")).Fill().Background(a.pal.bg).Padding(top+pageGap, 0, bottom, 0).Children(func() {
+	ui.Box(c.Key("settings-page")).Fill().Background(a.pal.Bg).Padding(top+pageGap, 0, bottom, 0).Children(func() {
 		a.startMark(c)
 		defer a.endMark(c)
 		ui.Row(c).Fill().AlignItems(ui.Stretch).Children(func() {
 			a.settingsSidebar(c)
-			ui.Box(c).Width(0.5).Shrink(0).Background(a.pal.hairline)
+			ui.Box(c).Width(0.5).Shrink(0).Background(a.pal.Hairline)
 			a.settingsBody(c)
 		})
 	})
@@ -116,11 +116,11 @@ func (a *app) settingsSidebar(c *ui.Context) {
 			selected := a.settingsTab == int(i)
 			button := ui.ButtonBase(c.Key(category.label)).Height(38).PaddingX(10).Gap(10).Radius(10).
 				AlignItems(ui.Center).Justify(ui.Start).Label("设置分类：" + category.label).Selected(selected)
-			bg, color, weight := ui.Transparent, p.muted, 500
+			bg, color, weight := ui.Transparent, p.Muted, 500
 			if selected {
-				bg, color, weight = p.press, p.text, 600
+				bg, color, weight = p.Press, p.Text, 600
 			} else if button.Hovered() {
-				bg, color = p.hover, p.text
+				bg, color = p.Hover, p.Text
 			}
 			button.Background(button.AnimateColor("bg", bg, ui.Animation{Duration: 120 * time.Millisecond})).TextColor(color)
 			button.Children(func() {
@@ -154,15 +154,15 @@ func (a *app) settingsContent(c *ui.Context) {
 		if a.settingsTab != int(cat) {
 			return
 		}
-		ui.Text(c, title).FontSize(12).FontWeight(600).TextColor(p.muted).Margin(14, 4, 4, 4)
-		ui.Column(c).Radius(20).Background(p.bg).Border(1, p.hairline).Dividers(1, p.hairline).Children(rows)
+		ui.Text(c, title).FontSize(12).FontWeight(600).TextColor(p.Muted).Margin(14, 4, 4, 4)
+		ui.Column(c).Radius(20).Background(p.Bg).Border(1, p.Hairline).Dividers(1, p.Hairline).Children(rows)
 	}
 	row := func(label, desc string, control func()) {
 		ui.Row(c).Padding(12, 16).Gap(16).AlignItems(ui.Center).MinHeight(48).Children(func() {
 			ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(3).Children(func() {
 				ui.Text(c, label).FontSize(13.5).FontWeight(500)
 				if desc != "" {
-					ui.Text(c, desc).FontSize(12).TextColor(p.muted).LineHeight(1.4)
+					ui.Text(c, desc).FontSize(12).TextColor(p.Muted).LineHeight(1.4)
 				}
 			})
 			control()
@@ -185,7 +185,7 @@ func (a *app) settingsContent(c *ui.Context) {
 				}
 				if segmented(c.Key("close-action"), &i, keepRunning, "退出应用") {
 					s.QuitOnClose = i == 1
-					s.save()
+					s.Save()
 				}
 			})
 			// Only on macOS: elsewhere the icon is always in the notification
@@ -255,30 +255,30 @@ func (a *app) settingsContent(c *ui.Context) {
 			chosen := volumeBalances[2].label
 			for i, balance := range volumeBalances {
 				labels[i] = balance.label
-				if balance.id == s.volumeBalance() {
+				if balance.id == s.VolumeBalanceMode() {
 					chosen = balance.label
 				}
 			}
 			if ui.Select(c.Key("volume-balance"), &chosen, labels).Label("选择音量平衡").Width(150).Changed() {
 				for _, balance := range volumeBalances {
 					if balance.label == chosen {
-						s.setVolumeBalance(balance.id)
+						s.SetVolumeBalance(balance.id)
 					}
 				}
 				a.pl.RefreshGain()
-				s.save()
+				s.Save()
 				a.redraw()
 			}
 		})
 		row("播放操作淡入淡出", "", func() {
 			if ui.Switch(c.Key("playback-fade"), &s.PlaybackFade).Label("切换播放操作淡入淡出").Changed() {
-				s.save()
+				s.Save()
 				a.redraw()
 			}
 		})
 		row("间奏时显示热评", "前奏、间奏与尾奏时，歌词处换成这首歌的热门评论", func() {
 			if ui.Switch(c.Key("hot-comments"), &s.HotComments).Label("切换热评").Changed() {
-				s.save()
+				s.Save()
 				a.redraw()
 			}
 		})
@@ -332,15 +332,15 @@ func (a *app) settingsContent(c *ui.Context) {
 		if runtime.GOOS == "windows" {
 			row("侧边栏材质", "", func() {
 				i := 0
-				if s.sidebarVibrancy() == mygo.VibrancyMica {
+				if s.SidebarVibrancy() == mygo.VibrancyMica {
 					i = 1
 				}
 				if segmented(c.Key("sidebar-material"), &i, "亚克力", "Mica") {
 					s.SidebarMaterial = []string{"acrylic", "mica"}[i]
 					if a.win != nil {
-						a.win.SetVibrancy(s.sidebarVibrancy())
+						a.win.SetVibrancy(s.SidebarVibrancy())
 					}
-					s.save()
+					s.Save()
 					a.redraw()
 				}
 			})
@@ -397,7 +397,7 @@ func (a *app) settingsContent(c *ui.Context) {
 		if supportsTaskbarLyrics() {
 			row("外部歌词", "", func() {
 				i := 0
-				if s.lyricsMode() == lyricsTaskbar {
+				if lyricsMode(*s) == lyricsTaskbar {
 					i = 1
 				}
 				if segmented(c.Key("lyrics-mode"), &i, "桌面歌词", "任务栏歌词") {
@@ -409,7 +409,7 @@ func (a *app) settingsContent(c *ui.Context) {
 				}
 			})
 		}
-		if supportsDesktopLyrics() && s.lyricsMode() == lyricsDesktop {
+		if supportsDesktopLyrics() && lyricsMode(*s) == lyricsDesktop {
 			row("桌面歌词行数", "双行仅针对中文歌", func() {
 				i := 0
 				if s.DesktopLyricsDoubleLine {
@@ -417,7 +417,7 @@ func (a *app) settingsContent(c *ui.Context) {
 				}
 				if segmented(c.Key("desktop-lyrics-lines"), &i, "单行", "双行") {
 					s.DesktopLyricsDoubleLine = i == 1
-					s.save()
+					s.Save()
 					a.redraw()
 				}
 			})
@@ -427,17 +427,17 @@ func (a *app) settingsContent(c *ui.Context) {
 			labels := make([]string, len(progressEffects))
 			for k, effect := range progressEffects {
 				labels[k] = effect.label
-				if effect.id == s.progressEffect() {
+				if effect.id == s.ProgressEffectMode() {
 					chosen = effect.label
 				}
 			}
 			if ui.Select(c.Key("progress-effect"), &chosen, labels).Label("选择进度条特效").Width(150).Changed() {
 				for _, effect := range progressEffects {
 					if effect.label == chosen {
-						s.setProgressEffect(effect.id)
+						s.SetProgressEffect(effect.id)
 					}
 				}
-				s.save()
+				s.Save()
 				a.redraw()
 			}
 		})
@@ -484,8 +484,8 @@ func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool)
 	// The settings window draws its own palette, which the app's may not be,
 	// but its accent follows the whole app's, cover included.
 	p := paletteFor(c.Theme())
-	if a.pal.accent.A > 0 {
-		p.accent = a.pal.accent
+	if a.pal.Accent.A > 0 {
+		p.Accent = a.pal.Accent
 	}
 	ui.Row(c).Gap(10).AlignItems(ui.Center).Children(func() {
 		s := ui.SliderBase(c.Key(key), v, 0, 1).Width(150).Height(22).Step(0.01).FocusRing(false).Label(label).
@@ -496,7 +496,7 @@ func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool)
 		}
 		if a.settingsDirty && !s.Pressed() {
 			a.settingsDirty = false
-			a.settings.save()
+			a.settings.Save()
 		}
 		held := s.Pressed()
 		thick := float32(4)
@@ -506,10 +506,10 @@ func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool)
 		thick = s.AnimateTo("thick", thick, ui.Snappy)
 		at := float32(*v)
 		hot := held || s.Hovered() || s.FocusVisible()
-		track, fill, knob := p.press, p.accent, paper
+		track, fill, knob := p.Press, p.Accent, paper
 		if !on {
 			// Off, the slider says so by its colors rather than by a layer.
-			track, fill, knob = p.hover, p.faint, p.hover
+			track, fill, knob = p.Hover, p.Faint, p.Hover
 		}
 		s.Draw(func(pel *ui.Painter, r ui.Rect) {
 			y := r.Y + (r.H-thick)/2
@@ -519,6 +519,6 @@ func (a *app) valueSlider(c *ui.Context, key, label string, v *float64, on bool)
 				pel.Fill(ui.Rect{X: r.X + r.W*at - 6, Y: r.Y + (r.H-12)/2, W: 12, H: 12}, knob, 6)
 			}
 		})
-		ui.Textf(c, "%d%%", int(100*(*v))).FontSize(12).FontFeatures("tnum").TextColor(p.muted).Width(38)
+		ui.Textf(c, "%d%%", int(100*(*v))).FontSize(12).FontFeatures("tnum").TextColor(p.Muted).Width(38)
 	})
 }

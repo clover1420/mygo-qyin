@@ -52,7 +52,7 @@ func TestSongShelfPlayback(t *testing.T) {
 				})
 			}
 			if all {
-				a.open(route{page: pageSongShelf, shelf: shelf})
+				a.open(route{Page: pageSongShelf, Shelf: shelf})
 			}
 			tt := ui.NewTester(view, 1200, 600)
 			tt.Frame()
@@ -94,10 +94,10 @@ func TestSongShelfNavigationAndRefresh(t *testing.T) {
 	tt.Advance(time.Second)
 	tt.Frame()
 	homeY := a.pageState().scroll.Y
-	a.open(route{page: pageSongShelf, shelf: snapshot})
+	a.open(route{Page: pageSongShelf, Shelf: snapshot})
 	tt.Frame()
 	detailRoute := a.route
-	if detailRoute.page != pageSongShelf || detailRoute.shelf != snapshot {
+	if detailRoute.Page != pageSongShelf || detailRoute.Shelf != snapshot {
 		t.Fatal("opening the saved recommendation did not keep its snapshot")
 	}
 	tt.Scroll(1000, 500, 0, 320)
@@ -135,7 +135,7 @@ func TestSongShelfNavigationAndRefresh(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if a.route != detailRoute || len(a.route.shelf.Tracks) != 30 || math.Abs(float64(a.pageState().tracks.scroll.Y-detailY)) > 1 {
+	if a.route != detailRoute || len(a.route.Shelf.Tracks) != 30 || math.Abs(float64(a.pageState().tracks.scroll.Y-detailY)) > 1 {
 		t.Fatal("refresh replaced the previously opened shelf or its scroll position")
 	}
 }
@@ -164,7 +164,7 @@ func TestSongShelfCarouselTailPlayback(t *testing.T) {
 	if cur := a.pl.Current(); cur == nil || cur.ID != shelf.Tracks[8].ID || !reflect.DeepEqual(a.pl.Queue(), shelf.Tracks) {
 		t.Fatal("the tail page played its local index or discarded the full shelf")
 	}
-	if a.route.page != pageHome {
+	if a.route.Page != pageHome {
 		t.Fatal("paging unexpectedly navigated away from Home")
 	}
 	if err := tt.Click("上一组歌曲：" + shelf.Title); err != nil {
@@ -280,7 +280,7 @@ func TestSongShelfCarouselNavigation(t *testing.T) {
 	if homeY <= 0 {
 		t.Fatal("the shelf intercepted ordinary vertical scrolling")
 	}
-	a.open(route{page: pageDaily})
+	a.open(route{Page: pageDaily})
 	tt.Frame()
 	a.back()
 	tt.Frame()
@@ -311,7 +311,7 @@ func TestSongShelfCarouselResize(t *testing.T) {
 	tt.Frame()
 	tt.SetSize(900, 500)
 	tt.Frame()
-	if a.pl.Current() != nil || a.route.page != pageHome {
+	if a.pl.Current() != nil || a.route.Page != pageHome {
 		t.Fatal("resizing the shelf started playback or changed the page")
 	}
 	if err := tt.Click(shelf.Tracks[6].Name); err != nil {
@@ -421,13 +421,13 @@ func TestSongShelfRefreshFailureAndAccountChange(t *testing.T) {
 	if d.loading || d.err == "" || &d.shelves[0] != snapshot || a.shelfPagers[snapshot] != pager || pager.page != 1 {
 		t.Fatal("failed refresh discarded the previous recommendations")
 	}
-	a.route = route{page: pageSongShelf, shelf: snapshot}
-	a.history = []route{{page: pageHome}, a.route}
+	a.route = route{Page: pageSongShelf, Shelf: snapshot}
+	a.history = []route{{Page: pageHome}, a.route}
 	a.forward = []route{a.route}
 	a.pageState()
 	a.clearSongShelves()
 	a.songShelvesAnswered(d, []qqmusic.SongShelf{{Title: "Old account"}}, nil)
-	if a.songShelves != nil || a.shelfPagers != nil || a.route.page != pageHome || len(a.history) != 1 || len(a.forward) != 0 || len(a.pageStates) != 0 {
+	if a.songShelves != nil || a.shelfPagers != nil || a.route.Page != pageHome || len(a.history) != 1 || len(a.forward) != 0 || len(a.pageStates) != 0 {
 		t.Fatal("account change retained personal recommendations or their navigation")
 	}
 }
@@ -480,13 +480,13 @@ func TestSongShelfFrames(t *testing.T) {
 					tr := &a.songShelves.shelves[0].Tracks[i]
 					tr.Album.PicURL = fmt.Sprintf("shelf-cover-%d", i)
 					color := colors[i%len(colors)]
-					art := &artwork{bmp: solidBitmap(color), tint: color}
+					art := &artwork{BMP: solidBitmap(color), Tint: color}
 					for _, px := range []int{96, 120, 200, 400, 600} {
-						a.art.art[qqmusic.Sized(tr.Album.PicURL, px)] = art
+						a.art.Add(qqmusic.Sized(tr.Album.PicURL, px), art)
 					}
 				}
 				if detail {
-					a.open(route{page: pageSongShelf, shelf: &a.songShelves.shelves[0]})
+					a.open(route{Page: pageSongShelf, Shelf: &a.songShelves.shelves[0]})
 				} else {
 					a.songShelves.shelves[0].Tracks = a.songShelves.shelves[0].Tracks[:9]
 				}

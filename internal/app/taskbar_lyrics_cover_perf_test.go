@@ -15,9 +15,9 @@ func TestTaskbarLyricsReadyCoverFrameBudget(t *testing.T) {
 	track := *a.pl.Current()
 	track.Album.PicURL = "https://example.invalid/taskbar-paused-cover.jpg"
 	a.pl.Cue([]qqmusic.Track{track})
-	a.art.add(qqmusic.Sized(track.Album.PicURL, 96), &artwork{bmp: taskbarCoverBitmap(color.RGBA{R: 255, A: 255})})
+	a.art.Add(qqmusic.Sized(track.Album.PicURL, 96), &artwork{BMP: taskbarCoverBitmap(color.RGBA{R: 255, A: 255})})
 	builds := 0
-	tt := ui.NewTester(func(c *ui.Context) { builds++; d.view(c) }, 280, 42)
+	tt := ui.NewTester(func(c *ui.Context) { builds++; d.View(c) }, 280, 42)
 	tt.Frame()
 	if red, _ := taskbarCoverColors(tt.Image()); red == 0 {
 		t.Fatal("fixture did not paint the ready cover")

@@ -18,7 +18,7 @@ type paneInk struct {
 // inkOn returns the colors for a pane, white where it is dark. onDark is for
 // a pane over Now Playing, which is dark whatever the theme.
 func (a *app) inkOn(onDark bool) paneInk {
-	if onDark || a.pal.dark {
+	if onDark || a.pal.Dark {
 		return paneInk{white, white.Alpha(0.6), white.Alpha(0.42), white.Alpha(0.1), white.Alpha(0.16), white.Alpha(0.1)}
 	}
 	text := ui.Hex("#1d1d1f")
@@ -29,13 +29,13 @@ func (a *app) inkOn(onDark bool) paneInk {
 // shows through in a light theme: a dark pane there takes more of its tint.
 func (a *app) pane(e ui.Element, radius float32, onDark bool) ui.Element {
 	e.Radius(radius).Shadow(0, 18, 44, -12, ui.RGBA(0, 0, 0, 0.45))
-	dark := onDark || a.pal.dark
+	dark := onDark || a.pal.Dark
 	switch {
 	case !a.settings.GlassPanels && dark:
 		return e.Background(ui.Hex("#232327")).Border(0.5, white.Alpha(0.12))
 	case !a.settings.GlassPanels:
 		return e.Background(ui.Hex("#f6f6f8")).Border(0.5, ui.RGBA(0, 0, 0, 0.12))
-	case a.pal.dark:
+	case a.pal.Dark:
 		return e.Material(glass.Glass{Tint: ui.RGBA(14, 14, 18, 0.62)}).Border(0.5, white.Alpha(0.14))
 	case onDark:
 		return e.Material(glass.Glass{Tint: ui.RGBA(14, 14, 18, 0.86)}).Border(0.5, white.Alpha(0.14))

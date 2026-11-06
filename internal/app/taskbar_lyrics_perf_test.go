@@ -45,7 +45,7 @@ func TestTaskbarLyricsFrameBudget(t *testing.T) {
 				a.pl.Hold(position)
 			}
 			if mode == "hidden" {
-				d.visible = false
+				d.Visible = false
 			}
 			if mode == "disabled" {
 				a.settings.TaskbarLyrics = false
@@ -54,7 +54,7 @@ func TestTaskbarLyricsFrameBudget(t *testing.T) {
 				a.pl.SetLyrics(nil)
 			}
 			builds := 0
-			tt := ui.NewTester(func(c *ui.Context) { builds++; d.view(c) }, 160, 42)
+			tt := ui.NewTester(func(c *ui.Context) { builds++; d.View(c) }, 160, 42)
 			tt.Frame()
 			before := builds
 			tt.Advance(500 * time.Millisecond)

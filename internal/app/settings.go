@@ -1,130 +1,36 @@
 package app
 
 import (
-	"encoding/json"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 
 	"github.com/egoist/mygo"
+
+	settingspkg "lilt/internal/settings"
 )
 
-// settings are the listener's choices, kept in settings.json in the user
-// data directory.
-type settings struct {
-	// QuitOnClose exits the app when the main window is closed; otherwise
-	// it stays available from the tray or Dock.
-	QuitOnClose bool `json:"quitOnClose"`
-	// Notch shows the quick player around the notch: the listener turns
-	// it on.
-	Notch bool `json:"notch"`
-	// DesktopLyrics enables the independent floating lyrics panel.
-	DesktopLyrics         bool    `json:"desktopLyrics"`
-	DesktopLyricsLocked   bool    `json:"desktopLyricsLocked"`
-	DesktopLyricsFontSize float32 `json:"desktopLyricsFontSize,omitempty"`
-	// DesktopLyricsDoubleLine previews the next sentence for Chinese lyrics.
-	DesktopLyricsDoubleLine bool `json:"desktopLyricsDoubleLine,omitempty"`
-	// TaskbarLyrics embeds a separate compact lyric view in the Windows taskbar.
-	TaskbarLyrics bool `json:"taskbarLyrics,omitempty"`
-	// LyricsMode keeps the preferred location independently of its enabled state.
-	LyricsMode string `json:"lyricsMode,omitempty"`
-	// NotchActivity shows the cover and the music's levels beside the
-	// notch while music plays, which hides the menu bar there.
-	NotchActivity bool `json:"notchActivity"`
-	// NotchVirtual keeps a notch of the app's own showing at the top of a
-	// display without one; else it shows only while the pointer asks.
-	NotchVirtual bool `json:"notchVirtual"`
-	// NotchGreeted says the notch showed itself, once, as the first song
-	// played (greet).
-	NotchGreeted bool `json:"notchGreeted"`
-	// Quality is the level of the streams: standard, higher, exhigh,
-	// lossless or hires.
-	Quality string `json:"quality"`
-	// Appearance is light, dark, or system to follow the system.
-	Appearance string `json:"appearance"`
-	// SidebarMaterial selects mica or acrylic (also when empty) on Windows.
-	SidebarMaterial string `json:"sidebarMaterial,omitempty"`
-	// AccentCover takes the accent from the cover playing, else the app's red.
-	AccentCover bool `json:"accentCover"`
-	// Smoke makes the progress bars comets trailing smoke as music plays,
-	// for a few percent of a core: the listener turns it on.
-	Smoke bool `json:"smoke"`
-	// ProgressEffect selects the progress bar's look. Empty keeps the old
-	// Smoke choice when reading settings saved before the effect selector.
-	ProgressEffect string `json:"progressEffect,omitempty"`
-	// LyricsStage shows lyrics on the stage, Folia's style, in Now
-	// Playing, rather than scrolling.
-	LyricsStage bool `json:"lyricsStage"`
-	// StageStyle is how the stage sets its lyrics (stageStyles): empty for
-	// Folia's classic, or the id of another of its visualizers.
-	StageStyle string `json:"stageStyle,omitempty"`
-	// StageSparks throws sparks off each word on the stage as it is sung,
-	// whatever its style.
-	StageSparks bool `json:"stageSparks,omitempty"`
-	// Volume is where the volume was left, from 0 to 1.
-	Volume float64 `json:"volume"`
-	// PlaybackFade smooths pause and resume operations.
-	PlaybackFade bool `json:"playbackFade"`
-	// Normalize is the old volume-balance switch, kept so installs saved
-	// before the mode selector can still be read.
-	Normalize bool `json:"volumeBalance"`
-	// VolumeBalance selects how far QQ's measured loudness is lifted.
-	VolumeBalance string `json:"volumeBalanceMode,omitempty"`
-	// HotComments shows a song's hot comments in its quiet parts, in
-	// place of the lyrics (quietComment): the listener turns it on.
-	HotComments bool `json:"hotComments"`
-	// Fog fills Now Playing's backdrop with fog of the cover's color,
-	// rising and swelling with the bass: an experiment the listener turns
-	// on.
-	Fog bool `json:"fog"`
-	// AppIcon is where the app's icon shows on macOS (appIcons); elsewhere
-	// it is always in the notification area.
-	AppIcon string `json:"appIcon"`
-	// Captions writes down episodes as they play, for their captions,
-	// once the listener has downloaded the model.
-	Captions bool `json:"captions"`
-	// CacheMB is how many megabytes the songs kept on disk may take; 0
-	// keeps none.
-	CacheMB int `json:"cacheMB"`
-	// CacheDir is the chosen parent of the dedicated Yunhe song cache;
-	// empty uses the platform's cache directory.
-	CacheDir string `json:"cacheDir,omitempty"`
-	// PendingCacheDir is migrated and applied before playback on the next launch.
-	// A pointer to an empty string means restore the platform's default.
-	PendingCacheDir *string `json:"pendingCacheDir,omitempty"`
-	// SearchHistory keeps submitted keywords, most recent first.
-	SearchHistory []string `json:"searchHistory,omitempty"`
+// settings are the listener's choices; the model and its persistence live in
+// lilt/internal/settings while the views still live here.
+type settings = settingspkg.Settings
 
-	// LiquidGlass floats the player bar as a capsule of glass.
-	LiquidGlass bool `json:"liquidGlass"`
-	// GlassClear is how clear the glass of the player bar is, from 0 to 1,
-	// and GlassBend how far it bends what shows through.
-	GlassClear float64 `json:"glassClear"`
-	GlassBend  float64 `json:"glassBend"`
-	// GlassPanels makes menus, popovers, dialogs and panels frosted glass.
-	GlassPanels bool `json:"glassPanels"`
+var defaultSettings = settingspkg.Default
 
-	// Font is the font the app is read in (uiFonts); empty for the default.
-	Font string `json:"font,omitempty"`
-
-	// NpLight lights the line sung in Now Playing, and GlowLevel how far the
-	// listener has turned that light up, 0.5 as it was tuned.
-	NpLight   bool    `json:"npLight"`
-	GlowLevel float64 `json:"glowLevel"`
-
-	path string // where they were loaded from, and are saved to
-}
-
-func defaultSettings() settings {
-	return settings{NotchActivity: true, Quality: "exhigh", Appearance: "system", SidebarMaterial: "acrylic", LiquidGlass: true, GlassClear: 0.6, GlassBend: 0.3, GlassPanels: true, NpLight: true, GlowLevel: 0.5, Volume: 0.8, PlaybackFade: true, Normalize: true, AppIcon: "dock-and-menubar", CacheMB: 2048, Captions: true}
+var loadSettings = func() settings {
+	s := settingspkg.Load()
+	normalizeLyrics(&s)
+	return s
 }
 
 const (
-	volumeBalanceOff      = "off"
-	volumeBalanceQuiet    = "quiet"
-	volumeBalanceStandard = "standard"
-	volumeBalanceHigh     = "high"
+	volumeBalanceOff      = settingspkg.VolumeBalanceOff
+	volumeBalanceQuiet    = settingspkg.VolumeBalanceQuiet
+	volumeBalanceStandard = settingspkg.VolumeBalanceStandard
+	volumeBalanceHigh     = settingspkg.VolumeBalanceHigh
+
+	progressStandard = settingspkg.ProgressStandard
+	progressSmoke    = settingspkg.ProgressSmoke
+	progressSquiggly = settingspkg.ProgressSquiggly
 )
 
 var volumeBalances = []struct{ id, label string }{
@@ -134,56 +40,29 @@ var volumeBalances = []struct{ id, label string }{
 	{volumeBalanceHigh, "高音量"},
 }
 
-func (s settings) volumeBalance() string {
-	switch s.VolumeBalance {
-	case volumeBalanceOff, volumeBalanceQuiet, volumeBalanceStandard, volumeBalanceHigh:
-		return s.VolumeBalance
-	}
-	if s.Normalize {
-		return volumeBalanceStandard
-	}
-	return volumeBalanceOff
-}
-
-func (s *settings) setVolumeBalance(mode string) {
-	s.VolumeBalance = mode
-	s.Normalize = mode != volumeBalanceOff
-}
-
-const (
-	progressStandard = "standard"
-	progressSmoke    = "smoke"
-	progressSquiggly = "squiggly"
-)
-
 var progressEffects = []struct{ id, label string }{
 	{progressStandard, "标准"},
 	{progressSmoke, "烟雾"},
 	{progressSquiggly, "波浪"},
 }
 
-func (s settings) progressEffect() string {
-	switch s.ProgressEffect {
-	case progressStandard, progressSmoke, progressSquiggly:
-		return s.ProgressEffect
-	}
-	if s.Smoke {
-		return progressSmoke
-	}
-	return progressStandard
+// qualityLevel is the stream level QQ Music names a quality by.
+var qualityLevels = []struct{ level, label string }{
+	{"standard", "标准（128k）"},
+	{"exhigh", "极高（320k）"},
+	{"lossless", "无损（FLAC）"},
 }
 
-func (s *settings) setProgressEffect(effect string) {
-	s.ProgressEffect = effect
-	s.Smoke = effect == progressSmoke
-}
-
-func settingsPath() (string, error) {
-	dir, err := mygo.App.Path(mygo.PathUserData)
-	if err != nil {
-		return "", err
-	}
-	return filepath.Join(dir, "settings.json"), nil
+// cacheLimits are the sizes the song cache may take, in megabytes.
+var cacheLimits = []struct {
+	mb    int
+	label string
+}{
+	{0, "关闭"},
+	{1024, "1 GB"},
+	{2048, "2 GB"},
+	{5120, "5 GB"},
+	{10240, "10 GB"},
 }
 
 // oldName is the app's previous name; older NetEase data stays separate.
@@ -224,77 +103,4 @@ func moveDir(old, dir string) {
 			os.MkdirAll(dir, 0o700)
 		}
 	}
-}
-
-// loadSettings reads the settings, or returns the defaults.
-func loadSettings() settings {
-	s := defaultSettings()
-	if path, err := settingsPath(); err == nil {
-		if b, err := os.ReadFile(path); err == nil {
-			json.Unmarshal(b, &s)
-		}
-		s.path = path
-	}
-	s.normalizeLyrics()
-	return s
-}
-
-// save keeps the settings where they were loaded from; defaults that were
-// never loaded, as in tests, are not saved.
-func (s settings) save() error {
-	path := s.path
-	if path == "" {
-		return nil
-	}
-	b, err := json.MarshalIndent(s, "", "  ")
-	if err != nil {
-		return err
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
-		return err
-	}
-	return os.WriteFile(path, b, 0o600)
-}
-
-// sidebarVibrancy keeps the Windows material choice across launches while
-// preserving the platform's sidebar material elsewhere.
-func (s settings) sidebarVibrancy() mygo.Vibrancy {
-	if runtime.GOOS != "windows" {
-		return mygo.VibrancySidebar
-	}
-	if s.SidebarMaterial == "mica" {
-		return mygo.VibrancyMica
-	}
-	return mygo.VibrancyAcrylic
-}
-
-// applyAppearance makes the windows light, dark, or follow the system.
-func (s settings) applyAppearance() {
-	switch s.Appearance {
-	case "light":
-		mygo.Theme.SetSource(mygo.ThemeLight)
-	case "dark":
-		mygo.Theme.SetSource(mygo.ThemeDark)
-	default:
-		mygo.Theme.SetSource(mygo.ThemeSystem)
-	}
-}
-
-// qualityLevel is the stream level NetEase names a quality by.
-var qualityLevels = []struct{ level, label string }{
-	{"standard", "标准（128k）"},
-	{"exhigh", "极高（320k）"},
-	{"lossless", "无损（FLAC）"},
-}
-
-// cacheLimits are the sizes the song cache may take, in megabytes.
-var cacheLimits = []struct {
-	mb    int
-	label string
-}{
-	{0, "关闭"},
-	{1024, "1 GB"},
-	{2048, "2 GB"},
-	{5120, "5 GB"},
-	{10240, "10 GB"},
 }

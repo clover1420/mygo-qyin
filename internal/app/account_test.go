@@ -72,7 +72,7 @@ func TestAccountMenuOpensOwnPage(t *testing.T) {
 		t.Fatal(err)
 	}
 	tt.Frame()
-	if a.route.page != pageUser || a.route.id != 42 {
+	if a.route.Page != pageUser || a.route.ID != 42 {
 		t.Fatalf("route = %+v, want the page of user 42", a.route)
 	}
 	if a.accountOpen {
@@ -119,14 +119,14 @@ func ownPageApp() *app {
 func TestOwnPageFollows(t *testing.T) {
 	asked := fakeSubscriptions(t)
 	a := ownPageApp()
-	a.open(route{page: pageUser, id: 9})
+	a.open(route{Page: pageUser, ID: 9})
 	wait(t, asked, "the artists followed")
 	tt := ui.NewTester(a.view, 1200, 1200)
 	tt.Frame()
 	if err := tt.Click("Ave Mujica"); err != nil {
 		t.Fatal(err)
 	}
-	if a.route.page != pageArtist || a.route.id != 10 {
+	if a.route.Page != pageArtist || a.route.ID != 10 {
 		t.Fatalf("route = %+v, want the page of artist 10", a.route)
 	}
 	a.users[9].subsLoading = 0 // what was asked for has landed
@@ -140,7 +140,7 @@ func TestOthersPageHidesFollows(t *testing.T) {
 	asked := fakeSubscriptions(t)
 	a := ownPageApp()
 	a.profile = &qqmusic.Profile{UserID: 1}
-	a.open(route{page: pageUser, id: 9})
+	a.open(route{Page: pageUser, ID: 9})
 	tt := ui.NewTester(a.view, 1200, 1200)
 	tt.Frame()
 	if len(asked) > 0 {
@@ -155,7 +155,7 @@ func TestOthersPageHidesFollows(t *testing.T) {
 func TestOwnPageFrameBudget(t *testing.T) {
 	fakeSubscriptions(t)
 	a := ownPageApp()
-	a.open(route{page: pageUser, id: 9})
+	a.open(route{Page: pageUser, ID: 9})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Advance(time.Second)
 	tt.Frame()
@@ -175,7 +175,7 @@ func TestOwnPageFrames(t *testing.T) {
 	fakeSubscriptions(t)
 	for _, dark := range []bool{false, true} {
 		a := ownPageApp()
-		a.open(route{page: pageUser, id: 9})
+		a.open(route{Page: pageUser, ID: 9})
 		tt := ui.NewTester(a.view, 1200, 1200)
 		tt.SetDark(dark)
 		tt.Advance(time.Second)
@@ -211,7 +211,7 @@ func TestOwnPageHeaderFrames(t *testing.T) {
 			a := ownPageApp()
 			d := a.users[9]
 			d.user.Nickname, d.user.Signature, d.membership = tc.nickname, "", tc.level
-			a.route = route{page: pageUser, id: 9}
+			a.route = route{Page: pageUser, ID: 9}
 			tt := ui.NewTester(a.view, tc.width, 700)
 			tt.SetDark(dark)
 			tt.Advance(time.Second)

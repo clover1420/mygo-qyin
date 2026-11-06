@@ -134,7 +134,7 @@ func TestLikeEpisodeRow(t *testing.T) {
 	a := catalogApp()
 	a.profile = &qqmusic.Profile{UserID: 1}
 	a.setProgramLiked(40, true)
-	a.open(route{page: pagePodcast, id: 5})
+	a.open(route{Page: pagePodcast, ID: 5})
 	tt := ui.NewTester(a.view, 1200, 800)
 	tt.Frame()
 	if _, ok := tt.Find("取消喜欢"); !ok {
@@ -271,14 +271,14 @@ func TestBackdropFrame(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		art := &artwork{bmp: ui.NewBitmap(img), tint: dominantColor(img)}
-		top, foot := backdropColors(art.tint)
-		t.Logf("tint %v, backdrop %v to %v", art.tint, top, foot)
-		a.art.art[qqmusic.Sized(tr.Album.PicURL, size)] = art
+		art := &artwork{BMP: ui.NewBitmap(img), Tint: dominantColor(img)}
+		top, foot := backdropColors(art.Tint)
+		t.Logf("tint %v, backdrop %v to %v", art.Tint, top, foot)
+		a.art.Add(qqmusic.Sized(tr.Album.PicURL, size), art)
 		if size == 600 {
 			bd := *art
-			bd.backdrop = ui.NewBitmap(blurImage(img))
-			a.art.art[qqmusic.Sized(tr.Album.PicURL, size)+"#backdrop"] = &bd
+			bd.Backdrop = ui.NewBitmap(blurImage(img))
+			a.art.Add(qqmusic.Sized(tr.Album.PicURL, size)+"#backdrop", &bd)
 		}
 	}
 	a.pl.Cue([]qqmusic.Track{tr})
@@ -314,12 +314,12 @@ func TestSmokeFrames(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		art := &artwork{bmp: ui.NewBitmap(img), tint: dominantColor(img)}
-		a.art.art[qqmusic.Sized(tr.Album.PicURL, size)] = art
+		art := &artwork{BMP: ui.NewBitmap(img), Tint: dominantColor(img)}
+		a.art.Add(qqmusic.Sized(tr.Album.PicURL, size), art)
 		if size == 600 {
 			bd := *art
-			bd.backdrop = ui.NewBitmap(blurImage(img))
-			a.art.art[qqmusic.Sized(tr.Album.PicURL, size)+"#backdrop"] = &bd
+			bd.Backdrop = ui.NewBitmap(blurImage(img))
+			a.art.Add(qqmusic.Sized(tr.Album.PicURL, size)+"#backdrop", &bd)
 		}
 	}
 	a.pl.Cue([]qqmusic.Track{tr})

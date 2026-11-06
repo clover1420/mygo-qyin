@@ -155,7 +155,7 @@ func (a *app) backdrop(c *ui.Context, art *artwork, tint ui.Color) {
 				bd.canvas = ui.NewCanvas(cw, ch)
 			}
 			bd.art, bd.tint, bd.fog, bd.at = art, tint, fog, now
-			bass := bd.level.group(0, 6)
+			bass := bd.level.Group(0, 6)
 			bd.canvas.Draw(p, func(cp *ui.Painter) {
 				box := ui.Rect{W: float32(cw), H: float32(ch)}
 				if fog {
@@ -200,8 +200,8 @@ func (bd *backdropCache) step(now time.Time, playing bool, lv [player.Bands]floa
 		bd.speed = to
 	}
 	bd.drift += bd.speed * dt
-	bd.level.step(now, lv, live)
-	return bd.speed > 0 || bd.level.group(0, 6) > 0.004
+	bd.level.Step(now, lv, live)
+	return bd.speed > 0 || bd.level.Group(0, 6) > 0.004
 }
 
 // drawBackdrop paints the still backdrop in r.
@@ -210,9 +210,9 @@ func drawBackdrop(p *ui.Painter, r ui.Rect, art *artwork, tint ui.Color) {
 	p.FillGradient(r, ui.LinearGradient{Angle: 180, Oklab: true, Stops: []ui.GradientStop{
 		{Color: top, At: 0}, {Color: foot, At: 1},
 	}}, 0)
-	if art != nil && art.backdrop != nil {
+	if art != nil && art.Backdrop != nil {
 		// The cover, blurred, as a faint wash of its own colors.
-		p.ImageRegion(art.backdrop, ui.Rect{W: 48, H: 48}, coverRect(r, 48, 48), ui.ImageOptions{Tint: white.Alpha(0.1)})
+		p.ImageRegion(art.Backdrop, ui.Rect{W: 48, H: 48}, coverRect(r, 48, 48), ui.ImageOptions{Tint: white.Alpha(0.1)})
 	}
 	// Darker toward the foot, under the controls.
 	p.FillGradient(r, ui.LinearGradient{Angle: 180, Stops: []ui.GradientStop{
@@ -255,29 +255,6 @@ func fogColors(tint ui.Color) (deep, fog ui.Color) {
 		s = min(max(s*1.3, 0.6), 0.85)
 	}
 	return hsvColor(h, s, 0.3), hsvColor(h, s*0.6, 0.72)
-}
-
-// hsvColor is the color of hue h (degrees), saturation s and value v.
-func hsvColor(h, s, v float64) ui.Color {
-	c := v * s
-	x := c * (1 - math.Abs(math.Mod(h/60, 2)-1))
-	var r, g, b float64
-	switch {
-	case h < 60:
-		r, g = c, x
-	case h < 120:
-		r, g = x, c
-	case h < 180:
-		g, b = c, x
-	case h < 240:
-		g, b = x, c
-	case h < 300:
-		r, b = x, c
-	default:
-		r, b = c, x
-	}
-	m := v - c
-	return ui.RGB(uint8((r+m)*255+0.5), uint8((g+m)*255+0.5), uint8((b+m)*255+0.5))
 }
 
 // backdropOver paints the backdrop again over band, a strip of win, the

@@ -121,18 +121,18 @@ func (a *app) trayMenu() *mygo.Menu {
 	}
 	if supportsDesktopLyrics() {
 		label := "桌面歌词"
-		if a.settings.lyricsMode() == lyricsTaskbar {
+		if lyricsMode(a.settings) == lyricsTaskbar {
 			label = "任务栏歌词"
 		}
 		lyrics := []*mygo.MenuItem{
-			{Label: label, Type: mygo.MenuItemCheckbox, Checked: a.settings.lyricsEnabled(),
-				Click: run(func() { a.setLyricsEnabled(!a.settings.lyricsEnabled()) })},
+			{Label: label, Type: mygo.MenuItemCheckbox, Checked: lyricsEnabled(a.settings),
+				Click: run(func() { a.setLyricsEnabled(!lyricsEnabled(a.settings)) })},
 		}
-		if a.settings.lyricsMode() == lyricsDesktop {
+		if lyricsMode(a.settings) == lyricsDesktop {
 			lyrics = append(lyrics, &mygo.MenuItem{Label: "解锁桌面歌词", Disabled: !a.settings.DesktopLyrics || !a.settings.DesktopLyricsLocked,
 				Click: run(func() {
 					if a.desktopLyrics != nil {
-						a.desktopLyrics.setLocked(false)
+						a.desktopLyrics.SetLocked(false)
 					}
 				})})
 		}

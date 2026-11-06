@@ -76,7 +76,7 @@ func (a *app) loadMine(uid int64) {
 // changed: loaded anew if shown, and the sidebar's covers with it.
 func (a *app) playlistChanged(id int64) {
 	delete(a.playlists, id)
-	if a.route.page == pagePlaylist && a.route.id == id {
+	if a.route.Page == pagePlaylist && a.route.ID == id {
 		a.loadPlaylist(id, false)
 	}
 	if a.profile != nil {
@@ -147,7 +147,7 @@ func (a *app) submitName() {
 			a.mine = slices.Insert(a.mine, at, *pl)
 			pl.Tracks = nil
 			a.playlists[pl.ID] = pl
-			a.open(route{page: pagePlaylist, id: pl.ID})
+			a.open(route{Page: pagePlaylist, ID: pl.ID})
 			if add != nil {
 				a.addTo(pl.ID, add)
 			}
@@ -181,11 +181,11 @@ func (a *app) deleteChosen() {
 	pl := (*lists)[i]
 	*lists = slices.Delete(slices.Clone(*lists), i, i+1)
 	// Leave no way back to its page, and leave it for the page before.
-	gone := func(r route) bool { return r.page == pagePlaylist && r.id == id }
+	gone := func(r route) bool { return r.Page == pagePlaylist && r.ID == id }
 	a.history = slices.DeleteFunc(a.history, gone)
 	a.forward = slices.DeleteFunc(a.forward, gone)
 	if gone(a.route) {
-		r := route{page: pageHome}
+		r := route{Page: pageHome}
 		if n := len(a.history); n > 0 {
 			r, a.history = a.history[n-1], a.history[:n-1]
 		}
@@ -329,10 +329,10 @@ func (a *app) playlistNameDialog(c *ui.Context) {
 			a.submitName()
 		}
 		ui.Row(c).Gap(10).Justify(ui.End).Children(func() {
-			if pillButton(c.Key("cancel"), nil, "取消", p.hover.Over(p.bg), p.text).Clicked() {
+			if pillButton(c.Key("cancel"), nil, "取消", p.Hover.Over(p.Bg), p.Text).Clicked() {
 				d.open = false
 			}
-			ok := pillButton(c.Key("ok"), nil, action, p.accent, p.onAccent)
+			ok := pillButton(c.Key("ok"), nil, action, p.Accent, p.OnAccent)
 			if strings.TrimSpace(d.name) == "" {
 				ok.Disabled(true).Opacity(0.5)
 			}
@@ -359,12 +359,12 @@ func (a *app) deletePlaylistDialog(c *ui.Context) {
 			message = "确定取消收藏歌单“" + d.name + "”吗？"
 		}
 		ui.Text(c, title).FontSize(17).FontWeight(700)
-		ui.Text(c, message).FontSize(13).TextColor(p.muted).LineHeight(1.45)
+		ui.Text(c, message).FontSize(13).TextColor(p.Muted).LineHeight(1.45)
 		ui.Row(c).Gap(10).Justify(ui.End).Margin(8, 0, 0, 0).Children(func() {
-			if pillButton(c.Key("cancel"), nil, "取消", p.hover.Over(p.bg), p.text).Clicked() {
+			if pillButton(c.Key("cancel"), nil, "取消", p.Hover.Over(p.Bg), p.Text).Clicked() {
 				d.open = false
 			}
-			if pillButton(c.Key("ok"), nil, action, p.accent, p.onAccent).Clicked() {
+			if pillButton(c.Key("ok"), nil, action, p.Accent, p.OnAccent).Clicked() {
 				a.deleteChosen()
 			}
 		})

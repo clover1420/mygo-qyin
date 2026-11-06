@@ -86,25 +86,25 @@ func suggestionList(res qqmusic.Suggestions) []suggestion {
 			continue
 		}
 		byKind["songs"] = append(byKind["songs"], suggestion{key, t.Name, t.ArtistNames(), "单曲",
-			route{page: pageSearch, query: t.Name, kind: qqmusic.SearchSongs}})
+			route{Page: pageSearch, Query: t.Name, Kind: qqmusic.SearchSongs}})
 	}
 	for _, ar := range res.Artists {
 		if ar.ID <= 0 {
 			continue
 		}
 		byKind["artists"] = append(byKind["artists"], suggestion{suggestionKey("artist", ar.ID, ar.MID), ar.Name, "", "歌手",
-			route{page: pageArtist, id: ar.ID}})
+			route{Page: pageArtist, ID: ar.ID}})
 	}
 	for _, al := range res.Albums {
 		if al.ID <= 0 {
 			continue
 		}
 		byKind["albums"] = append(byKind["albums"], suggestion{suggestionKey("album", al.ID, al.MID), al.Name, al.ArtistNames(), "专辑",
-			route{page: pageAlbum, id: al.ID}})
+			route{Page: pageAlbum, ID: al.ID}})
 	}
 	for _, pl := range res.Playlists {
 		byKind["playlists"] = append(byKind["playlists"], suggestion{fmt.Sprint("playlist:", pl.ID), pl.Name, pl.Creator.Nickname, "歌单",
-			route{page: pagePlaylist, id: pl.ID}})
+			route{Page: pagePlaylist, ID: pl.ID}})
 	}
 	var out []suggestion
 	for _, kind := range append(res.Order, "songs", "artists", "albums", "playlists") {
@@ -131,12 +131,12 @@ func (a *app) searchField(c *ui.Context) {
 	p := a.pal
 	field := ui.Row(c).Height(34).PaddingX(12).Gap(7).Radius(17).AlignItems(ui.Center).Margin(0, 0, 14, 0)
 	if c.Focused(a.searchBox) {
-		field.Background(p.bg).Shadow(0, 0, 0, 3, p.accent.Alpha(0.25)).Border(1, p.accent.Alpha(0.6))
+		field.Background(p.Bg).Shadow(0, 0, 0, 3, p.Accent.Alpha(0.25)).Border(1, p.Accent.Alpha(0.6))
 	} else {
-		field.Background(p.hover).Border(1, p.hairline)
+		field.Background(p.Hover).Border(1, p.Hairline)
 	}
 	field.Children(func() {
-		ui.Icon(c, iconSearch).Size(14, 14).TextColor(p.muted)
+		ui.Icon(c, iconSearch).Size(14, 14).TextColor(p.Muted)
 		cb := ui.ComboboxBase(c.Key("search"), &a.query)
 		in := cb.Input.Bind(&a.searchBox).Grow(1).MinWidth(0).
 			Placeholder("搜索歌曲、歌手、专辑").FontSize(13).Label("搜索")
@@ -159,15 +159,15 @@ func (a *app) searchField(c *ui.Context) {
 			option := func(key, label string) ui.Element {
 				row := cb.Item(key).MinHeight(36).Padding(6, 10).Gap(10).Radius(8).AlignItems(ui.Center).Label(label)
 				if row.Highlighted() {
-					row.Background(p.hover)
+					row.Background(p.Hover)
 				}
 				return row
 			}
 			if q == "" {
 				panel.Label("搜索历史")
 				ui.Row(c).Padding(2, 4, 2, 10).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, "搜索历史").FontSize(12).TextColor(p.muted).Grow(1)
-					iconButton(c.Key("clear"), iconTrash, 14, p.muted, "清空搜索历史").KeepFocus().OnClick(a.clearSearchHistory)
+					ui.Text(c, "搜索历史").FontSize(12).TextColor(p.Muted).Grow(1)
+					iconButton(c.Key("clear"), iconTrash, 14, p.Muted, "清空搜索历史").KeepFocus().OnClick(a.clearSearchHistory)
 				})
 				_, windowHeight := c.Size()
 				const popupChromeHeight = 80 // header, padding, and space around the popup
@@ -182,7 +182,7 @@ func (a *app) searchField(c *ui.Context) {
 				scroll.Children(func() {
 					for _, h := range a.settings.SearchHistory {
 						option("history:"+h, h).Children(func() {
-							ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.muted)
+							ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.Muted)
 							ui.Text(c, h).FontSize(13).SingleLine().Shrink(1).MinWidth(0)
 						})
 					}
@@ -192,7 +192,7 @@ func (a *app) searchField(c *ui.Context) {
 			panel.Label("搜索建议")
 			// The query first, which Enter searches as typed.
 			option("query", "搜索“"+q+"”").Children(func() {
-				ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.muted)
+				ui.Icon(c, iconSearch).Size(13, 13).TextColor(p.Muted)
 				ui.Text(c, "搜索“"+q+"”").FontSize(13).FontWeight(500).SingleLine().Shrink(1).MinWidth(0)
 			})
 			if s.query == q {
@@ -201,10 +201,10 @@ func (a *app) searchField(c *ui.Context) {
 						ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(2).Children(func() {
 							ui.Text(c, sg.name).FontSize(13).SingleLine()
 							if sg.detail != "" {
-								ui.Text(c, sg.detail).FontSize(11.5).TextColor(p.muted).SingleLine()
+								ui.Text(c, sg.detail).FontSize(11.5).TextColor(p.Muted).SingleLine()
 							}
 						})
-						ui.Text(c, sg.kind).FontSize(11.5).TextColor(p.faint)
+						ui.Text(c, sg.kind).FontSize(11.5).TextColor(p.Faint)
 					})
 				}
 			}
@@ -234,8 +234,8 @@ func (a *app) choose(key, q string) {
 		if sg.key != key {
 			continue
 		}
-		if sg.route.page == pageSearch {
-			a.query = sg.route.query
+		if sg.route.Page == pageSearch {
+			a.query = sg.route.Query
 			a.searchFor(sg.route)
 			return
 		}

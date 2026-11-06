@@ -55,7 +55,7 @@ func (a *app) startCacheMigration() {
 func (a *app) commitCacheDirectory(root string, cache *player.Cache) error {
 	next := a.settings
 	next.CacheDir, next.PendingCacheDir = root, nil
-	if err := next.save(); err != nil {
+	if err := next.Save(); err != nil {
 		return err
 	}
 	a.settings, a.pl.Cache = next, cache
@@ -66,7 +66,7 @@ func (a *app) commitCacheDirectory(root string, cache *player.Cache) error {
 
 func (a *app) cacheMigrationView(c *ui.Context) {
 	p := a.pal
-	c.Root().Background(p.bg)
+	c.Root().Background(p.Bg)
 	ui.Column(c).Fill().Center().Padding(40).Children(func() {
 		ui.Column(c).Width(360).Gap(16).Children(func() {
 			ui.Text(c, "正在迁移缓存").FontSize(22).FontWeight(600)
@@ -74,10 +74,10 @@ func (a *app) cacheMigrationView(c *ui.Context) {
 			if a.cacheMoveTotal > 0 {
 				progress = float32(a.cacheMoveDone) / float32(a.cacheMoveTotal)
 			}
-			ui.Box(c).Height(6).Radius(3).Background(p.hairline).Children(func() {
-				ui.Box(c).Height(6).Radius(3).WidthPercent(progress * 100).Background(p.accent)
+			ui.Box(c).Height(6).Radius(3).Background(p.Hairline).Children(func() {
+				ui.Box(c).Height(6).Radius(3).WidthPercent(progress * 100).Background(p.Accent)
 			})
-			ui.Text(c, fmt.Sprintf("%s / %s", megabytes(a.cacheMoveDone), megabytes(a.cacheMoveTotal))).FontSize(13).TextColor(p.muted)
+			ui.Text(c, fmt.Sprintf("%s / %s", megabytes(a.cacheMoveDone), megabytes(a.cacheMoveTotal))).FontSize(13).TextColor(p.Muted)
 		})
 	})
 	ui.Box(c).Absolute().Top(0).Left(0).Right(0).Height(topBar(c)).DragWindow()

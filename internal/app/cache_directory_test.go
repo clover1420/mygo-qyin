@@ -16,7 +16,7 @@ func TestCacheDirectorySettings(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	a.settings.CacheDir = t.TempDir()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	a.pl.Cache = newSongCache(a.settings)
 	oldCache := a.pl.Cache
 	writeCacheFixture(t, filepath.Join(oldCache.Directory(), "1-exhigh.mp3"), "old song")
@@ -42,7 +42,7 @@ func TestCacheDirectorySettings(t *testing.T) {
 	if a.settings.PendingCacheDir == nil || *a.settings.PendingCacheDir != selected || a.pl.Cache != oldCache {
 		t.Fatal("selection did not stage migration while keeping the current cache")
 	}
-	b, err := os.ReadFile(a.settings.path)
+	b, err := os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestCacheDirectorySettings(t *testing.T) {
 	if a.settings.CacheDir != selected || a.settings.PendingCacheDir != nil || a.pl.Cache != target || oldCache.Size() != 0 {
 		t.Fatal("completed migration did not select the destination and clean the originals")
 	}
-	b, err = os.ReadFile(a.settings.path)
+	b, err = os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,11 +95,11 @@ func TestCacheDirectorySelectionFailure(t *testing.T) {
 			a := newTestApp()
 			a.settings = defaultSettings()
 			a.settings.CacheDir = t.TempDir()
-			a.settings.path = filepath.Join(t.TempDir(), "settings.json")
-			if err := a.settings.save(); err != nil {
+			a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
+			if err := a.settings.Save(); err != nil {
 				t.Fatal(err)
 			}
-			before, err := os.ReadFile(a.settings.path)
+			before, err := os.ReadFile(a.settings.Path)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -112,7 +112,7 @@ func TestCacheDirectorySelectionFailure(t *testing.T) {
 			if scenario == "save error" {
 				blocker := filepath.Join(t.TempDir(), "file")
 				writeCacheFixture(t, blocker, "a file blocks settings writes")
-				a.settings.path = filepath.Join(blocker, "settings.json")
+				a.settings.Path = filepath.Join(blocker, "settings.json")
 			}
 			picker := pickCacheDirectory
 			defer func() { pickCacheDirectory = picker }()
@@ -138,7 +138,7 @@ func TestCacheDirectorySelectionFailure(t *testing.T) {
 				t.Fatal("the failed selection was not reported")
 			}
 			if scenario != "save error" {
-				after, err := os.ReadFile(a.settings.path)
+				after, err := os.ReadFile(a.settings.Path)
 				if err != nil || string(after) != string(before) {
 					t.Fatalf("persisted settings changed: %v", err)
 				}
@@ -155,7 +155,7 @@ func TestRestoreDefaultCacheDirectory(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	a.settings.CacheDir = t.TempDir()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	a.pl.Cache = newSongCache(a.settings)
 	tt := ui.NewTester(a.settingsView, 560, 2000)
 	tt.Frame()
@@ -165,7 +165,7 @@ func TestRestoreDefaultCacheDirectory(t *testing.T) {
 	if a.settings.PendingCacheDir == nil || *a.settings.PendingCacheDir != "" || a.pl.Cache.Directory() == filepath.Join(defaultRoot, "songs") {
 		t.Fatal("restoring the default did not defer migration until restart")
 	}
-	b, err := os.ReadFile(a.settings.path)
+	b, err := os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -195,7 +195,7 @@ func TestCancelCacheDirectoryChange(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	a.settings.CacheDir = t.TempDir()
-	a.settings.path = filepath.Join(t.TempDir(), "settings.json")
+	a.settings.Path = filepath.Join(t.TempDir(), "settings.json")
 	a.pl.Cache = newSongCache(a.settings)
 	original := a.pl.Cache
 	if err := a.setCacheDirectory(t.TempDir()); err != nil {
@@ -209,7 +209,7 @@ func TestCancelCacheDirectoryChange(t *testing.T) {
 	if a.settings.PendingCacheDir != nil || a.pl.Cache != original {
 		t.Fatal("cancellation did not retain the original cache")
 	}
-	b, err := os.ReadFile(a.settings.path)
+	b, err := os.ReadFile(a.settings.Path)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -228,7 +228,7 @@ func TestCacheDirectoryCommitFailure(t *testing.T) {
 	a.settings.PendingCacheDir = &destination
 	blocker := filepath.Join(t.TempDir(), "file")
 	writeCacheFixture(t, blocker, "settings writes fail here")
-	a.settings.path = filepath.Join(blocker, "settings.json")
+	a.settings.Path = filepath.Join(blocker, "settings.json")
 	a.pl.Cache = newSongCache(a.settings)
 	original := a.pl.Cache
 	chosen := a.settings

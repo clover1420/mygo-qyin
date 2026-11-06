@@ -25,7 +25,7 @@ func TestCoverAccent(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			a := newTestApp()
-			a.coverArt = &artwork{tint: tc.tint}
+			a.coverArt = &artwork{Tint: tc.tint}
 			got, ok := a.coverAccent()
 			if ok != tc.want {
 				t.Fatalf("follows cover = %v, want %v", ok, tc.want)
@@ -52,7 +52,7 @@ func TestApplyThemeAccentCover(t *testing.T) {
 		var got ui.Color
 		tt := ui.NewTester(func(c *ui.Context) {
 			a.applyTheme(c)
-			got = a.pal.accent
+			got = a.pal.Accent
 		}, 400, 300)
 		tt.Frame()
 		return got
@@ -61,7 +61,7 @@ func TestApplyThemeAccentCover(t *testing.T) {
 	same := func(x, y ui.Color) bool {
 		return x.R == y.R && x.G == y.G && x.B == y.B && x.A == y.A
 	}
-	green := &artwork{tint: ui.RGB(30, 180, 70)}
+	green := &artwork{Tint: ui.RGB(30, 180, 70)}
 	if off := accentOf(false, green); !same(off, red) {
 		t.Fatalf("off: %+v, want the fixed red %+v", off, red)
 	}
@@ -71,7 +71,7 @@ func TestApplyThemeAccentCover(t *testing.T) {
 	if missing := accentOf(true, nil); !same(missing, red) {
 		t.Fatalf("without a cover: %+v, want the fixed red %+v", missing, red)
 	}
-	if gray := accentOf(true, &artwork{tint: ui.RGB(120, 120, 120)}); !same(gray, red) {
+	if gray := accentOf(true, &artwork{Tint: ui.RGB(120, 120, 120)}); !same(gray, red) {
 		t.Fatalf("gray cover: %+v, want the fixed red %+v", gray, red)
 	}
 }
@@ -80,14 +80,14 @@ func TestApplyThemeAccentCover(t *testing.T) {
 // setting is on, and keeps its neutral color when it is off or the cover is
 // too gray to follow.
 func TestProgressFillAccentCover(t *testing.T) {
-	p := palette{text: ui.RGB(30, 30, 32)}
-	neutral := p.text.Alpha(0.75)
+	p := palette{Text: ui.RGB(30, 30, 32)}
+	neutral := p.Text.Alpha(0.75)
 	same := func(x, y ui.Color) bool {
 		return x.R == y.R && x.G == y.G && x.B == y.B && x.A == y.A
 	}
 	a := newTestApp()
 	a.settings = defaultSettings()
-	a.coverArt = &artwork{tint: ui.RGB(30, 180, 70)}
+	a.coverArt = &artwork{Tint: ui.RGB(30, 180, 70)}
 	if got := a.progressFill(p); !same(got, neutral) {
 		t.Fatalf("off: %+v, want neutral %+v", got, neutral)
 	}
@@ -99,7 +99,7 @@ func TestProgressFillAccentCover(t *testing.T) {
 	if got := a.progressFill(p); !same(got, want) {
 		t.Fatalf("on: %+v, want the cover accent %+v", got, want)
 	}
-	a.coverArt = &artwork{tint: ui.RGB(120, 120, 120)}
+	a.coverArt = &artwork{Tint: ui.RGB(120, 120, 120)}
 	if got := a.progressFill(p); !same(got, neutral) {
 		t.Fatalf("gray cover: %+v, want neutral %+v", got, neutral)
 	}

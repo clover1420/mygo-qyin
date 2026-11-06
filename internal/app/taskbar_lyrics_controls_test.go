@@ -9,13 +9,14 @@ import (
 
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
+	"lilt/internal/lyricsui"
 	"lilt/internal/qqmusic"
 )
 
 func taskbarControlsFixture() (*app, *taskbarLyrics) {
 	a, d := taskbarLyricsViewFixture()
 	a.taskbarLyrics = d
-	a.settings.setProgressEffect(progressStandard)
+	a.settings.SetProgressEffect(progressStandard)
 	tracks := []qqmusic.Track{
 		{ID: 7, Name: "我们一起听音乐", Artists: []qqmusic.Artist{{Name: "Amamiya"}}, Duration: 200000},
 		{ID: 8, Name: "下一首", Duration: 200000},
@@ -27,9 +28,9 @@ func taskbarControlsFixture() (*app, *taskbarLyrics) {
 	a.pl.Cue(tracks)
 	a.pl.SetLyrics(nil)
 	a.pl.Seek(40 * time.Second)
-	art := &artwork{bmp: solidBitmap(burstCyan)}
+	art := &artwork{BMP: solidBitmap(burstCyan)}
 	for _, size := range []int{96, 120} {
-		a.art.art[qqmusic.Sized(tracks[0].Album.PicURL, size)] = art
+		a.art.Add(qqmusic.Sized(tracks[0].Album.PicURL, size), art)
 	}
 	return a, d
 }
@@ -39,32 +40,32 @@ func TestTaskbarLyricsControlsCoverToggle(t *testing.T) {
 	for _, surface := range []string{"lyrics-host", "cover-island"} {
 		t.Run(surface, func(t *testing.T) {
 			a, d := taskbarControlsFixture()
-			view, width, height := d.view, 280, 42
+			view, width, height := d.View, 280, 42
 			if surface == "cover-island" {
-				view, width, height = d.coverView, 34, 34
+				view, width, height = d.CoverView, 34, 34
 			}
 			tt := ui.NewTester(view, width, height)
 			tt.Frame()
 			if err := tt.Click("歌曲控制"); err != nil {
 				t.Fatal(err)
 			}
-			if !d.controlsOpen {
+			if !d.ControlsOpen {
 				t.Fatal("clicking the cover did not open song controls")
 			}
-			d.scrub = scrubState{v: 120, held: true, active: true}
+			d.Scrub = scrubState{V: 120, Held: true, Active: true}
 			if err := tt.Click("歌曲控制"); err != nil {
 				t.Fatal(err)
 			}
-			if d.controlsOpen || d.scrub.held || d.scrub.active {
+			if d.ControlsOpen || d.Scrub.Held || d.Scrub.Active {
 				t.Fatal("clicking the cover again kept controls or an unfinished seek open")
 			}
 			if err := tt.Click("歌曲控制"); err != nil {
 				t.Fatal(err)
 			}
-			panel := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+			panel := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 			panel.Frame()
 			panel.Key(0, ui.KeyEscape)
-			if d.controlsOpen || a.nowPlaying || a.pl.Playing() || a.pl.Position() != 40*time.Second {
+			if d.ControlsOpen || a.nowPlaying || a.pl.Playing() || a.pl.Position() != 40*time.Second {
 				t.Fatal("Escape did not dismiss locally or cover interaction changed playback")
 			}
 		})
@@ -74,17 +75,17 @@ func TestTaskbarLyricsControlsCoverToggle(t *testing.T) {
 // Taskbar playback controls pause and resume the same audio player independently of the main window.
 func TestTaskbarLyricsControlsPlayback(t *testing.T) {
 	a, d := taskbarControlsFixture()
-	d.controlsOpen = true
+	d.ControlsOpen = true
 	out := audio.NewPlayer(&silence{})
 	out.SetVolume(0)
 	a.pl.Attach(out)
 	defer out.Close()
-	tt := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+	tt := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 	tt.Frame()
 	if err := tt.Click("播放/暂停"); err != nil {
 		t.Fatal(err)
 	}
-	if a.pl.Playing() || a.nowPlaying || !d.controlsOpen {
+	if a.pl.Playing() || a.nowPlaying || !d.ControlsOpen {
 		t.Fatal("pause did not act on the shared player while keeping local controls open")
 	}
 	if err := tt.Click("播放/暂停"); err != nil {
@@ -98,8 +99,8 @@ func TestTaskbarLyricsControlsPlayback(t *testing.T) {
 // Previous and next buttons choose the corresponding queue tracks rather than navigating the main app.
 func TestTaskbarLyricsControlsQueue(t *testing.T) {
 	a, d := taskbarControlsFixture()
-	d.controlsOpen = true
-	tt := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+	d.ControlsOpen = true
+	tt := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 	tt.Frame()
 	for _, action := range []struct {
 		label string
@@ -109,7 +110,7 @@ func TestTaskbarLyricsControlsQueue(t *testing.T) {
 			t.Fatal(err)
 		}
 		tt.Frame()
-		if a.pl.Current().ID != action.id || a.nowPlaying || !d.controlsOpen {
+		if a.pl.Current().ID != action.id || a.nowPlaying || !d.ControlsOpen {
 			t.Fatalf("%s chose track %d, want %d, or left the local controls", action.label, a.pl.Current().ID, action.id)
 		}
 	}
@@ -118,8 +119,8 @@ func TestTaskbarLyricsControlsQueue(t *testing.T) {
 // Dragging the taskbar progress bar must seek only on release and preserve a paused player.
 func TestTaskbarLyricsControlsSeekOnRelease(t *testing.T) {
 	a, d := taskbarControlsFixture()
-	d.controlsOpen = true
-	tt := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+	d.ControlsOpen = true
+	tt := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 	tt.Frame()
 	bar, ok := tt.Find("播放进度")
 	if !ok {
@@ -149,8 +150,8 @@ func TestTaskbarLyricsControlsTrackChangeCancelsSeek(t *testing.T) {
 	for _, identity := range []string{"id", "mid"} {
 		t.Run(identity, func(t *testing.T) {
 			a, d := taskbarControlsFixture()
-			d.controlsOpen = true
-			tt := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+			d.ControlsOpen = true
+			tt := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 			tt.Frame()
 			bar, ok := tt.Find("播放进度")
 			if !ok {
@@ -160,7 +161,7 @@ func TestTaskbarLyricsControlsTrackChangeCancelsSeek(t *testing.T) {
 			tt.Press(bar.X+bar.W*0.2, y)
 			tt.Move(bar.X+bar.W*0.8, y)
 			tt.Frame()
-			if !d.scrub.held || !d.scrub.active {
+			if !d.Scrub.Held || !d.Scrub.Active {
 				t.Fatal("fixture did not start a progress drag")
 			}
 			track := *a.pl.Current()
@@ -174,8 +175,8 @@ func TestTaskbarLyricsControlsTrackChangeCancelsSeek(t *testing.T) {
 			tt.Frame()
 			tt.Release(bar.X+bar.W*0.8, y)
 			tt.Frame()
-			if d.scrub.held || d.scrub.active || a.pl.Position() != 15*time.Second {
-				t.Fatalf("old drag sought into the new song: held=%t active=%t position=%s", d.scrub.held, d.scrub.active, a.pl.Position())
+			if d.Scrub.Held || d.Scrub.Active || a.pl.Position() != 15*time.Second {
+				t.Fatalf("old drag sought into the new song: held=%t active=%t position=%s", d.Scrub.Held, d.Scrub.Active, a.pl.Position())
 			}
 		})
 	}
@@ -186,24 +187,24 @@ func TestTaskbarLyricsControlsOwnerDismissal(t *testing.T) {
 	for _, action := range []string{"hide", "no-space", "cover-close", "destroy", "disable"} {
 		t.Run(action, func(t *testing.T) {
 			a, d := taskbarControlsFixture()
-			d.controlsOpen = true
-			d.scrub = scrubState{v: 120, held: true, active: true}
+			d.ControlsOpen = true
+			d.Scrub = scrubState{V: 120, Held: true, Active: true}
 			switch action {
 			case "hide":
-				d.hide()
+				d.Hide()
 			case "no-space":
-				d.updatePlacement(taskbarLyricsPlacement{})
+				d.UpdatePlacement(taskbarLyricsPlacement{})
 			case "cover-close":
-				d.destroyCoverWindow()
+				d.DestroyCoverWindow()
 			case "destroy":
-				d.destroy()
+				d.Destroy()
 			case "disable":
 				if !supportsTaskbarLyrics() {
 					t.Skip("taskbar settings are Windows-only")
 				}
 				a.setTaskbarLyricsEnabled(false)
 			}
-			if d.controlsOpen || d.scrub.held || d.scrub.active || a.pl.Position() != 40*time.Second {
+			if d.ControlsOpen || d.Scrub.Held || d.Scrub.Active || a.pl.Position() != 40*time.Second {
 				t.Fatalf("%s left song controls open or committed the discarded seek", action)
 			}
 		})
@@ -226,12 +227,12 @@ func TestTaskbarLyricsControlsFrames(t *testing.T) {
 	}{{"light", false, false}, {"dark", true, false}, {"acrylic-light", false, true}, {"acrylic-dark", true, true}} {
 		t.Run(mode.name, func(t *testing.T) {
 			a, d := taskbarControlsFixture()
-			d.controlsOpen, d.dark = true, mode.dark
+			d.ControlsOpen, d.Dark = true, mode.dark
 			if mode.vibrancy {
-				d.dark = !mode.dark // Exercise differing app and taskbar appearances.
+				d.Dark = !mode.dark // Exercise differing app and taskbar appearances.
 			}
 			a.pl.Seek(72 * time.Second)
-			tt := ui.NewTester(d.controlsView, taskbarControlsWidth, taskbarControlsHeight)
+			tt := ui.NewTester(d.ControlsView, lyricsui.TaskbarControlsWidth, lyricsui.TaskbarControlsHeight)
 			tt.SetDark(mode.dark)
 			tt.SetVibrancy(mode.vibrancy)
 			tt.Move(-10, -10)
