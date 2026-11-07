@@ -87,7 +87,12 @@ const (
 	// being its right or bottom edge; nothing outside Src shows.
 	OpImage
 	// OpPushClip clips the following ops to Rect with Radii, intersected
-	// with the clip in effect, until the matching OpPopClip.
+	// with the clip in effect, until the matching OpPopClip. Unless
+	// PaintSolid, the alpha of its Paint, a gradient of Color and Color2
+	// or of Stops as an OpFill's, masks what it clips too, as CSS's
+	// mask-image does; so does, with Image, the alpha of Image's Src
+	// drawn over Rect, as OpImage draws it: a coverage mask, as a path's
+	// (ClipShape.Masks).
 	OpPushClip
 	// OpPopClip restores the clip in effect before the matching OpPushClip.
 	OpPopClip
@@ -460,9 +465,9 @@ type Image struct {
 	Scene      *Scene
 	PixVersion uint64
 	// Transient marks a canvas drawn anew in every frame that shows it,
-	// as an element's effect layer: renderers free its texture once
-	// frames stop drawing it, rather than once it is collected, which
-	// the little memory it takes of Go's heap may put off for minutes.
+	// or pixels retained only as a drawing cache, such as a clip mask.
+	// Renderers free its texture once frames stop drawing it, rather than
+	// once it is collected, which Go's heap may put off for minutes.
 	Transient bool
 	// Restore re-creates Pix when a renderer needs the pixels after an
 	// owner dropped them, to upload or to draw them again, and Dropped
