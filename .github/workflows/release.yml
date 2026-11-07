@@ -43,12 +43,13 @@ jobs:
           test -s "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
       - name: Vet and test
-        # The app's drawing tests need CJK fonts and an audio device, absent
-        # on the headless Linux runner; the full suite runs on a desktop.
+        # The drawing tests of the app and the lyrics windows need CJK fonts
+        # and an audio device, absent on the headless Linux runner; the full
+        # suite runs on a desktop.
         run: |
           go build ./...
           go tool mygo vet .
-          go test $(go list ./... | grep -v '/internal/app$')
+          go test $(go list ./... | grep -Ev '/(internal/app|internal/ui/features/lyricsui)$')
       - name: Create the draft release
         env:
           GH_TOKEN: ${{ github.token }}
