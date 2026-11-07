@@ -5,6 +5,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/qqmusic"
 )
 
@@ -223,7 +224,7 @@ func (cs *commentState) setLiked(id int64, like bool) {
 
 // avatar shows a listener's picture, round, over empty while it loads.
 func (a *app) avatar(c *ui.Context, url string, size float32, empty ui.Color) {
-	bmp := bitmap(a.art.Get(qqmusic.Sized(url, int(size*3)), false))
+	bmp := bitmap(a.art.Get(qqmusic.Sized(url, int(size*3)), art.Cover))
 	box := ui.Box(c).Size(size, size).Radius(size / 2).Shrink(0)
 	in := artIn(box, bmp)
 	if in < 1 {

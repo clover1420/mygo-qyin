@@ -118,7 +118,7 @@ func (d *download) run(ctx context.Context, url string) {
 		}
 		if err == io.EOF {
 			// Whole if as long as promised: the cache's.
-			if d.part != "" && (d.size <= 0 || d.n == d.size) {
+			if d.keep != nil && d.part != "" && (d.size <= 0 || d.n == d.size) {
 				d.hand()
 			}
 			finish(nil)

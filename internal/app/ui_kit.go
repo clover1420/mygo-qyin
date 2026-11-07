@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/qqmusic"
 )
 
@@ -10,7 +11,7 @@ import (
 func (a *app) cover(c *ui.Context, url string, px int, size, radius float32) ui.Element {
 	p := a.pal
 	box := ui.Box(c).Size(size, size).Radius(radius).Center()
-	bmp := bitmap(a.art.Get(qqmusic.Sized(url, px), false))
+	bmp := bitmap(a.art.Get(qqmusic.Sized(url, px), art.Cover))
 	in := artIn(box, bmp)
 	if in < 1 {
 		box.Background(p.Hover)

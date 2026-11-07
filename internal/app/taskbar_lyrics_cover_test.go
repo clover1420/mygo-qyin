@@ -29,7 +29,7 @@ func TestTaskbarLyricsCoverFollowsCurrentTrack(t *testing.T) {
 	redURL, blueURL := "https://example.invalid/taskbar-red.jpg", "https://example.invalid/taskbar-blue.jpg"
 	redKey, blueKey := qqmusic.Sized(redURL, 96), qqmusic.Sized(blueURL, 96)
 	a.art.Add(redKey, &artwork{BMP: taskbarCoverBitmap(color.RGBA{R: 255, A: 255})})
-	a.art.Reserve(blueKey, false) // Keep the pending cover offline until this test supplies it.
+	a.art.Reserve(blueKey) // Keep the pending cover offline until this test supplies it.
 	track := *a.pl.Current()
 	track.Album.PicURL = redURL
 	a.pl.Cue([]qqmusic.Track{track})
@@ -55,7 +55,7 @@ func TestTaskbarLyricsCoverFollowsCurrentTrack(t *testing.T) {
 		t.Fatalf("failed cover retained old artwork or lost its placeholder: red=%d blue=%d", red, blue)
 	}
 
-	a.art.Release(blueKey, false)
+	a.art.Release(blueKey)
 	a.art.Add(blueKey, &artwork{BMP: taskbarCoverBitmap(color.RGBA{B: 255, A: 255})})
 	tt.Frame()
 	red, blue = taskbarCoverColors(tt.Image())

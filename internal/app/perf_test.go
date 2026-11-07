@@ -7,6 +7,7 @@ import (
 	"github.com/egoist/mygo/audio"
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/lyrics"
 	"lilt/internal/media/qqmusic"
 )
@@ -284,8 +285,8 @@ func TestLyricsWakeAfterGap(t *testing.T) {
 // go, so that the backdrop stops asking for frames.
 func TestBackdropFadeEnds(t *testing.T) {
 	a, tt, _ := coverApp(t)
-	a.art.Add(qqmusic.Sized("a", 600)+"#backdrop", &artwork{Tint: ui.RGB(200, 40, 40)})
-	a.art.Add(qqmusic.Sized("b", 600)+"#backdrop", &artwork{Tint: ui.RGB(40, 40, 200)})
+	a.art.Add(qqmusic.Sized("a", 600), &artwork{Tint: ui.RGB(200, 40, 40), Ready: art.Backdrop})
+	a.art.Add(qqmusic.Sized("b", 600), &artwork{Tint: ui.RGB(40, 40, 200), Ready: art.Backdrop})
 	q := a.pl.Queue()
 	q[1].Album.PicURL, q[2].Album.PicURL = "a", "b"
 	tt.Frame()

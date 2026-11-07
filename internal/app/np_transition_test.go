@@ -10,6 +10,7 @@ import (
 
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/qqmusic"
 )
 
@@ -129,11 +130,10 @@ func TestNowPlayingClosingCoverDoesNotBlink(t *testing.T) {
 	a := newTestApp()
 	a.settings = defaultSettings()
 	tr := qqmusic.Track{ID: 7, Name: "宝船", Album: qqmusic.Album{PicURL: "transition-cover"}, Duration: 200000}
-	art := &artwork{BMP: solidBitmap(accent(false, 9)), Tint: accent(false, 9)}
+	art := &artwork{BMP: solidBitmap(accent(false, 9)), Tint: accent(false, 9), Ready: art.Backdrop}
 	for _, size := range []int{120, 600} {
 		a.art.Add(qqmusic.Sized(tr.Album.PicURL, size), art)
 	}
-	a.art.Add(qqmusic.Sized(tr.Album.PicURL, 600)+"#backdrop", art)
 	a.pl.Cue([]qqmusic.Track{tr})
 	a.pl.SetLyrics(nil)
 	a.npPane = paneQueue
@@ -209,11 +209,10 @@ func TestNowPlayingTransitionFrames(t *testing.T) {
 			a := newTestApp()
 			a.settings = defaultSettings()
 			tr := qqmusic.Track{ID: 7, Name: "宝船", Album: qqmusic.Album{PicURL: "transition-frames"}, Duration: 200000}
-			art := &artwork{BMP: solidBitmap(accent(false, 9)), Tint: accent(false, 9)}
+			art := &artwork{BMP: solidBitmap(accent(false, 9)), Tint: accent(false, 9), Ready: art.Backdrop}
 			for _, size := range []int{120, 600} {
 				a.art.Add(qqmusic.Sized(tr.Album.PicURL, size), art)
 			}
-			a.art.Add(qqmusic.Sized(tr.Album.PicURL, 600)+"#backdrop", art)
 			a.pl.Cue([]qqmusic.Track{tr})
 			a.pl.SetLyrics(nil)
 			a.npPane = scene.pane

@@ -9,6 +9,7 @@ import (
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
+	"lilt/internal/media/art"
 	"lilt/internal/media/lyrics"
 	"lilt/internal/media/player"
 	"lilt/internal/media/qqmusic"
@@ -38,12 +39,13 @@ func RunTaskbarLyricsCheck(dir string, duration time.Duration, coverPath string)
 		if err != nil {
 			return err
 		}
-		bmp, _, err := decodeArt(data)
+		cover, err := art.DecodeArt(data, art.Cover)
 		if err != nil {
 			return err
 		}
 		coverURL = "taskbar-cover-fixture"
-		a.art.Add(qqmusic.Sized(coverURL, 96), &artwork{BMP: bmp, Size: len(data), Used: a.art.Clock()})
+		cover.Used = a.art.Clock()
+		a.art.Add(qqmusic.Sized(coverURL, 96), cover)
 	}
 	a.pl = player.New(a.post)
 	a.pl.Changed = a.redraw

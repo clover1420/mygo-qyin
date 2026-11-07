@@ -139,7 +139,7 @@ func CoverCard(c *ui.Context, d Deps, name, cover string, playCount float64, sub
 // The cover rounds itself rather than its parent clipping it: a clip moved
 // by a transform, as a card lifting under the pointer, is drawn on the CPU.
 func CoverFill(c *ui.Context, covers *art.Cache, p theme.Palette, url string, px int, radius float32) {
-	bmp := appui.Bitmap(covers.Get(qqmusic.Sized(url, px), false))
+	bmp := appui.Bitmap(covers.Get(qqmusic.Sized(url, px), art.Cover))
 	box := ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(radius)
 	in := appui.ArtIn(box, bmp)
 	if in < 1 {

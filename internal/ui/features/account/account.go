@@ -227,7 +227,7 @@ func Dialog(c *ui.Context, d Deps) {
 						Start(d, l.Wechat)
 					}
 				case l.Finished || l.Status == qqmusic.QRScanned:
-					if bmp := appui.Bitmap(d.Art.Get(qqmusic.Sized(l.Avatar, 160), false)); bmp != nil {
+					if bmp := appui.Bitmap(d.Art.Get(qqmusic.Sized(l.Avatar, 160), art.Cover)); bmp != nil {
 						pic := ui.Box(c).Size(72, 72).Radius(36).Shadow(0, 6, 16, -4, theme.Ink.Alpha(0.3))
 						in := appui.ArtIn(pic, bmp)
 						pic.Children(func() { appui.ArtImage(c, bmp, 36, in) })

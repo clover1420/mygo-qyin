@@ -441,7 +441,7 @@ func (n *Notch) compact(c *ui.Context, tr *qqmusic.Track, shown float32, showLyr
 	if shown < 0.02 {
 		return
 	}
-	art := n.Deps.Art.Get(qqmusic.Sized(tr.Album.PicURL, 96), false)
+	art := n.Deps.Art.Get(qqmusic.Sized(tr.Album.PicURL, 96), art.Cover)
 	s := n.H0 - 12
 	ui.Row(c).Absolute().Top(0).Left(0).Right(0).Height(n.H0).PaddingX(7).Gap(10).AlignItems(ui.Center).Opacity(shown).Children(func() {
 		cov := ui.Box(c).Size(s, s).Shrink(0).Radius(s * 0.28)
@@ -488,7 +488,7 @@ func (n *Notch) LyricText(c *ui.Context, tr *qqmusic.Track) string {
 func (n *Notch) levels(c *ui.Context, tr *qqmusic.Track, w, h float32, count int) {
 	d := n.Deps
 	color := theme.Paper
-	if art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 96), false); art != nil && !art.Failed {
+	if art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 96), art.Tint); art != nil && !art.Failed {
 		color = art.Tint.Mix(white, 0.35)
 	}
 	ui.Box(c).Size(w, h).Draw(func(p *ui.Painter, r ui.Rect) {
@@ -504,7 +504,7 @@ func (n *Notch) levels(c *ui.Context, tr *qqmusic.Track, w, h float32, count int
 func (n *Notch) expanded(c *ui.Context, tr *qqmusic.Track, open, left float32) {
 	d := n.Deps
 	pl := d.Player
-	art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 200), false)
+	art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 200), art.Cover)
 	transport.TickTimes(c, pl)
 	col := ui.Column(c).Absolute().Top(n.H0+6).Left(left).Width(OpenW).Padding(8, 22, 16, 22).Gap(12).Opacity(max(0, open*1.4-0.4))
 	col.Translate(0, (1-open)*-10)

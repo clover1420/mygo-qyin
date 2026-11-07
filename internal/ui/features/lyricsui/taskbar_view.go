@@ -7,6 +7,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/egoist/mygo/ui"
+	"lilt/internal/media/art"
 	"lilt/internal/media/lyrics"
 	"lilt/internal/media/qqmusic"
 	"lilt/internal/ui/base/appui"
@@ -121,7 +122,7 @@ func (d *Taskbar) CoverButton(c *ui.Context, cover ui.Element, url string, size 
 }
 
 func (d *Taskbar) CoverImage(c *ui.Context, url string, size float32) {
-	bmp := bitmap(d.Art.Get(qqmusic.Sized(url, 96), false))
+	bmp := bitmap(d.Art.Get(qqmusic.Sized(url, 96), art.Cover))
 	if bmp != nil {
 		ui.Image(c, bmp).Fill().Fit(ui.Cover).Radius(min(6, size/2))
 	} else {

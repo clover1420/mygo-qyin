@@ -3,6 +3,7 @@ package lyricsui
 import (
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/qqmusic"
 	"lilt/internal/ui/base/appui"
 	"lilt/internal/ui/base/theme"
@@ -46,7 +47,7 @@ func (d *Taskbar) ControlsView(c *ui.Context) {
 	ui.Column(c.Key(identity)).Fill().Padding(12).Gap(8).TextColor(text).Children(func() {
 		ui.Row(c).Height(64).Gap(12).AlignItems(ui.Center).Children(func() {
 			cover := ui.Box(c.Key("artwork")).Size(64, 64).Shrink(0).Radius(8).Background(theme.Neutral(dark, 4)).Center()
-			bmp := bitmap(d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 120), false))
+			bmp := bitmap(d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 120), art.Cover))
 			cover.Children(func() {
 				if bmp != nil {
 					ui.Image(c, bmp).Size(64, 64).Fit(ui.Cover).Radius(8)

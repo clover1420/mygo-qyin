@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/egoist/mygo/ui"
 
+	"lilt/internal/media/art"
 	"lilt/internal/media/qqmusic"
 	"lilt/internal/ui/base/theme"
 )
@@ -18,7 +19,7 @@ func (a *app) followCover() {
 		a.coverArt = nil
 		return
 	}
-	if art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 600), false); art != nil && !art.Failed {
+	if art := a.art.Get(qqmusic.Sized(tr.Album.PicURL, 600), art.Tint); art != nil && !art.Failed {
 		a.coverArt = art
 	}
 }

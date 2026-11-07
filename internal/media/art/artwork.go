@@ -27,9 +27,28 @@ type Artwork struct {
 	BMP      *ui.Bitmap
 	Backdrop *ui.Bitmap
 	Tint     ui.Color // the cover's most vivid color
+	Data     []byte   // the same encoded data the bitmap keeps to restore its pixels
+	Ready    Needs    // which derived resources have been made
 	Failed   bool
 	Used     time.Time // when it was last asked for
 	Size     int       // the bytes it keeps: its data, and the backdrop's pixels
+}
+
+// Needs are the resources a caller asks of a cover. A plain image needs
+// no color measurement or separately decoded image.
+type Needs uint8
+
+const (
+	Cover    Needs = 0
+	Tint     Needs = 1
+	Blur     Needs = 2
+	Backdrop       = Tint | Blur
+)
+
+// A request's needs can grow while its worker runs; only the main thread
+// reads or changes them. Extra resources use the same downloaded data.
+type artRequest struct {
+	want Needs
 }
 
 // Cache loads covers on goroutines and keeps them, up to artLimit
@@ -41,13 +60,15 @@ type Cache struct {
 	// gone are the covers dropped, for as long as something else holds
 	// them: Now Playing keeps the cover it shows, which comes back as it
 	// was rather than loading again.
-	gone  map[string]weak.Pointer[Artwork]
-	busy  map[string]bool
-	sem   chan struct{}
-	post  func(func())
-	now   func() time.Time
-	size  int // the bytes the covers in art keep
-	limit int
+	gone    map[string]weak.Pointer[Artwork]
+	busy    map[string]*artRequest
+	sem     chan struct{}
+	post    func(func())
+	fetch   func(string) ([]byte, error)
+	release func(*ui.Bitmap)
+	now     func() time.Time
+	size    int // the bytes the covers in art keep
+	limit   int
 }
 
 // artLimit budgets encoded cover data and backdrop pixels; decoded pixels,
@@ -59,14 +80,18 @@ const artLimit = 64 << 20
 const artRetry = 5 * time.Minute
 
 func New(post func(func())) *Cache {
-	return &Cache{art: map[string]*Artwork{}, gone: map[string]weak.Pointer[Artwork]{}, busy: map[string]bool{}, sem: make(chan struct{}, 8), post: post, now: time.Now, limit: artLimit}
+	return &Cache{
+		art: map[string]*Artwork{}, gone: map[string]weak.Pointer[Artwork]{}, busy: map[string]*artRequest{},
+		sem: make(chan struct{}, 8), post: post, fetch: qqmusic.Fetch, release: releaseArtPixels,
+		now: time.Now, limit: artLimit,
+	}
 }
 
 // Reserve holds a cover offline until Release, as a request being made.
-func (c *Cache) Reserve(url string, backdrop bool) { c.busy[keyFor(url, backdrop)] = true }
+func (c *Cache) Reserve(url string) { c.busy[url] = &artRequest{} }
 
 // Release frees a cover held by Reserve.
-func (c *Cache) Release(url string, backdrop bool) { delete(c.busy, keyFor(url, backdrop)) }
+func (c *Cache) Release(url string) { delete(c.busy, url) }
 
 // Clock is the cache's time, which tests set.
 func (c *Cache) Clock() time.Time { return c.now() }
@@ -74,19 +99,20 @@ func (c *Cache) Clock() time.Time { return c.now() }
 // SetClock sets the cache's time, which tests do.
 func (c *Cache) SetClock(now func() time.Time) { c.now = now }
 
-func keyFor(url string, backdrop bool) string {
-	if backdrop {
-		return url + "#backdrop"
-	}
-	return url
-}
-
 // Add keeps a cover, and drops those asked for least recently once the
 // covers take more than the limit, down to three quarters of it, so that
 // it sorts them seldom. Those showing were asked for last, and stay.
-func (c *Cache) Add(key string, a *Artwork) {
-	c.art[key] = a
+func (c *Cache) Add(url string, a *Artwork) {
+	if old := c.art[url]; old != nil {
+		c.size -= old.Size
+	}
+	c.art[url] = a
+	delete(c.gone, url)
 	c.size += a.Size
+	c.trim()
+}
+
+func (c *Cache) trim() {
 	if c.size <= c.limit {
 		return
 	}
@@ -111,89 +137,154 @@ func (c *Cache) Add(key string, a *Artwork) {
 	}
 }
 
-// get returns the cover at url, or nil while it loads.
-func (c *Cache) Get(url string, backdrop bool) *Artwork {
+// Get returns the shared cover once the requested resources are ready.
+// Plain images need no color measurement or separately decoded image.
+func (c *Cache) Get(url string, need Needs) *Artwork {
 	if url == "" {
 		return nil
 	}
-	key := url
-	if backdrop {
-		key += "#backdrop"
-	}
 	now := c.now()
-	if a, ok := c.art[key]; ok {
-		if !a.Failed {
-			a.Used = now
-			return a
+	a := c.art[url]
+	if a == nil {
+		a = c.gone[url].Value()
+		delete(c.gone, url)
+		if a != nil && (!a.Failed || now.Sub(a.Used) < artRetry) {
+			if !a.Failed {
+				a.Used = now
+			}
+			c.Add(url, a)
 		}
-		if now.Sub(a.Used) < artRetry {
-			return a
-		}
-		delete(c.art, key)
 	}
-	if a := c.gone[key].Value(); a != nil {
-		delete(c.gone, key)
+	if a != nil {
 		if !a.Failed || now.Sub(a.Used) < artRetry {
 			if !a.Failed {
 				a.Used = now
 			}
-			c.Add(key, a)
-			return a
+			if a.Failed || a.Ready&need == need {
+				return a
+			}
+		} else {
+			if c.art[url] == a {
+				delete(c.art, url)
+				c.size -= a.Size
+			}
+			a = nil
 		}
 	}
-	if c.busy[key] {
+	if request := c.busy[url]; request != nil {
+		request.want |= need
 		return nil
 	}
-	c.busy[key] = true
+	if a != nil {
+		need &^= a.Ready
+	}
+	c.load(url, a, need)
+	return nil
+}
+
+func (c *Cache) load(url string, a *Artwork, need Needs) {
+	request := &artRequest{want: need}
+	c.busy[url] = request
+	var data []byte
+	if a != nil {
+		data = a.Data
+	}
+	fetch := c.fetch
 	go func() {
 		c.sem <- struct{}{}
-		bmp, img, size, err := loadArt(url)
-		<-c.sem
-		var blurred *image.RGBA
-		var tint ui.Color
-		if err == nil {
-			tint = DominantColor(img)
-			if backdrop {
-				blurred = BlurImage(img)
+		var result *Artwork
+		var err error
+		if a == nil {
+			data, err = fetch(url)
+			if err == nil {
+				result, err = DecodeArt(data, need)
 			}
+		} else {
+			result, err = deriveArt(data, need)
 		}
+		<-c.sem
 		c.post(func() {
-			delete(c.busy, key)
+			delete(c.busy, url)
 			if err != nil {
-				c.Add(key, &Artwork{Failed: true, Used: c.now()})
+				c.Add(url, &Artwork{Failed: true, Used: c.now()})
 				return
 			}
-			a := &Artwork{BMP: bmp, Tint: tint, Used: c.now(), Size: size}
-			if blurred != nil {
-				a.Backdrop = ui.NewBitmap(blurred)
-				a.Size += len(blurred.Pix)
+			if a == nil {
+				a = result
+				a.Used = c.now()
+				c.Add(url, a)
+				// Let the first frame and its smaller copies upload before
+				// dropping pixels; encoded data can restore them as before.
+				c.release(a.BMP)
+			} else {
+				if need&Tint != 0 {
+					a.Tint = result.Tint
+				}
+				if need&Blur != 0 {
+					a.Backdrop = result.Backdrop
+				}
+				a.Ready |= need
+				a.Size += result.Size
+				if c.art[url] == a {
+					c.size += result.Size
+					c.trim()
+				} else {
+					c.Add(url, a)
+				}
 			}
-			c.Add(key, a)
-			// Shown by the frame post draws, the cover drops its pixels,
-			// which its data decodes again if they are needed.
-			time.AfterFunc(artRelease, func() { mygo.RunOnMain(bmp.ReleasePixels) })
+			if missing := request.want &^ a.Ready; missing != 0 {
+				c.load(url, a, missing)
+			}
 		})
 	}()
-	return nil
 }
 
 // artRelease is how long a cover keeps its pixels once loaded: past the
 // frame that first shows it, and the smaller copies it shows from there.
 const artRelease = 2 * time.Second
 
-// loadArt fetches the cover at url, as a bitmap to draw and an image to
-// measure, with the bytes of its data.
-func loadArt(url string) (*ui.Bitmap, image.Image, int, error) {
-	b, err := qqmusic.Fetch(url)
-	if err != nil {
-		return nil, nil, 0, err
-	}
-	bmp, img, err := Decode(b)
-	return bmp, img, len(b), err
+func releaseArtPixels(bmp *ui.Bitmap) {
+	time.AfterFunc(artRelease, func() { mygo.RunOnMain(bmp.ReleasePixels) })
 }
 
-// decodeArt decodes a cover twice: as a bitmap, which keeps the data to
-// decode its pixels again after it drops them, and as an image.
+// DecodeArt always keeps the bitmap's compressed restore source. Only
+// callers asking for colors or a backdrop need a second decoded image.
+func DecodeArt(b []byte, need Needs) (*Artwork, error) {
+	size := len(b)
+	b = stillCover(b)
+	bmp, err := ui.DecodeBitmap(b)
+	if err != nil {
+		return nil, err
+	}
+	a, err := deriveArt(b, need)
+	if err != nil {
+		return nil, err
+	}
+	a.BMP, a.Data, a.Size = bmp, b, size+a.Size
+	return a, nil
+}
+
+func deriveArt(data []byte, need Needs) (*Artwork, error) {
+	a := &Artwork{Ready: need}
+	if need == Cover {
+		return a, nil
+	}
+	img, err := decodeImage(data)
+	if err != nil {
+		return nil, err
+	}
+	if need&Tint != 0 {
+		a.Tint = DominantColor(img)
+	}
+	if need&Blur != 0 {
+		blurred := BlurImage(img)
+		a.Backdrop = ui.NewBitmap(blurred)
+		a.Size = len(blurred.Pix)
+	}
+	return a, nil
+}
+
+// Decode returns a cover as a bitmap to draw and an image to measure.
 func Decode(b []byte) (*ui.Bitmap, image.Image, error) {
 	b = stillCover(b)
 	img, _, err := image.Decode(bytes.NewReader(b))
@@ -304,7 +395,7 @@ func shrink(img image.Image, n int) *image.RGBA {
 			for yy := y0; yy < max(y1, y0+1); yy += max(1, (y1-y0)/4) {
 				for xx := x0; xx < max(x1, x0+1); xx += max(1, (x1-x0)/4) {
 					cr, cg, cb, _ := img.At(xx, yy).RGBA()
-					r, g, bl, cnt = r+cr>>8, g+cg>>8, bl+cb>>8, cnt+1
+					r, g, bl, cnt = cr>>8, cg>>8, cb>>8, cnt+1
 				}
 			}
 			out.SetRGBA(x, y, color.RGBA{uint8(r / cnt), uint8(g / cnt), uint8(bl / cnt), 255})
@@ -313,7 +404,7 @@ func shrink(img image.Image, n int) *image.RGBA {
 	return out
 }
 
-// dominantColor returns the most vivid color that covers much of img: the
+// DominantColor returns the most vivid color that covers much of img: the
 // hue that its saturated pixels share most, at their mean.
 func DominantColor(img image.Image) ui.Color {
 	small := shrink(img, 24)
@@ -347,7 +438,7 @@ func DominantColor(img image.Image) ui.Color {
 	return ui.RGB(uint8(sum[best][0]/w*255), uint8(sum[best][1]/w*255), uint8(sum[best][2]/w*255))
 }
 
-// blurImage returns img shrunk and blurred, more saturated, to fill a
+// BlurImage returns img shrunk and blurred, more saturated, to fill a
 // backdrop behind what plays, scaled up as smooth as it is.
 func BlurImage(img image.Image) *image.RGBA {
 	const n = 48

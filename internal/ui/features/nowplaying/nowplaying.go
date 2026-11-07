@@ -223,7 +223,7 @@ func View(c *ui.Context, d Deps) {
 	// keep our time labels ticking independently of paint-only animations.
 	transport.TickTimes(c, pl)
 	w, h := c.Size()
-	art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 600), true)
+	art := d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 600), art.Backdrop)
 	// The colors stay the last song's while its cover loads, rather than
 	// going gray between the two.
 	shown := art

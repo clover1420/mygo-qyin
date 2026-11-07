@@ -96,7 +96,7 @@ func DailyCard(c *ui.Context, d DailyDeps, now time.Time) {
 	w, _ := c.Size()
 	inner := w - d.Sidebar - 2*Pad
 	still := c.Preferences().ReduceMotion
-	cover := d.Art.Get(qqmusic.Sized(songs[0].Album.PicURL, 600), true)
+	cover := d.Art.Get(qqmusic.Sized(songs[0].Album.PicURL, 600), art.Backdrop)
 	card := ui.ButtonBase(c.Key("daily")).Height(DailyHeight).Radius(DailyRadius).FocusRing(false).Label("每日推荐").TextColor(theme.Paper)
 	hovered := card.Hovered()
 	ours, playing := dailyPlaying(d)
@@ -395,7 +395,7 @@ func DailyStack(c *ui.Context, d DailyDeps, songs []qqmusic.Track, fanned bool, 
 		}
 		// The record, behind its sleeve.
 		mid := float32(SleeveLeft + SleeveSize/2)
-		cover := d.Art.Get(qqmusic.Sized(songs[0].Album.PicURL, 240), false)
+		cover := d.Art.Get(qqmusic.Sized(songs[0].Album.PicURL, 240), art.Cover)
 		ui.Box(c.Key("record")).Absolute().Left(mid+recordOut(out)-RecordSize/2).Top((SleeveSize-RecordSize)/2).
 			Size(RecordSize, RecordSize).Radius(RecordSize/2).Shadow(0, 8, 20, -4, theme.Ink.Alpha(0.5)).
 			Draw(func(p *ui.Painter, r ui.Rect) {
@@ -473,7 +473,7 @@ func dailyBlurb(d DailyDeps) string {
 func DailyArt(c *ui.Context, d DailyDeps, now time.Time, size float32) {
 	var a *art.Artwork
 	if len(d.Daily) > 0 {
-		a = d.Art.Get(qqmusic.Sized(d.Daily[0].Album.PicURL, 600), true)
+		a = d.Art.Get(qqmusic.Sized(d.Daily[0].Album.PicURL, 600), art.Backdrop)
 	}
 	radius := size * 0.07
 	blurred := backdropBitmap(a)

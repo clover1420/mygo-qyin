@@ -90,7 +90,7 @@ func fmCard(c *ui.Context, d RadioDeps) {
 	}
 	var cover *art.Artwork
 	if tr != nil {
-		cover = d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 600), true)
+		cover = d.Art.Get(qqmusic.Sized(tr.Album.PicURL, 600), art.Backdrop)
 	}
 	blurred := backdropBitmap(cover)
 	card := ui.Box(c.Key("fm-card")).Height(320).Radius(26).Background(theme.Neutral(true, 3)).TextColor(theme.Paper).
