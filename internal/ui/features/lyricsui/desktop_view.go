@@ -309,7 +309,7 @@ func DesktopLayouts(c *ui.Context, content desktopLyricContent, position time.Du
 	font := ui.Font{Family: c.Theme().Font, Size: size, Weight: 700, LineHeight: 1.3}
 	shape := ui.TextShape{Width: width, Align: ui.Center}
 	text := content.text
-	spans := []ui.Span{{Text: text, Color: theme.Veil(12)}}
+	var spans []ui.Span
 	if content.line.Timed && len(content.line.Words) > 0 {
 		spans = make([]ui.Span, 0, len(content.line.Words))
 		for _, word := range content.line.Words {
@@ -317,18 +317,23 @@ func DesktopLayouts(c *ui.Context, content desktopLyricContent, position time.Du
 			spans = append(spans, ui.Span{Text: word.Text, Color: theme.Paper.Alpha(brightness)})
 		}
 	}
-	layout := desktopLyricLayouts{outline: ui.ShapeRichTextWith([]ui.Span{{Text: text}}, font, shape), text: ui.ShapeRichTextWith(spans, font, shape)}
+	layout := desktopLyricLayouts{outline: retainedLyricText(c, text, font, shape, ui.Color{})}
+	if content.line.Timed && len(content.line.Words) > 0 {
+		layout.text = ui.ShapeRichTextWith(spans, font, shape)
+	} else {
+		layout.text = retainedLyricText(c, text, font, shape, theme.Veil(12))
+	}
 	_, layout.originalHeight = layout.text.Size()
 	layout.height = layout.originalHeight
 	if content.translation != "" {
 		font.Size, font.Weight = size*0.625, 500
-		layout.translationOutline = ui.ShapeRichTextWith([]ui.Span{{Text: content.translation}}, font, shape)
+		layout.translationOutline = retainedLyricText(c, content.translation, font, shape, ui.Color{})
 		layout.translation = layout.translationOutline
 		_, h := layout.translation.Size()
 		layout.height += h + 6
 	} else if content.preview != "" {
-		layout.previewOutline = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview}}, font, shape)
-		layout.preview = ui.ShapeRichTextWith([]ui.Span{{Text: content.preview, Color: theme.Paper.Alpha(DesktopRestAlpha)}}, font, shape)
+		layout.previewOutline = retainedLyricText(c, content.preview, font, shape, ui.Color{})
+		layout.preview = retainedLyricText(c, content.preview, font, shape, theme.Paper.Alpha(DesktopRestAlpha))
 		_, h := layout.preview.Size()
 		layout.height += h + 6
 	}

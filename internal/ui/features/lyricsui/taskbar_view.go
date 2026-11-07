@@ -185,7 +185,7 @@ func MakeLayout(c *ui.Context, content desktopLyricContent, position time.Durati
 		secondary = content.preview
 	}
 	secondary = taskbarLyricSingleLine(secondary)
-	spans := []ui.Span{{Text: text, Color: color}}
+	var spans []ui.Span
 	if content.line.Timed && len(content.line.Words) > 0 {
 		spans = make([]ui.Span, 0, len(content.line.Words))
 		for _, word := range content.line.Words {
@@ -196,14 +196,18 @@ func MakeLayout(c *ui.Context, content desktopLyricContent, position time.Durati
 	shape := func(size float32) taskbarLyricLayout {
 		font := ui.Font{Family: c.Theme().Font, Size: size, Weight: 600, LineHeight: 1.15}
 		layout := taskbarLyricLayout{
-			text:    ui.ShapeRichText(spans, font, 0),
-			outline: ui.ShapeRichText([]ui.Span{{Text: text}}, font, 0),
+			outline: retainedLyricText(c, text, font, ui.TextShape{}, ui.Color{}),
 			preview: preview,
+		}
+		if content.line.Timed && len(content.line.Words) > 0 {
+			layout.text = ui.ShapeRichText(spans, font, 0)
+		} else {
+			layout.text = retainedLyricText(c, text, font, ui.TextShape{}, color)
 		}
 		layout.width, layout.originalHeight = layout.text.Size()
 		layout.height = layout.originalHeight
 		if secondary != "" {
-			layout.secondary = ui.ShapeRichText([]ui.Span{{Text: secondary}}, font, 0)
+			layout.secondary = retainedLyricText(c, secondary, font, ui.TextShape{}, ui.Color{})
 			layout.secondaryOutline = layout.secondary
 			var h float32
 			layout.secondaryWidth, h = layout.secondary.Size()

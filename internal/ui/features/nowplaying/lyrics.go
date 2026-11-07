@@ -12,6 +12,26 @@ import (
 	"lilt/internal/media/qqmusic"
 )
 
+// lyricWordWake waits through genuine word gaps instead of keeping a 25 Hz loop.
+func lyricWordWake(line lyrics.Line, position time.Duration) time.Duration {
+	if !line.Timed {
+		return 0
+	}
+	var next time.Duration
+	for _, word := range line.Words {
+		delay := time.Duration(0)
+		if position < word.Start {
+			delay = word.Start - position
+		} else if position < word.End {
+			delay = min(40*time.Millisecond, word.End-position)
+		}
+		if delay > 0 && (next == 0 || delay < next) {
+			next = delay
+		}
+	}
+	return next
+}
+
 // LyricsPane shows the lyrics of the song playing, the line sung lit, and
 // brings it a third of the way down as it changes. Under a hot comment they
 // nearly go, as Now Playing keeps it.
@@ -123,8 +143,11 @@ func TimedLines(c *ui.Context, l Lyrics, scroll ui.Element, lines []lyrics.Line,
 								}
 							})
 							if pl.Playing() {
-								// Words brighten smoothly enough at 25 frames a second.
-								c.After(40 * time.Millisecond)
+								// Once a word ends, sleep until another starts instead of
+								// rebuilding unchanged lyrics through a gap or the outro.
+								if next := lyricWordWake(line, pos); next > 0 {
+									c.After(next)
+								}
 							}
 						} else {
 							ui.Text(c, line.Text).FontSize(st.Size).FontWeight(st.Weight).LineHeight(st.LineHeight).LetterSpacing(-0.4).TextColor(white)
