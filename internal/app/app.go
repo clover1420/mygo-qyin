@@ -10,6 +10,7 @@ import (
 	"lilt/internal/core/navigation"
 	"lilt/internal/media/player"
 	"lilt/internal/media/qqmusic"
+	"lilt/internal/ui/base/appui"
 )
 
 type pageKind = navigation.Page
@@ -123,10 +124,10 @@ type app struct {
 	suggestions   suggestState          // what the search field's query may be after
 
 	nowPlaying  bool
-	npOpen      bool      // Now Playing as it last showed: open or not
-	npChangedAt time.Time // when it last opened or closed
-	npPane      int       // paneLyrics, paneQueue, paneStage, paneComments, paneProgram or paneCaptions
-	npPaneTop   float32   // how far the cover beside the pane starts below its top
+	npOpen      bool                       // Now Playing as it last showed: open or not
+	npMotion    appui.NowPlayingTransition // how it grows out of the player bar's cover
+	npPane      int                        // paneLyrics, paneQueue, paneStage, paneComments, paneProgram or paneCaptions
+	npPaneTop   float32                    // how far the cover beside the pane starts below its top
 	lyricScroll ui.ScrollState
 	lyricGlide  lyricGlide
 	lyricAt     int

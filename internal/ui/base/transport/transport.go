@@ -48,6 +48,10 @@ func Scrubber(c *ui.Context, pl *player.Player, effect string, st *State, track,
 	})
 	pressed := st.Held
 	switch {
+	case s.PressCanceled():
+		// Losing capture ends the preview without committing a seek.
+		st.Held, st.Active = false, false
+		st.V = pl.Position().Seconds()
 	case pressed:
 		st.Active = true
 	case st.Active:

@@ -48,6 +48,7 @@ type Deps struct {
 	QueueOpen    *bool
 	QueuePopup   *ui.ListState
 	QueuePopupAt *int
+	Motion       *appui.NowPlayingTransition
 
 	UnderBottom bool
 
@@ -119,8 +120,14 @@ func Bar(c *ui.Context, d Deps) {
 			reveal := info.AnimateTo("reveal", boolFloat(hovered), motion)
 			info.Children(func() {
 				cover := ui.Box(c).Size(48, 48).Shrink(0)
+				if b := cover.LayoutBounds(); b.W > 0 && d.Motion != nil {
+					d.Motion.From = b
+				}
+				if d.Motion != nil && d.Motion.T > 0 && !d.Motion.Still {
+					cover.Invisible() // the flying cover takes its place
+				}
 				cover.Translate(0, -reveal).Children(func() {
-					d.Cover(c, tr.Album.PicURL, 120, 48, 8).Shadow(0, 2, 8, 0, p.CardShade)
+					d.Cover(c, tr.Album.PicURL, 120, 48, appui.NPFromRadius).Shadow(0, 2, 8, 0, p.CardShade)
 					ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).Radius(8).Center().PassThrough().
 						Opacity(reveal).Background(theme.Shade(5)).TextColor(theme.Paper).Children(func() {
 						ui.Icon(c, appui.IconDown).Size(18, 18).Rotate(180).Translate(0, 3*(1-reveal))

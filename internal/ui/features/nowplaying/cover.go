@@ -100,7 +100,7 @@ func bitmap(a *art.Artwork) *ui.Bitmap {
 
 // Cover shows the cover of tr, size across, which the pointer tilts,
 // drags and flings.
-func Cover(c *ui.Context, pl *player.Player, cs *CoverState, tr *qqmusic.Track, coverArt *art.Artwork, size float32) {
+func Cover(c *ui.Context, pl *player.Player, cs *CoverState, motion *appui.NowPlayingTransition, tr *qqmusic.Track, coverArt *art.Artwork, size float32) {
 	far := size * 1.5 // where a cover flies off to
 	fling := func(dir int) {
 		cs.flung = dir
@@ -191,6 +191,7 @@ func Cover(c *ui.Context, pl *player.Player, cs *CoverState, tr *qqmusic.Track, 
 
 	// It tilts toward the pointer, and swings as it is dragged.
 	px, py, over := wrap.PointerPosition()
+	over = over && motion.T >= 1
 	tx, ty := float32(0), float32(0)
 	if over && !wrap.Dragging() {
 		tx = clamp1(px/size*2 - 1)
@@ -228,21 +229,22 @@ func Cover(c *ui.Context, pl *player.Player, cs *CoverState, tr *qqmusic.Track, 
 		if over {
 			scale *= 1.02
 		}
-		box := ui.Box(c).Fill().Radius(20).Shadow(0, 30, 60, -12, theme.Ink.Alpha(0.55))
+		radius := motion.Radius(c, 20, size)
+		box := ui.Box(c).Fill().Radius(radius).Shadow(0, 30, 60, -12, theme.Ink.Alpha(0.55))
 		if math.Abs(float64(rx))+math.Abs(float64(ry)) > 0.05 {
 			// In depth only while tilted: flat, it draws as an image does.
 			box.RotateX(rx).RotateY(ry).Perspective(900)
 		}
-		box.AnimatePose(ui.Pose{Scale: scale}, ui.Animation{Spring: ui.SpringOptions{Duration: 600 * time.Millisecond, Bounce: 0.25}})
+		motion.Breathe(box, scale)
 		in := appui.ArtIn(box, bitmap(coverArt))
 		if in < 1 {
 			box.Background(white.Alpha(0.08))
 		}
 		box.Children(func() {
-			appui.ArtImage(c, bitmap(coverArt), 16, in)
+			appui.ArtImage(c, bitmap(coverArt), radius, in)
 			if shine > 0.01 {
 				ui.Box(c).Absolute().Top(0).Left(0).Right(0).Bottom(0).PassThrough().Draw(func(p *ui.Painter, r ui.Rect) {
-					glareShader().Draw(p, r, shader.Options{Radius: 16, Uniforms: map[string]any{
+					glareShader().Draw(p, r, shader.Options{Radius: radius, Uniforms: map[string]any{
 						"Center": [2]float32{gx, gy}, "Core": r.W * 0.16, "Sigma": r.W * 0.225, "Alpha": 0.26 * shine,
 					}})
 				})

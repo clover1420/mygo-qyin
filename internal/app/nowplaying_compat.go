@@ -49,7 +49,7 @@ func (a *app) nowplayingDeps() nowplaying.Deps {
 		NpScrub:           &a.npScrub,
 		NowPlaying:        &a.nowPlaying,
 		Open:              &a.npOpen,
-		ChangedAt:         &a.npChangedAt,
+		Motion:            &a.npMotion,
 		Pane:              &a.npPane,
 		PaneTop:           &a.npPaneTop,
 		NPArt:             &a.npArt,

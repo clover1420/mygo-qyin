@@ -30,6 +30,7 @@ func (a *app) playerbarDeps() playerbar.Deps {
 		QueueOpen:              &a.queueOpen,
 		QueuePopup:             &a.queuePopup,
 		QueuePopupAt:           &a.queuePopupAt,
+		Motion:                 &a.npMotion,
 		UnderBottom:            a.underBottom,
 		Cover:                  a.cover,
 		Like:                   a.likeButton,
