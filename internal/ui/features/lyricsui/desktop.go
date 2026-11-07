@@ -44,7 +44,7 @@ type Desktop struct {
 // SupportsDesktopLyrics reports whether the platform has a desktop lyrics
 // panel.
 func SupportsDesktopLyrics() bool {
-	return runtime.GOOS == "windows" || runtime.GOOS == "darwin"
+	return runtime.GOOS == "windows" || runtime.GOOS == "darwin" || runtime.GOOS == "linux"
 }
 
 // NewDesktop returns a desktop lyrics panel.
@@ -78,7 +78,7 @@ func (d *Desktop) Sync() {
 	styleDesktopLyricsWindow(w)
 	d.DesiredHeight = 0
 	d.Width = float64(w.Bounds().Width)
-	w.SetIgnoreMouseEvents(d.Settings.DesktopLyricsLocked)
+	setDesktopLyricsIgnoreMouse(w, d.Settings.DesktopLyricsLocked)
 	w.OnReadyToShow(func() {
 		if d.Win == w && d.Settings.DesktopLyrics && !d.Quitting() {
 			w.ShowInactive()
@@ -131,7 +131,7 @@ func (d *Desktop) SetLocked(locked bool) {
 	d.Settings.DesktopLyricsLocked = locked
 	d.Settings.Save()
 	if d.Win != nil {
-		d.Win.SetIgnoreMouseEvents(locked)
+		setDesktopLyricsIgnoreMouse(d.Win, locked)
 	}
 	d.RefreshTray()
 	d.Redraw()
