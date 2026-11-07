@@ -505,6 +505,9 @@ func content(c *ui.Context, d Deps) {
 					d.Redraw()
 				}
 			})
+			row("桌面歌词颜色", "", func() {
+				desktopLyricsColorControl(c, d)
+			})
 		}
 		row("进度条特效", "", func() {
 			chosen := ProgressEffects[0].Label

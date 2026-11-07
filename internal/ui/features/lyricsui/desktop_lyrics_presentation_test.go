@@ -171,8 +171,8 @@ func TestDesktopLyricsTransitionFrames(t *testing.T) {
 				if !started {
 					state.changed, started = c.Now(), true
 				}
-				previous := DesktopLayouts(c, desktopLyricContent{text: scene.previous}, 0, 32, 432)
-				current := DesktopLayouts(c, desktopLyricContent{text: scene.current, translation: scene.translation}, 0, 32, 432)
+				previous := DesktopLayouts(c, desktopLyricContent{text: scene.previous}, 0, 32, 432, theme.Paper)
+				current := DesktopLayouts(c, desktopLyricContent{text: scene.current, translation: scene.translation}, 0, 32, 432, theme.Paper)
 				blend := state.blend(c)
 				ui.Box(c).Fill().Background(theme.Neutral(false, 2)).PaddingX(24).Children(func() {
 					drawDesktopLyricLayers(c, current, previous, 140, blend)

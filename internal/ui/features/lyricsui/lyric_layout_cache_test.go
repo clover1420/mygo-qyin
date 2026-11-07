@@ -31,7 +31,7 @@ func TestLyricLayoutsRetainStableLayers(t *testing.T) {
 				position := 1500 * time.Millisecond
 				var desktop desktopLyricLayouts
 				dt := ui.NewTester(func(c *ui.Context) {
-					desktop = DesktopLayouts(c, content, position, 32, 300)
+					desktop = DesktopLayouts(c, content, position, 32, 300, cachePaper)
 				}, 320, 160)
 				dt.Frame()
 				firstDesktop := desktop
@@ -105,7 +105,7 @@ func TestDesktopLyricLayoutsRefreshInputs(t *testing.T) {
 		theme := *c.Theme()
 		theme.Font = family
 		c.SetTheme(&theme)
-		layout = DesktopLayouts(c, content, 0, size, width)
+		layout = DesktopLayouts(c, content, 0, size, width, cachePaper)
 	}, 320, 160)
 	tt.Frame()
 	for _, change := range []struct {
