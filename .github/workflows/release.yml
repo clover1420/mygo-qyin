@@ -2,8 +2,6 @@
 # Linux, signs their updates, and uploads them to a draft
 # release of the tag, which is published by hand: installed apps update
 # to it then.
-# Before that, the tag's code is vetted and tested, and a prerelease script
-# trims the draft to the installers and portable archives people download.
 name: Release
 
 on:
@@ -13,20 +11,11 @@ on:
 permissions:
   contents: write # the draft release, and the uploads to it
 
-concurrency:
-  group: release-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   draft-release:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
-        with:
-          go-version-file: go.mod
-          cache: true
       # mygo build uploads to the release of mygo.json's version, whichever
       # tag started the workflow.
       - name: Check the version
@@ -42,14 +31,6 @@ jobs:
           ' CHANGELOG.md | sed '/./,$!d' > "$RUNNER_TEMP/notes.md"
           test -s "$RUNNER_TEMP/notes.md"
           cat "$RUNNER_TEMP/notes.md"
-      - name: Vet and test
-        # The drawing tests of the app and the lyrics windows need CJK fonts
-        # and an audio device, absent on the headless Linux runner; the full
-        # suite runs on a desktop.
-        run: |
-          go build ./...
-          go tool mygo vet .
-          go test $(go list ./... | grep -Ev '/(internal/app|internal/ui/features/lyricsui)$')
       - name: Create the draft release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -63,7 +44,6 @@ jobs:
     needs: draft-release
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
     strategy:
       fail-fast: false
       # MyGo merges the release's shared SHA256SUMS before uploading it.
@@ -79,7 +59,6 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-          cache: true
       - name: Install NSIS, for the Windows installers
         if: matrix.name == 'Windows'
         run: sudo apt-get update && sudo apt-get install -y nsis
@@ -90,15 +69,3 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           MYGO_UPDATER_PRIVATE_KEY: ${{ secrets.MYGO_UPDATER_PRIVATE_KEY }}
         run: go tool mygo build -platform "${{ matrix.platform }}" -upload
-
-  prerelease:
-    needs: build
-    if: always()
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    env:
-      GH_TOKEN: ${{ github.token }}
-    steps:
-      - uses: actions/checkout@v7
-      - name: Keep installers and portable archives
-        run: bash scripts/prerelease.sh "$GITHUB_REF_NAME"

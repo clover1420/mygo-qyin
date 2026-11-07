@@ -609,7 +609,9 @@ func (r *Renderer) draw(s *scene.Scene) error {
 	if err := r.drawFrame(s); err != nil {
 		return err
 	}
-	r.sweepTransientImages()
+	if r.redrew != redrewNothing {
+		r.sweepTransient()
+	}
 	if r.frame%120 == 0 {
 		r.sweep()
 	}
@@ -1262,13 +1264,19 @@ func (r *Renderer) FrameInfo() string {
 	return r.b.Summary()
 }
 
-// sweepTransientImages drops temporary pixel textures after the last drawing
-// of the frame. GL keeps submitted draws alive until they finish using them.
-func (r *Renderer) sweepTransientImages() {
+// sweepTransient frees temporary images and canvases a built frame no
+// longer uses. OpenGL keeps resources referenced by queued commands alive.
+func (r *Renderer) sweepTransient() {
 	for key, t := range r.images {
 		if t.transient && t.lastFrame != r.frame {
 			glDeleteTextures(1, &t.tex)
 			delete(r.images, key)
+		}
+	}
+	for key, t := range r.canvases {
+		if c := t.canvas.Value(); c == nil || c.Transient && t.lastFrame != r.frame {
+			r.deleteCanvas(t)
+			delete(r.canvases, key)
 		}
 	}
 }

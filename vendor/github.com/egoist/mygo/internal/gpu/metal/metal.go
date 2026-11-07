@@ -1040,6 +1040,7 @@ func (r *Renderer) waitLast() {
 func (r *Renderer) track(cb id) {
 	r.inflight[r.inUse] = send(cb, "retain")
 	r.slot = (r.inUse + 1) % ringSize
+	r.sweepTransient()
 }
 
 // encode encodes drawing s into target, whole, returning the
@@ -2028,20 +2029,27 @@ const sweepEvery = 120
 // take the second way, and counting only the first, they swept seldom if
 // ever, while each frame's transient canvases piled up on the GPU.
 func (r *Renderer) sweepIfDue() {
-	r.sweepTransientImages()
 	if r.frame-r.swept >= sweepEvery {
 		r.swept = r.frame
 		r.sweep()
 	}
 }
 
-// sweepTransientImages drops temporary pixel textures once the complete frame
-// is submitted. Command buffers retain textures used by frames still in flight.
-func (r *Renderer) sweepTransientImages() {
+// sweepTransient releases the cache's ownership of temporary resources
+// this submitted frame no longer uses. In-flight command buffers retain
+// their resources, so retiring one does not need to wait for the GPU.
+func (r *Renderer) sweepTransient() {
 	for key, t := range r.images {
 		if t.transient && t.lastFrame != r.frame {
 			release(&t.tex)
 			delete(r.images, key)
+		}
+	}
+	for key, t := range r.canvases {
+		if c := t.canvas.Value(); c == nil || c.Transient && t.lastFrame != r.frame {
+			release(&t.tex)
+			t.drawState.release()
+			delete(r.canvases, key)
 		}
 	}
 }

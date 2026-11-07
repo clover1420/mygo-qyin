@@ -343,6 +343,7 @@ type Renderer struct {
 	mask, color texture
 	images      map[uint64]*texture
 	frame       uint64
+	swept       uint64 // the frame of the last sweep
 	// canvases are the textures canvases are drawn into, and drawing the
 	// render target drawn into now: the back buffer's, or a canvas's.
 	canvases map[uint64]*canvasTexture
@@ -918,7 +919,7 @@ func (r *Renderer) imageView(img *scene.Image) uintptr {
 		if pix == nil {
 			return 0
 		}
-		t = &texture{transient: img.Transient}
+		t = &texture{}
 		if err := r.newTexture(t, img.W, img.H, formatR8G8B8A8Unorm, pix, 4); err != nil {
 			return 0
 		}
@@ -940,7 +941,7 @@ func (r *Renderer) imageView(img *scene.Image) uintptr {
 			img.Uploaded()
 		}
 	}
-	t.lastFrame = r.frame
+	t.lastFrame, t.transient = r.frame, img.Transient
 	return t.srv
 }
 
@@ -1063,6 +1064,7 @@ func (r *Renderer) drawFrame(s *scene.Scene) (bool, error) {
 				r.redrew = redrewNothing
 				r.diff.Remember(s)
 				r.pipelines.Remember()
+				r.sweepTransient()
 				return false, nil
 			}
 			part, r.redrew = &r.part, redrewPart
@@ -1072,6 +1074,7 @@ func (r *Renderer) drawFrame(s *scene.Scene) (bool, error) {
 	if err := r.drawBuilt(built, &r.b, r.rtv, part); err != nil {
 		return false, err
 	}
+	r.sweepTransient()
 	if r.ctx1 != 0 {
 		r.diff.Remember(s)
 		r.pipelines.Remember()
@@ -1793,25 +1796,12 @@ func (r *Renderer) show(sync uintptr) error {
 	// window made hidden, may not be what the window shows once it does:
 	// the next frame draws whole.
 	r.held = r.ctx1 != 0 && uint32(hr) != dxgiStatusOccluded
-	r.sweepTransientImages()
-	if r.frame%120 == 0 {
+	if r.frame-r.swept >= sweepEvery {
+		r.swept = r.frame
 		r.sweep()
 		r.cost.readPeriod()
 	}
 	return nil
-}
-
-// sweepTransientImages frees cached masks as soon as the frame no longer
-// samples them. Waiting hundreds of frames kept whole-window textures
-// resident after an opening animation had already stopped drawing them.
-func (r *Renderer) sweepTransientImages() {
-	for id, t := range r.images {
-		if t.transient && t.lastFrame != r.frame {
-			free(&t.srv)
-			free(&t.tex)
-			delete(r.images, id)
-		}
-	}
 }
 
 // FrameInfo describes the last frame for MYGO_FRAME_STATS.
@@ -1825,9 +1815,34 @@ func (r *Renderer) FrameInfo() string {
 	return r.b.Summary()
 }
 
+// sweepEvery is how many frames go by between sweeps. show sweeps once
+// that many went by since the last sweep, rather than at each multiple of
+// it: frames that change nothing count too and present nothing, so an
+// animation that changes every other frame could present none of the
+// multiples, and never sweep.
+const sweepEvery = 120
+
+// sweepTransient frees temporary resources once a built frame stops using
+// them. The commands already queued on the immediate context keep their GPU
+// resources alive; ordinary images retain the periodic cache policy.
+func (r *Renderer) sweepTransient() {
+	for id, t := range r.images {
+		if t.transient && t.lastFrame != r.frame {
+			free(&t.srv)
+			free(&t.tex)
+			delete(r.images, id)
+		}
+	}
+	for id, t := range r.canvases {
+		if c := t.canvas.Value(); c == nil || c.Transient && t.lastFrame != r.frame {
+			freeCanvas(t)
+			delete(r.canvases, id)
+		}
+	}
+}
+
 // sweep frees the textures of images no frame drew for a while, and
-// those of canvases gone, or transient and not drawn this frame: render
-// calls it every 120 frames.
+// those of canvases gone, or transient and not drawn this frame.
 func (r *Renderer) sweep() {
 	for id, t := range r.images {
 		if r.frame-t.lastFrame > 240 {

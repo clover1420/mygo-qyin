@@ -12,7 +12,7 @@
 # quit first.
 set -euo pipefail
 
-name="Yunhe"
+name="Lilt"
 id="dev.amamiya.qqmusic"
 release=0 keep_login=0 songs=0
 for arg in "$@"; do
