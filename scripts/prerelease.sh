@@ -62,7 +62,7 @@ for name in "${found[@]}"; do
 done
 
 if ((${#remove[@]})) && [[ -z ${PRERELEASE_DRY_RUN:-} ]]; then
-  gh release delete-assets "$tag" "${remove[@]}" --repo "$repo" --yes
+  gh release delete-assets "$tag" "${remove[@]}" --repo "$repo"
 fi
 
 printf 'kept %d assets, removed %d\n' "$((${#found[@]} - ${#remove[@]}))" "${#remove[@]}"
