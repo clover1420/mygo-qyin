@@ -24,14 +24,6 @@ func (a *app) cover(c *ui.Context, url string, px int, size, radius float32) ui.
 	return box
 }
 
-// backdrop returns the blurred cover of art, nil while it loads.
-func backdrop(art *artwork) *ui.Bitmap {
-	if art == nil {
-		return nil
-	}
-	return art.Backdrop
-}
-
 // paged is how a list loaded a page at a time is coming along.
 type paged struct {
 	loaded  bool // whether the first page came

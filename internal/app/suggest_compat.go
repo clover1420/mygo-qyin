@@ -53,7 +53,3 @@ func (a *app) dismissSuggestions() {
 func (a *app) searchField(c *ui.Context) {
 	suggest.Field(c, a.suggestDeps())
 }
-
-func (a *app) choose(key, q string) {
-	suggest.Choose(a.suggestDeps(), key, q)
-}

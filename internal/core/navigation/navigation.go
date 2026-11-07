@@ -36,13 +36,3 @@ type Route struct {
 	// Shelf is the recommendation detail's snapshot, kept even after a refresh.
 	Shelf *qqmusic.SongShelf
 }
-
-// Level is how deep a page is: those of the sidebar, and what opens from
-// them.
-func Level(r Route) int {
-	switch r.Page {
-	case Playlist, Artist, Album, User, Podcast, SongShelf:
-		return 1
-	}
-	return 0
-}

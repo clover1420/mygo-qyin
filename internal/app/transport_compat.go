@@ -22,5 +22,3 @@ var (
 func (a *app) scrubber(c *ui.Context, st *scrubState, track, fill ui.Color, height float32, smoke ui.Color) ui.Element {
 	return transport.Scrubber(c, a.pl, a.settings.ProgressEffectMode(), st, track, fill, height, smoke)
 }
-
-func (a *app) tickTimes(c *ui.Context) { transport.TickTimes(c, a.pl) }

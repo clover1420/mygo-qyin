@@ -68,10 +68,6 @@ func (a *app) toggleLike(tr *qqmusic.Track) {
 	likes.Toggle(a.likesDeps(), tr)
 }
 
-func (a *app) isLiked(tr *qqmusic.Track) bool {
-	return likes.IsLiked(a.likesDeps(), tr)
-}
-
 func (a *app) likeCurrent() {
 	likes.LikeCurrent(a.likesDeps())
 }

@@ -52,22 +52,10 @@ func (a *app) playerbarInk(onDark bool) playerbar.Ink {
 
 func (a *app) playerBar(c *ui.Context) { playerbar.Bar(c, a.playerbarDeps()) }
 
-func (a *app) transport(c *ui.Context, color, dim, on ui.Color, size float32, surface ...buttonSurface) {
-	playerbar.Transport(c, a.pl, color, dim, on, size, surface...)
-}
-
 func (a *app) volumeButton(c *ui.Context, color ui.Color) {
 	playerbar.VolumeButton(c, &a.volume, &a.volumeOpen, a.pl, a.pal, color)
 }
 
-func (a *app) volumeSlider(c *ui.Context, color, track ui.Color, width float32, surface ...buttonSurface) {
-	playerbar.VolumeSlider(c, &a.volume, &a.mutedFrom, a.pl, color, track, width, surface...)
-}
-
 func (a *app) nativeVolumeSlider(c *ui.Context, pop popover) {
 	playerbar.NativeVolumeSlider(c, &a.volume, a.pl, pop, a.pal.Accent)
-}
-
-func (a *app) scrollVolume(ev ui.InputEvent) bool {
-	return playerbar.ScrollVolume(&a.volume, a.pl, ev)
 }

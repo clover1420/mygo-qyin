@@ -681,10 +681,6 @@ func (a *app) event(c *ui.Context, e *qqmusic.Event) {
 	pages.Event(c, a.eventDeps(), e)
 }
 
-func (a *app) shared(c *ui.Context, name, sub, pic string, r route) {
-	pages.Shared(c, a.eventDeps(), name, sub, pic, r)
-}
-
 func (a *app) albumPage(c *ui.Context) { pages.AlbumPage(c, a.albumDeps(), a.route.ID) }
 func (a *app) albumGrid(c *ui.Context, albums []qqmusic.AlbumProfile) {
 	pages.AlbumGrid(c, a.albumDeps(), albums)
@@ -816,10 +812,6 @@ func (a *app) columns(c *ui.Context, min float32) int {
 	return pages.Columns(c, sidebarWidth, min)
 }
 
-func (a *app) heading(c *ui.Context, title, sub string) {
-	pages.Heading(c, a.pal, title, sub)
-}
-
 func (a *app) section(c *ui.Context, title string) ui.Element {
 	return pages.Section(c, title)
 }
@@ -828,22 +820,6 @@ func (a *app) playlistCard(c *ui.Context, pl *qqmusic.Playlist) {
 	pages.PlaylistCard(c, a.pagesDeps(), pl)
 }
 
-func (a *app) coverCard(c *ui.Context, name, cover string, playCount float64, sub string, play func()) bool {
-	return pages.CoverCard(c, a.pagesDeps(), name, cover, playCount, sub, play)
-}
-
 func (a *app) coverFill(c *ui.Context, url string, px int, radius float32) {
 	pages.CoverFill(c, a.art, a.pal, url, px, radius)
-}
-
-func (a *app) coverPlayButton(c *ui.Context, shown bool, play func()) {
-	pages.CoverPlayButton(c, a.pal, shown, play)
-}
-
-func (a *app) chartCard(c *ui.Context, pl *qqmusic.Playlist) {
-	pages.ChartCard(c, a.pagesDeps(), pl)
-}
-
-func (a *app) collectionHeader(c *ui.Context, pl *qqmusic.Playlist, kind, meta string, actions func()) {
-	pages.CollectionHeader(c, a.pagesDeps(), pl, kind, meta, actions)
 }

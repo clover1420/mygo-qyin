@@ -78,10 +78,6 @@ func (a *app) loadMine(uid int64) {
 	playlistedit.LoadMine(a.playlistTools(), uid)
 }
 
-func (a *app) playlistChanged(id int64) {
-	playlistedit.Changed(a.playlistTools(), id)
-}
-
 func (a *app) newPlaylist(tr *qqmusic.Track) {
 	playlistedit.New(a.playlistTools(), tr)
 }
@@ -108,14 +104,6 @@ func (a *app) deleteChosen() {
 
 func (a *app) finishPlaylistRemoval(pl qqmusic.Playlist, saved bool, index int, err error) {
 	playlistedit.FinishRemoval(a.playlistTools(), pl, saved, index, err)
-}
-
-func (a *app) addTo(pid int64, tr *qqmusic.Track) {
-	playlistedit.AddTo(a.playlistTools(), pid, tr)
-}
-
-func (a *app) removeFrom(pid int64, tr *qqmusic.Track) {
-	playlistedit.RemoveFrom(a.playlistTools(), pid, tr)
 }
 
 func (a *app) playlistItems(m *ui.Menu, tr *qqmusic.Track, pid int64) {

@@ -1,10 +1,6 @@
 package app
 
-import (
-	"time"
-
-	"lilt/internal/media/captions"
-)
+import "lilt/internal/media/captions"
 
 // The captions model lives in lilt/internal/media/captions; the app keeps these
 // names while the pane that shows it still lives here.
@@ -39,17 +35,9 @@ func (a *app) setCaptionState(state captionState) {
 }
 
 func (a *app) captionsShown() bool { return a.captions.Shown() }
-func (a *app) modelReady() bool    { return a.captions.Ready() }
 func (a *app) captionsOn() bool    { return a.captions.On() }
 
-func (a *app) startModelDownload()   { a.captions.StartDownload() }
-func (a *app) cancelModelDownload()  { a.captions.CancelDownload() }
-func (a *app) deleteModel()          { a.captions.Delete() }
-func (a *app) syncCaptions()         { a.captions.Sync() }
-func (a *app) stopCaptions()         { a.captions.Stop() }
-func (a *app) pauseCaptions()        { a.captions.Pause() }
-func (a *app) captionsWritten() bool { return a.captions.Written() }
-func (a *app) captionsWriting(pos time.Duration) bool {
-	return a.captions.Writing(pos)
-}
+func (a *app) startModelDownload()     { a.captions.StartDownload() }
+func (a *app) cancelModelDownload()    { a.captions.CancelDownload() }
+func (a *app) syncCaptions()           { a.captions.Sync() }
 func (a *app) transcriptWrite() func() { return a.captions.TranscriptWrite() }
